@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import styles from "./Settings.module.css";
 import { useAlerts } from "@/store/store";
 import { useRef, useState } from "react";
+import { getApiUrl } from "@/lib/api";
 import Image from "next/image";
 
 const cdn = process.env.NEXT_PUBLIC_CDN_URL;
@@ -88,7 +89,7 @@ export function Profile({ user }) {
                 return startUpload([avatar]);
             }
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/me`, {
+            const response = await fetch(`${getApiUrl()}/me`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -186,7 +187,7 @@ export function Profile({ user }) {
                                 disabled={isLoading || imageLoading}
                             >
                                 Save Changes
-                                {isLoading && <Spinner primary />}
+                                {isLoading && <Spinner />}
                             </button>
 
                             {!isLoading && (
@@ -266,10 +267,10 @@ export function Profile({ user }) {
 
                                 <p>{avatar ? "Change Avatar" : "Upload Avatar"}</p>
 
-                                {imageLoading && (
+                                {!imageLoading && (
                                     <Spinner
-                                        size={16}
-                                        margin={0}
+                                        size={18}
+                                        stroke="var(--fg-1)"
                                     />
                                 )}
                             </button>

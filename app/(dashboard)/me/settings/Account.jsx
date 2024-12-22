@@ -19,6 +19,7 @@ import {
     Input,
     Form,
 } from "@/app/components/client";
+import { getApiUrl } from "@/lib/api";
 
 export function Account({ user }) {
     const [passwordLoading, setPasswordLoading] = useState(false);
@@ -88,7 +89,7 @@ export function Account({ user }) {
         try {
             setPasswordLoading(true);
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/me`, {
+            const response = await fetch(`${getApiUrl()}/me`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -156,7 +157,7 @@ export function Account({ user }) {
         try {
             setEmailLoading(true);
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/me`, {
+            const response = await fetch(`${getApiUrl()}/me`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -205,13 +206,10 @@ export function Account({ user }) {
         try {
             setEmailCodeLoading(true);
 
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/auth/verify-email`,
-                {
-                    method: "POST",
-                    body: JSON.stringify({ email: user.email }),
-                }
-            );
+            const response = await fetch(`${getApiUrl()}/auth/verify-email`, {
+                method: "POST",
+                body: JSON.stringify({ email: user.email }),
+            });
 
             if (!response.ok) {
                 throw new Error("Something went wrong");
@@ -234,10 +232,7 @@ export function Account({ user }) {
         try {
             setVerifyEmailLoading(true);
 
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/me/verify-email`,
-                { method: "POST" }
-            );
+            const response = await fetch(`${getApiUrl()}/me/verify-email`, { method: "POST" });
 
             if (!response.ok) {
                 throw new Error("Something went wrong");
@@ -368,14 +363,7 @@ export function Account({ user }) {
                     {!!newPassword.length && (
                         <FormButtons>
                             <button className="button primary small">
-                                Change Password{" "}
-                                {passwordLoading && (
-                                    <Spinner
-                                        primary
-                                        size={16}
-                                        margin={2}
-                                    />
-                                )}
+                                Change Password {passwordLoading && <Spinner />}
                             </button>
 
                             <button
@@ -442,14 +430,7 @@ export function Account({ user }) {
                                         className="button primary"
                                         disabled={!twoFactorCode}
                                     >
-                                        Verify{" "}
-                                        {passwordLoading && (
-                                            <Spinner
-                                                primary
-                                                size={16}
-                                                margin={2}
-                                            />
-                                        )}
+                                        Verify {passwordLoading && <Spinner />}
                                     </button>
                                 </FormButtons>
                             </Form>
@@ -495,7 +476,7 @@ export function Account({ user }) {
                                                 `Please wait ${Math.ceil(verifyEmailWait / 60)} minutes`
                                             ) : verifyEmailLoading ? (
                                                 <>
-                                                    Sending <Spinner size={14} />
+                                                    Sending <Spinner />
                                                 </>
                                             ) : (
                                                 "Resend verification email"
@@ -520,13 +501,7 @@ export function Account({ user }) {
                                 className="button primary small"
                             >
                                 Change Email
-                                {emailLoading && (
-                                    <Spinner
-                                        primary
-                                        size={16}
-                                        margin={2}
-                                    />
-                                )}
+                                {emailLoading && <Spinner />}
                             </button>
 
                             <button
@@ -603,14 +578,7 @@ export function Account({ user }) {
                                         className="button primary"
                                         disabled={!emailCode}
                                     >
-                                        Verify{" "}
-                                        {emailLoading && (
-                                            <Spinner
-                                                primary
-                                                size={16}
-                                                margin={2}
-                                            />
-                                        )}
+                                        Verify {emailLoading && <Spinner />}
                                     </button>
                                 </FormButtons>
                             </Form>
