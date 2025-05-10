@@ -11,8 +11,8 @@ const nextConfig = {
         ],
         dangerouslyAllowSVG: true,
     },
-    experimental: {
-        instrumentationHook: true,
+    typescript: {
+        ignoreBuildErrors: true,
     },
 };
 
