@@ -1,10 +1,10 @@
 import { getPermittedResources } from "@/lib/db/helpers";
 import styles from "@/app/(mainapp)/page.module.css";
-import shuffleArray from "@/lib/shuffleArray";
 import { cookies } from "next/headers";
 import { useUser } from "@/lib/auth";
 import { DailyTrain } from "@client";
 import Link from "next/link";
+import shuffleQuizzes from "@/lib/shuffleQuizzes";
 
 export default async function DailyPage() {
   const user = await useUser({ token: (await cookies()).get("token")?.value });
@@ -14,7 +14,7 @@ export default async function DailyPage() {
     withQuizzes: true,
   });
 
-  shuffleArray(quizzes);
+  const sortedQuizzes = shuffleQuizzes(quizzes);
 
   return (
     <main className={styles.main}>
@@ -52,7 +52,7 @@ export default async function DailyPage() {
         <h2>Ready to test your knowledge?</h2>
 
         {user ? (
-          <DailyTrain quizzes={quizzes} />
+          <DailyTrain quizzes={sortedQuizzes} />
         ) : (
           <p>
             Please{" "}
