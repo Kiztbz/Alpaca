@@ -22,6 +22,7 @@ export function ListAnswer({
   setCorrect,
   canClientCheck,
   isFlashcard,
+  handleWhenCorrect,
 }) {
   const [answers, setAnswers] = useState(new Array(quiz.numOfAnswers).fill(""));
   const [incorrectIndexes, setIncorrectIndexes] = useState([]);
@@ -88,6 +89,8 @@ export function ListAnswer({
       setIsCorrect(true);
       setHasAnswered(true);
 
+      if (handleWhenCorrect) handleWhenCorrect();
+
       if (showConfetti) {
         correctConfetti();
       }
@@ -124,6 +127,8 @@ export function ListAnswer({
           } else {
             setHints([]);
 
+            if (handleWhenCorrect) handleWhenCorrect();
+
             if (showConfetti) {
               correctConfetti();
             }
@@ -143,9 +148,9 @@ export function ListAnswer({
 
   return (
     <Form gap={20} singleColumn onSubmit={handleSubmitAnswer}>
-      {isOrdered && <InfoBox fullWidth>Order the answers correctly</InfoBox>}
+      {/* isOrdered && <InfoBox fullWidth>Order the answers correctly</InfoBox> */}
 
-      {isOrdered && (
+      {/* isOrdered && (
         // <DraggableList quizId={quiz.id}>
         //     {answers.map((a, i) => {
         //         const hasError = incorrectIndexes.includes(i);
@@ -179,11 +184,10 @@ export function ListAnswer({
         //     })}
         // </DraggableList>
 
-        <div>little problem there</div>
-      )}
+        // <div>little problem there</div>
+      */ }
 
-      {!isOrdered &&
-        answers.map((a, i) => {
+      {answers.map((a, i) => {
           const hasError = incorrectIndexes.includes(i);
 
           return (
@@ -234,19 +238,25 @@ export function ListAnswer({
       )}
 
       <FormButtons>
-        {!isFlashcard && <button
-          type="submit"
-          disabled={
-            (hasAnswered && !isCorrect) ||
-            !answers.every((a) => a) ||
-            loading ||
-            isCorrect
-          }
-          className={`button small ${hasAnswered ? (isCorrect ? "success" : "danger") : "primary"}`}
-        >
-          {isCorrect ? "Correct!" : hasAnswered ? "Incorrect" : "Check Answer "}
-          {loading && <Spinner />}
-        </button>}
+        {!isFlashcard && (
+          <button
+            type="submit"
+            disabled={
+              (hasAnswered && !isCorrect) ||
+              !answers.every((a) => a) ||
+              loading ||
+              isCorrect
+            }
+            className={`button small ${hasAnswered ? (isCorrect ? "success" : "danger") : "primary"}`}
+          >
+            {isCorrect
+              ? "Correct!"
+              : hasAnswered
+                ? "Incorrect"
+                : "Check Answer "}
+            {loading && <Spinner />}
+          </button>
+        )}
 
         {isFlashcard && (
           <button type="submit" className={`button small primary`}>

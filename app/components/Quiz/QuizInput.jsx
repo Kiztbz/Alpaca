@@ -122,7 +122,10 @@ function stateReducer(state, action) {
         courses: action.value.courses || [],
       };
     case "reset":
-      return defaultState;
+      return {
+        ...defaultState,
+        ...action.default,
+      };
     default:
       return state;
   }
@@ -136,21 +139,37 @@ export function QuizInput({ quiz, setQuiz, close }) {
   const courses = useStore((state) => state.courses);
   const notes = useStore((state) => state.notes);
   const user = useStore((state) => state.user);
+  const inputDefaults = useStore((state) => state.inputDefaults);
 
   const isOwner = quiz && user && quiz.creator.id === user.id;
   const canChangePermissions = isOwner || !quiz;
 
   useEffect(() => {
-    if (!quiz) return;
+    if (!quiz) {
+      dispatch({ type: "sources", value: inputDefaults.sources });
+      dispatch({ type: "courses", value: inputDefaults.courses });
+      dispatch({ type: "notes", value: inputDefaults.notes });
+      dispatch({ type: "tags", value: inputDefaults.tags });
+      dispatch({ type: "permissions", value: inputDefaults.permissions });
+      return;
+    }
 
     dispatch({
       type: "editing",
-      value: quiz,
-      sources,
-      notes,
-      courses,
+      value: {
+        ...quiz,
+        sources: sources.filter((x) =>
+          quiz.sources ? quiz.sources.includes(x.id) : false
+        ),
+        notes: notes.filter((x) =>
+          quiz.notes ? quiz.notes.includes(x.id) : false
+        ),
+        courses: courses.filter((x) =>
+          quiz.courses ? quiz.courses.includes(x.id) : false
+        ),
+      },
     });
-  }, [sources, notes, courses]);
+  }, [sources, notes, courses, inputDefaults]);
 
   useEffect(() => {
     if (setQuiz) {
@@ -247,7 +266,7 @@ export function QuizInput({ quiz, setQuiz, close }) {
     dispatch({ type: "loading", value: false });
 
     if (response.status === 201) {
-      dispatch({ type: "reset" });
+      dispatch({ type: "reset", default: inputDefaults });
 
       addAlert({
         success: true,
@@ -390,16 +409,16 @@ export function QuizInput({ quiz, setQuiz, close }) {
       )}
 
       <Select
-        multiple
         required
-        itemValue="id"
+        multiple
         label="Sources"
-        options={sources}
-        itemLabel="title"
         data={state.sources}
+        options={sources}
+        itemValue="title"
+        itemLabel="title"
         placeholder="Select sources"
         error={state.errors.sources}
-        description="The sources you used to create this note"
+        description="The sources you used to create this quiz"
         setter={(value) => {
           dispatch({ type: "sources", value });
           dispatch({ type: "errors", value: { sources: "" } });
@@ -409,8 +428,8 @@ export function QuizInput({ quiz, setQuiz, close }) {
       <Select
         multiple
         label="Notes"
-        itemValue="id"
         options={notes}
+        itemValue="title"
         itemLabel="title"
         data={state.notes}
         placeholder="Select notes"
@@ -424,14 +443,14 @@ export function QuizInput({ quiz, setQuiz, close }) {
 
       <Select
         multiple
-        itemValue="id"
         label="Courses"
+        itemValue="name"
         itemLabel="name"
         options={courses}
         data={state.courses}
         placeholder="Select courses"
         error={state.errors.courses}
-        description="The courses this note is related to"
+        description="The courses this note cites or references"
         setter={(value) => {
           dispatch({ type: "courses", value });
           dispatch({ type: "errors", value: { courses: "" } });

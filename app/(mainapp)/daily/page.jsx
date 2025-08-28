@@ -1,4 +1,4 @@
-import { getPermittedResources } from "@/lib/db/helpers";
+import { getPermittedResources, getRelationships } from "@/lib/db/helpers";
 import styles from "@/app/(mainapp)/page.module.css";
 import { cookies } from "next/headers";
 import { useUser } from "@/lib/auth";
@@ -9,12 +9,116 @@ import shuffleQuizzes from "@/lib/shuffleQuizzes";
 export default async function DailyPage() {
   const user = await useUser({ token: (await cookies()).get("token")?.value });
 
-  const { quizzes } = await getPermittedResources({
+  const resourcesObject = await getPermittedResources({
     userId: user ? user.id : undefined,
     withQuizzes: true,
   });
-
+  const { quizzes } = resourcesObject;
   const sortedQuizzes = shuffleQuizzes(quizzes);
+
+  const relationships = await getRelationships();
+  const includeRef = relationships.filter((x) => !!x.includeReference);
+  
+  function pushToList(rel, type) {
+    const resourceList = [
+      {
+        name: "sources",
+        title: "Sources",
+        singular: "source",
+        description:
+          "A source is a record of a resource such as a book, website, or video tutorial, that you can cite for your notes or quiz questions.",
+      },
+      {
+        name: "notes",
+        title: "Notes",
+        singular: "note",
+        description:
+          "A note is a record of your thoughts, ideas, or summaries of a source. You can use notes to create quiz questions or to help you study.",
+      },
+      {
+        name: "quizzes",
+        title: "Quizzes",
+        singular: "quiz",
+        description:
+          "A quiz is a question that challenges your understanding and recall of information from a source or note.",
+      },
+      {
+        name: "courses",
+        title: "Courses",
+        singular: "course",
+        description:
+          "A course is a collection of notes, quizzes, and sources that are related to a specific topic or subject.",
+      },
+    ];
+    if (rel.AType === type) {
+      quizzes
+        .filter((x) => x.id === rel.A)
+        .forEach((x) => {
+          const listType = resourceList.find(
+            (x) => x.singular === rel.BType
+          ).name;
+          if (!x[listType]) x[listType] = [];
+          if (!x[listType].includes(rel.B)) x[listType].push(rel.B);
+        });
+    }
+
+    if (rel.BType === type) {
+      quizzes
+        .filter((x) => x.id === rel.B)
+        .forEach((x) => {
+          const listType = resourceList.find(
+            (x) => x.singular === rel.AType
+          ).name;
+          if (!x[listType]) x[listType] = [];
+          if (!x[listType].includes(rel.A)) x[listType].push(rel.A);
+        });
+    }
+  }
+
+  relationships.forEach((rel) => {
+    includeRef.forEach((x) => {
+      if (
+        x.AType !== "course" &&
+        x.AType === rel.AType &&
+        rel.BType !== "course" &&
+        x.A === rel.A
+      ) {
+        const newRel = {
+          A: x.B,
+          AType: "course",
+          B: rel.B,
+          BType: rel.BType,
+        };
+        relationships.push(newRel);
+      }
+      // if rel.BType source rel.B 1,
+      if (
+        x.AType !== "course" &&
+        x.AType === rel.BType &&
+        rel.BType !== "course" &&
+        x.A === rel.B
+      ) {
+        const newRel = {
+          A: rel.A,
+          AType: rel.AType,
+          B: x.B,
+          BType: "course",
+        };
+        relationships.push(newRel);
+      }
+
+      if (x.BType !== "course" && x.BType === rel.BType && x.B === rel.B) {
+        const newRel = {
+          AType: rel.BType,
+          A: rel.B,
+          BType: "course",
+          B: x.A,
+        };
+        relationships.push(newRel);
+      }
+    });
+    pushToList(rel, "quiz");
+  });
 
   return (
     <main className={styles.main}>

@@ -8,6 +8,7 @@ const keyMap = {
   course: "courses",
   group: "groups",
   associate: "associates",
+  relationship: "relationships",
   blocked: "blocked",
   notification: "notifications",
 };
@@ -26,6 +27,22 @@ export const useStore = create((set) => ({
   blocked: [],
 
   notifications: [],
+
+  inputDefaults: {
+    courses: [],
+    sources: [],
+    notes: [],
+    quizzes: [],
+    tags: [],
+    permissions: {
+      allRead: false,
+      allWrite: false,
+      read: [],
+      write: [],
+      groupId: null,
+      groupLocked: false,
+    },
+  },
 
   setUser: (user) =>
     set(() => {
@@ -50,6 +67,15 @@ export const useStore = create((set) => ({
     });
   },
 
+  setInputDefaults: (defaults) => {
+    return set((state) => ({
+      inputDefaults: {
+        ...state.inputDefaults,
+        ...defaults,
+      },
+    }));
+  },
+
   fillInitialData: (data) => set(() => ({ ...data })),
 
   addItem: (type, item) => {
@@ -60,6 +86,19 @@ export const useStore = create((set) => ({
     return set((state) => ({
       ...state,
       [keyMap[type]]: [...state[keyMap[type]], item],
+    }));
+  },
+
+  updateItem: (type, updatedItem) => {
+    if (!keyMap[type]) {
+      return;
+    }
+
+    return set((state) => ({
+      ...state,
+      [keyMap[type]]: state[keyMap[type]].map((x) =>
+        x.id === updatedItem.id ? updatedItem : x
+      ),
     }));
   },
 
@@ -106,6 +145,8 @@ export const useDailyTrain = create()((set) => ({
     timeLimit: 60 * 15,
     tags: [],
     courses: [],
+    sources: [],
+    notes: [],
   },
 
   setStart: (start) => set(() => ({ start })),

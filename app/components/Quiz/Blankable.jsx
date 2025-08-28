@@ -10,7 +10,13 @@ import { nanoid } from "nanoid";
 import listPrint from "@/lib/listPrint";
 import interleaveArrays from "@/lib/interleaveArrays";
 
-export function Blankable({ canClientCheck, quiz, setCorrect, isFlashcard }) {
+export function Blankable({
+  canClientCheck,
+  quiz,
+  setCorrect,
+  isFlashcard,
+  handleWhenCorrect,
+}) {
   const texts = quiz.prompt.split(/<blank \/>/);
 
   const [answers, setAnswers] = useState(new Array(texts.length - 1).fill(""));
@@ -24,6 +30,7 @@ export function Blankable({ canClientCheck, quiz, setCorrect, isFlashcard }) {
 
   const addAlert = useAlerts((state) => state.addAlert);
   const user = useStore((state) => state.user);
+  const updateItem = useStore((state) => state.updateItem);
   const showConfetti =
     (user && user.settings && user.settings.showConfetti) ?? true;
 
@@ -66,6 +73,8 @@ export function Blankable({ canClientCheck, quiz, setCorrect, isFlashcard }) {
       setIsCorrect(true);
       setHasAnswered(true);
 
+      if (handleWhenCorrect) handleWhenCorrect();
+
       if (showConfetti) {
         correctConfetti();
       }
@@ -99,12 +108,16 @@ export function Blankable({ canClientCheck, quiz, setCorrect, isFlashcard }) {
 
           if (!isCorrect) {
             setFailures((prev) => prev + 1);
+            // updateItem("quiz", { ...quiz, level: quiz.level-- });
           } else {
             setHints([]);
+
+            if (handleWhenCorrect) handleWhenCorrect();
 
             if (showConfetti) {
               correctConfetti();
             }
+            // updateItem("quiz", { ...quiz, level: quiz.level++ });
           }
         }
       } catch (error) {
