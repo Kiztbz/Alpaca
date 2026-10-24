@@ -5,7 +5,7 @@ const { Client } = pg;
 
 if (!process.env.DATABASE_URL) {
     console.error("DATABASE_URL is required. Copy the Supabase transaction-pooler URL into .env.");
-    process.exit(1);
+    throw new Error("DATABASE_URL is not set");
 }
 
 const client = new Client({
