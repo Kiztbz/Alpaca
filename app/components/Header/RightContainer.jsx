@@ -89,6 +89,9 @@ export function RightContainer({ user }) {
                                     >
                                         {link.name}
                                     </Link>
+                                    {link.children && <div className={styles.childLinks}>
+                                        {link.children.map((child) => <Link key={child.name} href={child.href} onClick={handleClose}>{child.name}</Link>)}
+                                    </div>}
                                 </li>
                             ))}
                         </ul>

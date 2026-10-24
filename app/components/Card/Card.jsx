@@ -1,22 +1,12 @@
 "use client";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import styles from "./Card.module.css";
 import hljs from "highlight.js";
 import Link from "next/link";
 
 export function Card({ link, darker, border, lighter, fullWidth, hideAnimatedBorder, ...props }) {
-    const [hasLoaded, setHasLoaded] = useState(false);
-
-    useEffect(() => {
-        setHasLoaded(true);
-    }, []);
-
-    if (!hasLoaded) {
-        return null;
-    }
-
     // Link is external if it starts with http
     const isExternalLink = link && link.startsWith("http");
     const bg = darker ? "var(--bg-1)" : lighter ? "var(--bg-3)" : "";
@@ -88,15 +78,17 @@ export function CardDescription({ children, setInnerHtml = false }) {
 }
 
 export function CardDescriptionHTML({ children }) {
-    // We want to use highlightjs to highlight each code block in the description
-    // but we need to wait for the component to be mounted to do so
+    const contentRef = useRef(null);
 
     useEffect(() => {
-        hljs.highlightAll();
-    }, []);
+        contentRef.current?.querySelectorAll("pre code").forEach((block) => {
+            if (!block.dataset.highlighted) hljs.highlightElement(block);
+        });
+    }, [children]);
 
     return (
         <p
+            ref={contentRef}
             className={styles.description}
             dangerouslySetInnerHTML={{ __html: children }}
         />

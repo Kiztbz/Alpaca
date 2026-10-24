@@ -3,9 +3,10 @@
 import { NoteInput, QuizInput, SourceInput, CourseInput } from "@client";
 import { useEffect, useState } from "react";
 import styles from "./Create.module.css";
+import InputDefaults from "./inputDefaults";
 
-export default function Create() {
-    const [tab, setTab] = useState("Note");
+export default function Create({ initialTab }) {
+    const [tab, setTab] = useState(initialTab || "Note");
 
     const tabs = {
         Note: <NoteInput />,
@@ -16,12 +17,16 @@ export default function Create() {
 
     useEffect(() => {
         if (typeof window !== undefined) {
-            setTab(localStorage.getItem("createTab") || "Note");
+            setTab(initialTab || localStorage.getItem("createTab") || "Note");
         }
-    }, []);
+    }, [initialTab]);
 
     return (
         <main className={styles.main}>
+            <header className={styles.header}>
+                <div><span>Workspace</span><h1>Create</h1><p>Add a learning building block and connect it to the rest of your library.</p></div>
+                <InputDefaults />
+            </header>
             <nav>
                 <div className={styles.tabs}>
                     <ol>

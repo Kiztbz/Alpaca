@@ -1,24 +1,26 @@
-import { getPermittedResources, getRelationships } from "@/lib/db/helpers";
+import { getGroups, getPermittedResources, getRelationships } from "@/lib/db/helpers";
 import { redirect } from "next/navigation";
 import { CourseDash } from "./CourseDash";
 import { cookies } from "next/headers";
-import { useUser } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
+import { FillStore } from "@client";
+import { expandCourseRelationships } from "@/lib/resourceRelations";
 
 export default async function CoursePage(props) {
   const params = await props.params;
-  const user = await useUser({ token: (await cookies()).get("token")?.value });
+  const user = await getSessionUser((await cookies()).get("token")?.value);
   const name = decodeURIComponent(params.name);
 
-  const resources = await getPermittedResources({
-    userId: user?.id,
-    takeAll: true,
-  });
+  const [resources, relationships, groups] = await Promise.all([
+    getPermittedResources({ userId: user?.id, takeAll: true }),
+    getRelationships(),
+    user ? getGroups(user.id) : Promise.resolve([]),
+  ]);
 
   const course = resources.courses.find((x) => x.name === name);
   if (!course) return redirect("/courses");
 
-  const relationships = await getRelationships();
-  const includeRef = relationships.filter((x) => !!x.includeReference);
+  const expandedRelationships = expandCourseRelationships(relationships);
 
   const listName = {
     quiz: "quizzes",
@@ -27,51 +29,7 @@ export default async function CoursePage(props) {
     course: "courses",
   };
 
-  relationships.forEach((rel) => {
-    includeRef.forEach((x) => {
-      if (
-        x.AType !== "course" &&
-        x.AType === rel.AType &&
-        rel.BType !== "course" &&
-        x.A === rel.A
-      ) {
-        const newRel = {
-          A: x.B,
-          AType: "course",
-          B: rel.B,
-          BType: rel.BType,
-        };
-        relationships.push(newRel);
-      }
-      
-      if (
-        x.AType !== "course" &&
-        x.AType === rel.BType &&
-        rel.BType !== "course" &&
-        x.A === rel.B
-      ) {
-        const newRel = {
-          A: rel.A,
-          AType: rel.AType,
-          B: x.B,
-          BType: "course",
-        };
-        relationships.push(newRel);
-      }
-
-      if (x.BType !== "course" && x.BType === rel.BType && x.B === rel.B) {
-        const newRel = {
-          AType: rel.BType,
-          A: rel.B,
-          BType: "course",
-          B: x.A,
-        };
-        relationships.push(newRel);
-      }
-    });
-  });
-
-  relationships.forEach((rel) => {
+  expandedRelationships.forEach((rel) => {
     if (rel.A === course.id && rel.AType === "course") {
       const listType = listName[rel.BType];
       if (!course[listType]) course[listType] = [];
@@ -87,5 +45,8 @@ export default async function CoursePage(props) {
     }
   });
 
-  return <CourseDash course={course} isLogged={!!user} />;
+  return <>
+    {user && <FillStore user={user} groups={groups} relationships={expandedRelationships} {...resources} />}
+    <CourseDash course={course} isLogged={!!user} />
+  </>;
 }

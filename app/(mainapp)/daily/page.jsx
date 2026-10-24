@@ -1,23 +1,26 @@
 import { getPermittedResources, getRelationships } from "@/lib/db/helpers";
-import styles from "@/app/(mainapp)/page.module.css";
+import styles from "../AppScreen.module.css";
 import { cookies } from "next/headers";
-import { useUser } from "@/lib/auth";
-import { DailyTrain } from "@client";
+import { getSessionUser } from "@/lib/auth";
+import { DailyTrain, FillStore } from "@client";
 import Link from "next/link";
 import shuffleQuizzes from "@/lib/shuffleQuizzes";
+import { expandCourseRelationships } from "@/lib/resourceRelations";
 
 export default async function DailyPage() {
-  const user = await useUser({ token: (await cookies()).get("token")?.value });
+  const user = await getSessionUser((await cookies()).get("token")?.value);
 
-  const resourcesObject = await getPermittedResources({
-    userId: user ? user.id : undefined,
-    withQuizzes: true,
-  });
+  const [resourcesObject, rawRelationships] = await Promise.all([
+    getPermittedResources({
+      userId: user?.id,
+      takeAll: true,
+    }),
+    getRelationships(),
+  ]);
   const { quizzes } = resourcesObject;
   const sortedQuizzes = shuffleQuizzes(quizzes);
 
-  const relationships = await getRelationships();
-  const includeRef = relationships.filter((x) => !!x.includeReference);
+  const relationships = expandCourseRelationships(rawRelationships);
   
   function pushToList(rel, type) {
     const resourceList = [
@@ -75,86 +78,15 @@ export default async function DailyPage() {
     }
   }
 
-  relationships.forEach((rel) => {
-    includeRef.forEach((x) => {
-      if (
-        x.AType !== "course" &&
-        x.AType === rel.AType &&
-        rel.BType !== "course" &&
-        x.A === rel.A
-      ) {
-        const newRel = {
-          A: x.B,
-          AType: "course",
-          B: rel.B,
-          BType: rel.BType,
-        };
-        relationships.push(newRel);
-      }
-      // if rel.BType source rel.B 1,
-      if (
-        x.AType !== "course" &&
-        x.AType === rel.BType &&
-        rel.BType !== "course" &&
-        x.A === rel.B
-      ) {
-        const newRel = {
-          A: rel.A,
-          AType: rel.AType,
-          B: x.B,
-          BType: "course",
-        };
-        relationships.push(newRel);
-      }
-
-      if (x.BType !== "course" && x.BType === rel.BType && x.B === rel.B) {
-        const newRel = {
-          AType: rel.BType,
-          A: rel.B,
-          BType: "course",
-          B: x.A,
-        };
-        relationships.push(newRel);
-      }
-    });
-    pushToList(rel, "quiz");
-  });
+  relationships.forEach((rel) => pushToList(rel, "quiz"));
 
   return (
-    <main className={styles.main}>
-      <header>
-        <h1>Daily Train</h1>
-
-        <p>
-          Daily Training is a spaced repetition system that helps you remember
-          information from your notes and sources.
-        </p>
+    <main className={styles.screen}>
+      {user && <FillStore user={user} relationships={relationships} {...resourcesObject} />}
+      <header className={styles.screenHeader}>
+        <div><span>Spaced repetition</span><h1>Daily Train</h1><p>A focused session of questions that are ready for review today.</p></div>
       </header>
-
-      <section>
-        <h2>How it works</h2>
-
-        <p>
-          The Daily Train page is where you can practice on the quiz questions.
-        </p>
-
-        <p>
-          When you get a quiz question correct, it levels up, and you do not see
-          it again until later. Say you achieve level 7 with a quiz question
-          when you get it right today. That quiz question will not appear in
-          Daily Training for another 7 days.
-        </p>
-
-        <p>
-          But if you get a quiz question wrong, you go down one level, and you
-          have to try to get it right again before it disappears from Daily
-          Training.
-        </p>
-      </section>
-
-      <section>
-        <h2>Ready to test your knowledge?</h2>
-
+      <section className={styles.content}><div className={styles.sessionPanel}><div><span>Today&apos;s queue</span><h2>{sortedQuizzes.length} questions ready</h2><p>Correct answers wait longer before returning. Missed answers come back sooner so you can strengthen them.</p></div>
         {user ? (
           <DailyTrain quizzes={sortedQuizzes} />
         ) : (
@@ -165,7 +97,7 @@ export default async function DailyPage() {
             </Link>{" "}
             to start training
           </p>
-        )}
+        )}</div>
       </section>
     </main>
   );

@@ -7,22 +7,22 @@ import {
   SourceDisplay,
 } from "@/app/components/client";
 import { useState } from "react";
+import styles from "../AppScreen.module.css";
 
 export default function StudyList({ resources, type, heading }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <section>
-      <h2>{heading}</h2>
-      <button
+    <section className={styles.studySection}>
+      <header><h2>{heading}<span>{resources.length} available</span></h2><button
         className="button primary"
         onClick={() => setOpen((prev) => !prev)}
       >
         {open ? "Hide" : "Show"}
-      </button>
-      {resources.length === 0 && <p>None available for selected tag.</p>}
+      </button></header>
+      {resources.length === 0 && <p className={styles.empty}>None available for the selected filter.</p>}
       {open && (
-        <MasoneryList>
+        <div><MasoneryList>
           {resources.map((res) => {
             if (type === "note") return <NoteDisplay key={res.id} note={res} />;
 
@@ -39,7 +39,7 @@ export default function StudyList({ resources, type, heading }) {
             if (type === "source")
               return <SourceDisplay key={res.id} source={res} />;
           })}
-        </MasoneryList>
+        </MasoneryList></div>
       )}
     </section>
   );

@@ -39,7 +39,7 @@ export function FillStore({
 
         setUser(user);
 
-        fillInitialData({
+        const data = {
             user,
             users,
             sources,
@@ -50,13 +50,17 @@ export function FillStore({
             groups,
             associates,
             notifications,
-        });
+        };
+
+        fillInitialData(
+            Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined))
+        );
 
         return () => {
             ws.close();
             console.log(`Web socket connection closed to ${webSocketURL}`);
         };
-    }, [user, sources, notes, quizzes, courses, groups, associates, notifications]);
+    }, [user, sources, notes, quizzes, courses, relationships, groups, associates, notifications]);
 
     return null;
 }

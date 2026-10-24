@@ -114,6 +114,10 @@
     background-color: var(--accent);
 }
 
+.childLinks { display: grid; margin: -2px 0 8px 18px; border-left: 1px solid var(--bg-4); }
+.childLinks a { padding: 9px 14px; color: var(--fg-4); font-size: 15px; font-weight: 700; }
+.childLinks a:hover { color: var(--accent); }
+
 .profile {
     top: 12px;
     right: 12px;

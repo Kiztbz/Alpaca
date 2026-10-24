@@ -22,7 +22,7 @@ import {
   Card,
 } from "@client";
 
-export function NoteDisplay({ note }) {
+export function NoteDisplay({ note, contextCourse }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -52,7 +52,10 @@ export function NoteDisplay({ note }) {
   const canDelete = !!note.creator && note.creator.id === user?.id;
 
   return (
-    <Card fullWidth link={`/notes/${note.publicId}`}>
+    <Card
+      fullWidth
+      link={`/notes/${note.publicId}${contextCourse ? `?course=${encodeURIComponent(contextCourse.publicId)}` : ""}`}
+    >
       <header>
         <h4 title={note.title}>{note.title}</h4>
       </header>

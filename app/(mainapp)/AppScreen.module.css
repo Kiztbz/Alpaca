@@ -1,0 +1,25 @@
+.screen { width: min(1220px, 100%); min-height: calc(100vh - 68px); margin: 0 auto; padding: 46px 38px 90px; }
+.screenHeader { gap: 30px; display: flex; padding-bottom: 28px; align-items: flex-end; justify-content: space-between; border-bottom: 1px solid var(--bg-4); }
+.screenHeader > div:first-child > span { color: var(--accent); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.screenHeader h1 { margin-top: 5px; color: var(--fg-1); font-size: clamp(38px, 5vw, 54px); line-height: 1; letter-spacing: -.045em; }
+.screenHeader p { max-width: 650px; margin-top: 10px; color: var(--fg-4); font-size: 14px; line-height: 1.55; }
+.headerControls { flex: none; }
+.content { margin-top: 28px; }
+.sessionPanel { display: grid; padding: clamp(24px, 4vw, 42px); overflow: hidden; border-radius: 24px; background: linear-gradient(135deg, var(--bg-2), var(--bg-1)); border: 1px solid var(--bg-4); grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 28px; }
+.sessionPanel span { color: var(--accent); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em; }
+.sessionPanel h2 { margin-top: 8px; color: var(--fg-1); font-size: clamp(25px, 4vw, 38px); letter-spacing: -.035em; }
+.sessionPanel p { max-width: 650px; margin-top: 10px; color: var(--fg-4); font-size: 14px; line-height: 1.6; }
+.studyGrid { gap: 14px; display: grid; margin-top: 28px; }
+.studySection { padding: 22px; border-radius: 18px; background: var(--bg-2); border: 1px solid var(--bg-4); }
+.studySection > header { display: flex; align-items: center; justify-content: space-between; }
+.studySection h2 { color: var(--fg-1); font-size: 22px; }
+.studySection header span { margin-left: 8px; color: var(--fg-4); font-size: 11px; font-weight: 700; }
+.studySection > div { margin-top: 18px; }
+.empty { margin-top: 16px; color: var(--fg-4); font-size: 13px; }
+
+@media (max-width: 720px) {
+  .screen { padding: 30px 16px 68px; }
+  .screenHeader { align-items: flex-start; flex-direction: column; }
+  .headerControls { width: 100%; }
+  .sessionPanel { grid-template-columns: 1fr; }
+}

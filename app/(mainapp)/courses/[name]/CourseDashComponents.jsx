@@ -388,7 +388,7 @@ export function QuizzesTabMain({ course }) {
                 return a.level - b.level;
               })
               .map((quiz) =>
-                quiz ? <QuizDisplay lighter quiz={quiz} key={quiz.id} /> : ""
+                quiz ? <QuizDisplay lighter quiz={quiz} contextCourse={course} key={quiz.id} /> : ""
               )}
           </MasoneryList>
         </>
@@ -418,7 +418,7 @@ export function NotesTabMain({ course }) {
 
           <MasoneryList>
             {courseNotes.map((note) => (
-              <NoteDisplay note={note} key={note.id} />
+              <NoteDisplay note={note} contextCourse={course} key={note.id} />
             ))}
           </MasoneryList>
         </>
@@ -448,7 +448,7 @@ export function SourcesMainTab({ course }) {
 
           <MasoneryList>
             {courseSources.map((source) => (
-              <SourceDisplay source={source} key={source.id} />
+              <SourceDisplay source={source} contextCourse={course} key={source.id} />
             ))}
           </MasoneryList>
         </>

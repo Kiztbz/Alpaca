@@ -18,7 +18,7 @@ import {
   Card,
 } from "@client";
 
-export function SourceDisplay({ source }) {
+export function SourceDisplay({ source, contextCourse }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -45,7 +45,10 @@ export function SourceDisplay({ source }) {
   const canDelete = source.creator && source.creator.id === user?.id;
 
   return (
-    <Card fullWidth link={`/sources/${source.publicId}`}>
+    <Card
+      fullWidth
+      link={`/sources/${source.publicId}${contextCourse ? `?course=${encodeURIComponent(contextCourse.publicId)}` : ""}`}
+    >
       <header>
         <h4 title={source.title}>{source.title}</h4>
         <CardChip>{source.medium}</CardChip>

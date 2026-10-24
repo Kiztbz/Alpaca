@@ -1,9 +1,8 @@
-import { getGroups, getPermittedResources, getRelationships } from "@/lib/db/helpers";
 import { Inter, Sofia_Sans, Roboto_Mono } from "next/font/google";
 import { FillStore, Timer, Alerts, ThemeSetter } from "@client";
 import { metadatas } from "@/lib/metadatas";
 import { cookies } from "next/headers";
-import { useUser } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,32 +40,7 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-    const user = await useUser({
-        token: (await cookies()).get("token")?.value,
-        select: ["id", "username", "displayName", "avatar", "role", "settings"],
-        withAssociates: true,
-        withNotifications: true,
-    });
-
-    let resources = { sources: [], notes: [], quizzes: [], courses: [] };
-    let groups = [];
-    let relationships = [];
-
-    // The public pages do not need application data. Avoid opening a database
-    // connection for anonymous requests so the landing and auth pages remain
-    // available during a database outage.
-    if (user) {
-        [resources, groups, relationships] = await Promise.all([
-            getPermittedResources({
-                userId: user.id,
-                takeAll: true,
-            }),
-            getGroups(user.id),
-            getRelationships(),
-        ]);
-    }
-
-    const { sources, notes, quizzes, courses } = resources;
+    const user = await getSessionUser((await cookies()).get("token")?.value);
 
     return (
         <html
@@ -76,12 +50,6 @@ export default async function RootLayout({ children }) {
             {user && (
                 <FillStore
                     user={user}
-                    notes={notes}
-                    groups={groups}
-                    sources={sources}
-                    quizzes={quizzes}
-                    courses={courses}
-                    relationships={relationships}
                     associates={user.associates}
                     notifications={user.notifications || []}
                 />

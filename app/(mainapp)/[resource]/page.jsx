@@ -3,11 +3,13 @@ import { SearchOptions } from "./SearchOptions";
 import styles from "@main/page.module.css";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { useUser } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db/db";
 import Image from "next/image";
 import Link from "next/link";
 import { sql } from "kysely";
+import { NotesHub } from "@/app/components/Note/NotesHub";
+import { expandCourseRelationships } from "@/lib/resourceRelations";
 import {
   TooltipContent,
   TooltipTrigger,
@@ -63,7 +65,7 @@ export default async function ResourcePage(props) {
   const current = resourceList.find((r) => r.name === params.resource);
   if (!current) return redirect("/resources");
 
-  const user = await useUser({ token: (await cookies()).get("token")?.value });
+  const user = await getSessionUser((await cookies()).get("token")?.value);
 
   if (page < 1 || amount < 1 || amount > 100) {
     return redirect(
@@ -73,19 +75,27 @@ export default async function ResourcePage(props) {
     );
   }
 
-  const resourcesObject = await getPermittedResources({
-    withSources: current.name === "sources",
-    withNotes: current.name === "notes",
-    withQuizzes: current.name === "quizzes",
-    withCourses: current.name === "courses",
-    userId: user?.id,
-    limit: amount + 1,
-    offset: (page - 1) * amount,
-    tagSearch: tag ? tag : undefined,
-  });
+  const [resourcesObject, rawRelationships, maxPage] = await Promise.all([
+    getPermittedResources({
+      withSources: current.name === "sources",
+      withNotes: current.name === "notes",
+      withQuizzes: current.name === "quizzes",
+      withCourses: current.name === "courses",
+      userId: user?.id,
+      limit: amount + 1,
+      offset: (page - 1) * amount,
+      tagSearch: tag ? tag : undefined,
+    }),
+    getRelationships(),
+    getMaxPage({
+      userId: user?.id,
+      resource: current.name,
+      type: current.singular,
+      amount,
+    }),
+  ]);
 
-  const relationships = await getRelationships();
-  const includeRef = relationships.filter((x) => !!x.includeReference);
+  const relationships = expandCourseRelationships(rawRelationships);
 
   const type = resourceList.find((x) => x.name === current.name).singular;
 
@@ -115,50 +125,7 @@ export default async function ResourcePage(props) {
     }
   }
 
-  relationships.forEach((rel) => {
-    includeRef.forEach((x) => {
-      if (
-        x.AType !== "course" &&
-        x.AType === rel.AType &&
-        rel.BType !== "course" &&
-        x.A === rel.A
-      ) {
-        const newRel = {
-          A: x.B,
-          AType: "course",
-          B: rel.B,
-          BType: rel.BType,
-        };
-        relationships.push(newRel);
-      }
-      
-      if (
-        x.AType !== "course" &&
-        x.AType === rel.BType &&
-        rel.BType !== "course" &&
-        x.A === rel.B
-      ) {
-        const newRel = {
-          A: rel.A,
-          AType: rel.AType,
-          B: x.B,
-          BType: "course",
-        };
-        relationships.push(newRel);
-      }
-
-      if (x.BType !== "course" && x.BType === rel.BType && x.B === rel.B) {
-        const newRel = {
-          AType: rel.BType,
-          A: rel.B,
-          BType: "course",
-          B: x.A,
-        };
-        relationships.push(newRel);
-      }
-    });
-    pushToList(rel, type);
-  });
+  relationships.forEach((rel) => pushToList(rel, type));
 
   const resources = resourcesObject[current.name];
   if (!resources) return redirect("/");
@@ -171,12 +138,32 @@ export default async function ResourcePage(props) {
     );
   }
 
-  const maxPage = await getMaxPage({
-    userId: user?.id,
-    resource: current.name,
-    type: current.singular,
-    amount: amount,
-  });
+  if (current.name === "notes") {
+    const notes = resources
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, amount)
+      .map((note) => ({
+        id: note.id,
+        publicId: note.publicId,
+        title: note.title,
+        text: note.text,
+        tags: note.tags,
+        createdAt: note.createdAt,
+        creator: note.creator
+          ? { username: note.creator.username, displayName: note.creator.displayName }
+          : null,
+      }));
+
+    return (
+      <NotesHub
+        notes={notes}
+        page={page}
+        maxPage={maxPage}
+        amount={amount}
+        activeTag={tag}
+      />
+    );
+  }
 
   return (
     <main className={styles.main}>
@@ -185,7 +172,7 @@ export default async function ResourcePage(props) {
           <>
             <header>
               <h2>
-                Available {current.title}
+                {current.title}
                 <Tooltip>
                   <TooltipTrigger>
                     <div tabIndex={0} className={styles.tooltipIcon}>

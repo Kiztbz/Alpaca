@@ -1,8 +1,8 @@
 import { getPermittedResources } from "@/lib/db/helpers";
 import { SearchOptions } from "../[resource]/SearchOptions";
-import styles from "@/app/(mainapp)/page.module.css";
+import styles from "../AppScreen.module.css";
 import { cookies } from "next/headers";
-import { useUser } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import shuffleArray from "@/lib/shuffleArray";
 import StudyList from "./StudyList";
 
@@ -10,7 +10,7 @@ const DEFAULT_PAGE_SIZE = 10;
 
 export default async function StudyPage(props) {
   const searchParams = await props.searchParams;
-  const user = await useUser({ token: (await cookies()).get("token")?.value });
+  const user = await getSessionUser((await cookies()).get("token")?.value);
 
   const page = Number(searchParams["page"] ?? 1);
   const amount = Number(searchParams["amount"] ?? DEFAULT_PAGE_SIZE);
@@ -28,36 +28,29 @@ export default async function StudyPage(props) {
   });
 
   return (
-    <main className={styles.main}>
-      <header>
-        <h1>Study</h1>
-
-        <p>
-          This is where you study your notes and practice quiz questions without
-          trying to level up
-        </p>
-
-        <SearchOptions
+    <main className={styles.screen}>
+      <header className={styles.screenHeader}>
+        <div><span>Practice space</span><h1>Study</h1><p>Review notes, rehearse flashcards, and revisit sources without changing quiz levels.</p></div>
+        <div className={styles.headerControls}><SearchOptions
           tag={tag}
           page={page}
           amount={amount}
           maxPage={100}
           name="study"
           noTags={false}
-        />
+        /></div>
       </header>
-
-      <StudyList resources={shuffleArray(notes)} type="note" heading="Notes" />
-
-      <StudyList
+      <div className={styles.studyGrid}>
+        <StudyList resources={shuffleArray(notes)} type="note" heading="Notes" />
+        <StudyList
         resources={shuffleArray(quizzes).sort(
           (quiz1, quiz2) => quiz1.level - quiz2.level
         )}
         type="quiz"
         heading="Flashcards"
-      />
-
-      <StudyList resources={sources} type="source" heading="Sources" />
+        />
+        <StudyList resources={sources} type="source" heading="Sources" />
+      </div>
     </main>
   );
 }

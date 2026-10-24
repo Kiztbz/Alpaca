@@ -51,7 +51,11 @@ export function CourseDisplay({ lighter = false, darker = false, course }) {
         <CardChip>Level {course.level || 0}</CardChip>
       </header>
 
-      <CardDescription>{course.description}</CardDescription>
+      <CardDescription>
+        {course.description?.length > 220
+          ? `${course.description.slice(0, 220)}…`
+          : course.description}
+      </CardDescription>
 
       {course.parents?.length > 0 && (
         <section>

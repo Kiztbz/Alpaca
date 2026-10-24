@@ -30,6 +30,7 @@ import { toUTCdatestring } from "@/lib/date";
 import checkAnswers from "@/lib/checkAnswers";
 import listPrint from "@/lib/listPrint";
 import { correctConfetti } from "@/lib/correctConfetti";
+import Link from "next/link";
 
 export function QuizDisplay({
   quiz,
@@ -37,6 +38,8 @@ export function QuizDisplay({
   isFlashcard,
   canEditDelete,
   lighter,
+  contextCourse,
+  showDetailLink = true,
   handleWhenCorrect,
   handleWhenIncorrect,
 }) {
@@ -98,8 +101,11 @@ export function QuizDisplay({
 
   const canDelete = quiz.creator && quiz.creator.id === user?.id;
 
-  const whenLevelUp = new Date(toUTCdatestring(quiz.hiddenUntil));
-  const canLevelUp = whenLevelUp < Date.now();
+  const whenLevelUp = quiz.hiddenUntil
+    ? new Date(toUTCdatestring(quiz.hiddenUntil))
+    : null;
+  const hasLevelUpDate = whenLevelUp && !Number.isNaN(whenLevelUp.getTime());
+  const canLevelUp = hasLevelUpDate && whenLevelUp < Date.now();
 
   async function handleSubmitAnswer(e) {
     e.preventDefault();
@@ -364,14 +370,16 @@ export function QuizDisplay({
         </FormButtons>
       </Form>
 
-      <div>
-        {canLevelUp
-          ? "Level Up Now!"
-          : "Available to level up " +
-            whenLevelUp.toLocaleDateString() +
-            " " +
-            whenLevelUp.toLocaleTimeString()}
-      </div>
+      {hasLevelUpDate && (
+        <div>
+          {canLevelUp
+            ? "Level Up Now!"
+            : "Available to level up " +
+              whenLevelUp.toLocaleDateString() +
+              " " +
+              whenLevelUp.toLocaleTimeString()}
+        </div>
+      )}
 
       {!!canEditDelete && (!!canEdit || !!canDelete) && (
         <div className={styles.tools}>
@@ -510,6 +518,14 @@ export function QuizDisplay({
         <CardCreatedAt>
           {new Date(quiz.createdAt).toLocaleDateString()}
         </CardCreatedAt>
+        {showDetailLink && quiz.publicId && (
+          <Link
+            className={styles.detailLink}
+            href={`/quizzes/${quiz.publicId}${contextCourse ? `?course=${encodeURIComponent(contextCourse.publicId)}` : ""}`}
+          >
+            Open details →
+          </Link>
+        )}
       </footer>
     </Card>
   );

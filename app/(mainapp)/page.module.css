@@ -448,3 +448,67 @@
 .finalCta p {
     color: var(--muted);
 }
+
+/* Product screens use a compact application frame instead of landing-page spacing. */
+.main {
+    width: min(1220px, 100%);
+    min-height: calc(100vh - 68px);
+    margin: 0 auto;
+    padding: 44px 38px 90px;
+}
+
+.main > header {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0 0 28px;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--bg-4);
+}
+
+.main > header > h1 {
+    margin: 0;
+    font-size: clamp(38px, 5vw, 54px);
+    line-height: 1;
+    letter-spacing: -.045em;
+}
+
+.main > header > p {
+    max-width: 650px;
+    margin-top: 10px;
+    color: var(--fg-4);
+    font-size: 14px;
+    text-align: left;
+}
+
+.main > section {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+.main > section > header {
+    gap: 24px;
+    min-height: 76px;
+    padding: 0 0 20px;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--bg-4);
+}
+
+.main > section h2 {
+    margin: 0;
+    color: var(--fg-1);
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1;
+    letter-spacing: -.04em;
+}
+
+.main > section > header + ul,
+.main > section > header + div {
+    margin-top: 24px;
+}
+
+@media (max-width: 720px) {
+    .main { padding: 30px 16px 68px; }
+    .main > section > header { align-items: flex-start; }
+}
