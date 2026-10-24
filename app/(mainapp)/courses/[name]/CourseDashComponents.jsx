@@ -1,460 +1,166 @@
 "use client";
 
-import { useStore, useAlerts } from "@/store/store";
-import {
-  CourseDisplay,
-  QuizDisplay,
-  NoteDisplay,
-  SourceDisplay,
-  Spinner,
-  MasoneryList,
-} from "@/app/components/client";
-import shuffleArray from "@/lib/shuffleArray";
+import { Spinner } from "@client";
+import { noteCardCount } from "@/lib/noteCards";
+import { useAlerts, useStore } from "@/store/store";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./CourseDash.module.css";
-import { useState } from "react";
-
-function getUserQuizzesStats(quizIDs, quizList) {
-  let sum = 0;
-  let countOfCanLevel = 0;
-  let lowestLevel;
-
-  const userQuizzes = quizIDs?.length
-    ? quizIDs
-        .map((q) => {
-          const userQuiz = q
-            ? quizList.find((x) => String(x.id) === String(q))
-            : {
-                id: 0,
-                createAt: 0,
-                level: 0,
-                hiddenUntil: 0,
-              };
-
-          if (!userQuiz) return;
-
-          sum += userQuiz.level;
-
-          lowestLevel =
-            lowestLevel == undefined || userQuiz.level < lowestLevel
-              ? userQuiz.level
-              : lowestLevel;
-
-          if (new Date(userQuiz.hiddenUntil) < Date.now()) {
-            countOfCanLevel++;
-          }
-          return userQuiz;
-        })
-        .filter((x) => !!x)
-    : [];
-
-  const averageLevel = userQuizzes.length ? sum / userQuizzes.length : 0;
-
-  return { userQuizzes, averageLevel, lowestLevel, countOfCanLevel };
-}
-
-function getNotes(noteIDs, noteList) {
-  return noteIDs?.length
-    ? noteIDs.map((noteId) => noteList.find((note) => String(note.id) === String(noteId))).filter(Boolean)
-    : [];
-}
-
-function getSources(sourceIDs, sourceList) {
-  return sourceIDs?.length
-    ? sourceIDs.map((sourceId) =>
-        sourceList.find((source) => String(source.id) === String(sourceId))
-      ).filter(Boolean)
-    : [];
-}
 
 const basePath = process.env.NEXT_PUBLIC_BASEPATH ?? "";
 
-export function CourseTabInfo({
-  course,
-  isLogged,
-  isEnrolled,
-  isLoading,
-  setIsLoading,
-}) {
-  const addAlert = useAlerts((state) => state.addAlert);
-
-  async function enroll() {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(
-        `${basePath}/api/course/${course.id}/enroll`,
-        {
-          method: "POST",
-        }
-      );
-      const { message } = await response.json();
-
-      if (response.ok) {
-        addAlert({
-          success: true,
-          message,
-        });
-
-        window.location.reload();
-      } else {
-        addAlert({
-          success: false,
-          message: message || "Something went wrong",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      addAlert({
-        success: false,
-        message: `Something went wrong: ${error.message}`,
-      });
-    }
-
-    setIsLoading(false);
-  }
-
-  async function unenroll() {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(
-        `${basePath}/api/course/${course.id}/unenroll`,
-        {
-          method: "POST",
-        }
-      );
-      const { message } = await response.json();
-
-      if (response.ok) {
-        addAlert({
-          success: true,
-          message,
-        });
-
-        window.location.reload();
-      } else {
-        addAlert({
-          success: false,
-          message: message || "Something went wrong",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      addAlert({
-        success: false,
-        message: `Something went wrong: ${error.message}`,
-      });
-    }
-
-    setIsLoading(false);
-  }
-
-  return (
-    <>
-      {isLogged && (
-        <button
-          onClick={() => {
-            if (isEnrolled) unenroll();
-            else enroll();
-          }}
-          className={`button ${isEnrolled ? "danger" : "primary"}`}
-        >
-          {isEnrolled ? "Unenroll from this course" : "Enroll in this course"}
-
-          {isLoading && <Spinner />}
-        </button>
-      )}
-    </>
-  );
+function Icon({ name }) {
+  const paths = {
+    arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,
+    book: <><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3Z" /><path d="M8 17h11M9 8h6" /></>,
+    bolt: <path d="m13 2-7 11h5l-1 9 8-12h-5V2Z" />,
+    check: <path d="m5 12 4 4L19 6" />,
+    file: <><path d="M6 2h8l4 4v16H6z" /><path d="M14 2v5h5M9 12h6M9 16h6" /></>,
+    lock: <><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
+  };
+  return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
 
-export function CourseTabMain({ user, course, isLoading, setIsLoading }) {
+function relatedItems(ids, items) {
+  return ids?.length ? ids.map((id) => items.find((item) => String(item.id) === String(id))).filter(Boolean) : [];
+}
+
+function plainText(value) {
+  return String(value || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function quizLabel(quiz) {
+  if (quiz.title) return quiz.title;
+  if (typeof quiz.question === "string") return plainText(quiz.question);
+  if (Array.isArray(quiz.question)) return plainText(quiz.question.map((part) => typeof part === "string" ? part : part?.text || part?.value || "").join(" "));
+  return "Practice question";
+}
+
+export function CourseActions({ course, user, isLogged, isEnrolled, isLoading, setIsLoading }) {
+  const addAlert = useAlerts((state) => state.addAlert);
   const [courseState, setCourseState] = useState({ ...course });
-  const addAlert = useAlerts((state) => state.addAlert);
+  const isOwner = Boolean(user && String(user.id) === String(course.creator?.id));
 
-  async function enrollment(action) {
-    // The `action` is one of three strings:
-    // "private", "open", and "paid"
-
+  async function request(url, options, successMessage, reload = false) {
     setIsLoading(true);
-
     try {
-      const response = await fetch(`${basePath}/api/course/${course.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          enrollment: action,
-        }),
-      });
-
-      if (response.ok) {
-        addAlert({
-          success: true,
-          message: `Successful ${action}`,
-        });
-
-        console.log(courseState);
-
-        setCourseState((prev) => ({
-          ...prev,
-          enrollment: action,
-        }));
-      } else {
-        addAlert({
-          success: false,
-          message: `${response.status}: ${response.statusText}`,
-        });
-      }
+      const response = await fetch(url, options);
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || `${response.status}: ${response.statusText}`);
+      addAlert({ success: true, message: payload.message || successMessage });
+      if (reload) window.location.reload();
+      return true;
     } catch (error) {
-      console.error(error);
-      addAlert({
-        success: false,
-        message: `Something went wrong: ${error.message}`,
-      });
+      addAlert({ success: false, message: error.message || "Something went wrong" });
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }
 
-  async function permissions(action) {
-    // The `action` is shaped like:
-    // {
-    //   allRead: Boolean
-    // }
-    // More potential actions can be added later if the below route is set up to receive
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${basePath}/api/course/${course.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          permissions: action,
-        }),
-      });
-
-      if (response.ok) {
-        addAlert({
-          success: true,
-          message: `Successfully changed permissions for course`,
-        });
-
-        setCourseState((prev) => ({
-          ...prev,
-          permissions: {
-            ...action,
-          },
-        }));
-      } else {
-        addAlert({
-          success: false,
-          message: `${response.status}: ${response.statusText}`,
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      addAlert({
-        success: false,
-        message: "Something went wrong",
-      });
-    }
-
-    setIsLoading(false);
+  async function toggleEnrollment() {
+    await request(`${basePath}/api/course/${course.id}/${isEnrolled ? "unenroll" : "enroll"}`, { method: "POST" }, isEnrolled ? "Left course" : "Course added", true);
   }
 
-  return (
-    <div className={styles.userContent}>
-      {user?.id === course.creator?.id && (
-        <div className={styles.actionButtons}>
-          {/* There are actually three choices for enrollment: "private", "open", and "paid" */}
-          <button
-            onClick={() => {
-              if (courseState.enrollment === "open") {
-                enrollment("private");
-              } else {
-                enrollment("open");
-              }
-            }}
-            className="button"
-          >
-            {courseState.enrollment === "open"
-              ? "Close enrollment"
-              : "Open enrollment"}
+  async function updateCourse(patch, message) {
+    const updated = await request(`${basePath}/api/course/${course.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) }, message);
+    if (updated) setCourseState((current) => ({ ...current, ...patch }));
+  }
 
-            {isLoading && <Spinner />}
-          </button>
+  if (!isLogged && !isOwner) return null;
 
-          <button
-            onClick={() => {
-              if (courseState.permissions?.allRead) {
-                permissions({
-                  allRead: false,
-                });
-              } else {
-                permissions({
-                  allRead: true,
-                });
-              }
-            }}
-            className="button"
-          >
-            {courseState.permissions?.allRead ? "Make private" : "Make public"}
-
-            {isLoading && <Spinner />}
-          </button>
-        </div>
-      )}
-
-      <h3>Description</h3>
-      <p className={styles.description}>{course.description}</p>
-
-      {course.parents?.length > 0 && (
-        <>
-          <h3>Parent Courses</h3>
-
-          <MasoneryList>
-            {course.parents.map((course) => (
-              <CourseDisplay lighter key={course.id} course={course} />
-            ))}
-          </MasoneryList>
-        </>
-      )}
-      {!course.parents?.length && <h3>No Parent Courses</h3>}
-
-      {course.prerequisites?.length > 0 && (
-        <>
-          <h3>Prerequisite Courses</h3>
-
-          <MasoneryList>
-            {course.prerequisites.map((course) => (
-              <CourseDisplay lighter key={course.id} course={course} />
-            ))}
-          </MasoneryList>
-        </>
-      )}
-      {!course.prerequisites?.length && <h3>No Prerequisite Courses</h3>}
-    </div>
-  );
-}
-
-export function QuizzesTabInfo({ course }) {
-  const quizzes = useStore((state) => state.quizzes);
-
-  const { averageLevel, lowestLevel, countOfCanLevel } = getUserQuizzesStats(
-    course.quizzes,
-    quizzes
-  );
-
-  return (
-    <>
-      <span>Average Level: {averageLevel.toFixed(3)}</span>
-      <span>Lowest Level: {lowestLevel}</span>
-      <span>Available to Level Up: {countOfCanLevel}</span>
-    </>
-  );
-}
-
-export function QuizzesTabMain({ course }) {
-  const quizzes = useStore((state) => state.quizzes);
-
-  const { userQuizzes } = getUserQuizzesStats(course.quizzes, quizzes);
-
-  return (
-    <div className={styles.userContent}>
-      {userQuizzes.length > 0 && (
-        <>
-          <h3>Quizzes related to this course</h3>
-
-          <MasoneryList>
-            {shuffleArray(userQuizzes)
-              .sort((a, b) => {
-                if (
-                  b.hiddenUntil === "" ||
-                  new Date(a.hiddenUntil) > new Date(b.hiddenUntil)
-                ) {
-                  return 1;
-                }
-                if (
-                  a.hiddenUntil === "" ||
-                  new Date(a.hiddenUntil) < new Date(b.hiddenUntil)
-                ) {
-                  return -1;
-                }
-                return a.level - b.level;
-              })
-              .map((quiz) =>
-                quiz ? <QuizDisplay lighter quiz={quiz} contextCourse={course} key={quiz.id} /> : ""
-              )}
-          </MasoneryList>
-        </>
-      )}
-
-      {!userQuizzes?.length && <h3>No Available Quizzes for this Course</h3>}
-    </div>
-  );
+  return <div className={styles.courseActions}>
+    {isLogged && <button type="button" className={isEnrolled ? styles.secondaryAction : styles.primaryAction} onClick={toggleEnrollment} disabled={isLoading}>{isEnrolled ? "Leave course" : "Start course"}{isLoading && <Spinner />}</button>}
+    {isOwner && <div className={styles.ownerActions}>
+      <button type="button" onClick={() => updateCourse({ enrollment: courseState.enrollment === "open" ? "private" : "open" }, "Enrollment updated")} disabled={isLoading}>{courseState.enrollment === "open" ? "Close enrollment" : "Open enrollment"}</button>
+      <button type="button" onClick={() => updateCourse({ permissions: { allRead: !courseState.permissions?.allRead } }, "Visibility updated")} disabled={isLoading}>{courseState.permissions?.allRead ? "Make private" : "Make public"}</button>
+    </div>}
+  </div>;
 }
 
 export function NotesTabInfo({ course }) {
   const notes = useStore((state) => state.notes);
-  const courseNotesLength = getNotes(course.notes, notes).length;
-
-  return <span>Available Notes: {courseNotesLength}</span>;
+  return <span className={styles.countPill}>{relatedItems(course.notes, notes).length} lessons</span>;
 }
 
 export function NotesTabMain({ course }) {
   const notes = useStore((state) => state.notes);
-  const courseNotes = getNotes(course.notes, notes);
+  const courseNotes = useMemo(() => relatedItems(course.notes, notes), [course.notes, notes]);
+  const [progress, setProgress] = useState({});
 
-  return (
-    <div className={styles.userContent}>
-      {courseNotes?.length > 0 && (
-        <>
-          <h3>Notes related to this course</h3>
+  useEffect(() => {
+    const saved = {};
+    courseNotes.forEach((note) => {
+      try { saved[note.publicId] = JSON.parse(localStorage.getItem(`alpaca-note-progress:${note.publicId}`) || "null"); }
+      catch { saved[note.publicId] = null; }
+    });
+    setProgress(saved);
+  }, [courseNotes]);
 
-          <MasoneryList>
-            {courseNotes.map((note) => (
-              <NoteDisplay note={note} contextCourse={course} key={note.id} />
-            ))}
-          </MasoneryList>
-        </>
-      )}
+  if (!courseNotes.length) return <EmptyState icon="book" title="No lessons yet" copy="Notes added to this course will appear here as short learning sessions." />;
 
-      {!courseNotes?.length && <h3>No Available Notes for this Course</h3>}
-    </div>
-  );
+  return <div className={styles.lessonGrid}>{courseNotes.map((note, index) => {
+    const saved = progress[note.publicId];
+    const cards = Math.max(1, noteCardCount(note.text));
+    const complete = Boolean(saved?.complete);
+    const percent = complete ? 100 : Math.min(99, Math.round(((saved?.index || 0) / cards) * 100));
+    return <Link key={note.id} href={`/notes/${note.publicId}?course=${encodeURIComponent(course.publicId)}`} className={`${styles.appCard} ${complete ? styles.completeCard : ""}`}>
+      <div className={styles.cardTop}><span className={styles.lessonNumber}>{complete ? <Icon name="check" /> : index + 1}</span><span className={styles.cardStatus}>{complete ? "Complete" : percent ? `${percent}% done` : "Lesson"}</span></div>
+      <h3>{note.title}</h3>
+      <p>{plainText(note.text).slice(0, 120) || "Open this lesson to start learning."}</p>
+      <div className={styles.cardProgress}><i style={{ width: `${percent}%` }} /></div>
+      <footer><span>{cards} cards · {Math.max(2, Math.ceil(cards * .7))} min</span><strong>{percent ? "Continue" : "Start"}<Icon name="arrow" /></strong></footer>
+    </Link>;
+  })}</div>;
+}
+
+function getQuizStats(ids, quizzes) {
+  const items = relatedItems(ids, quizzes);
+  const available = items.filter((quiz) => !quiz.hiddenUntil || new Date(quiz.hiddenUntil) <= new Date()).length;
+  const average = items.length ? items.reduce((sum, quiz) => sum + (quiz.level || 0), 0) / items.length : 0;
+  return { items, available, average };
+}
+
+export function QuizzesTabInfo({ course }) {
+  const quizzes = useStore((state) => state.quizzes);
+  const { available } = getQuizStats(course.quizzes, quizzes);
+  return <span className={styles.countPill}>{available} ready</span>;
+}
+
+export function QuizzesTabMain({ course }) {
+  const quizzes = useStore((state) => state.quizzes);
+  const { items, available, average } = getQuizStats(course.quizzes, quizzes);
+  if (!items.length) return <EmptyState icon="bolt" title="No practice yet" copy="Quizzes connected to this course will collect here." />;
+
+  return <><div className={styles.practiceSummary}><div><span>Ready now</span><strong>{available}</strong></div><div><span>Average level</span><strong>{average.toFixed(1)}</strong></div><div><span>Total practice</span><strong>{items.length}</strong></div></div><div className={styles.cardGrid}>{items.map((quiz) => {
+    const availableNow = !quiz.hiddenUntil || new Date(quiz.hiddenUntil) <= new Date();
+    return <Link key={quiz.id} href={`/quizzes/${quiz.publicId}?course=${encodeURIComponent(course.publicId)}`} className={`${styles.appCard} ${!availableNow ? styles.lockedCard : ""}`}>
+      <div className={styles.cardTop}><span className={styles.typeIcon}><Icon name={availableNow ? "bolt" : "lock"} /></span><span className={styles.cardStatus}>{availableNow ? "Ready" : "Review later"}</span></div>
+      <h3>{quizLabel(quiz)}</h3>
+      <p>{availableNow ? "Test what you remember and strengthen this skill." : "This practice will unlock again after its review interval."}</p>
+      <footer><span>Level {quiz.level || 0}</span><strong>{availableNow ? "Practice" : "Preview"}<Icon name="arrow" /></strong></footer>
+    </Link>;
+  })}</div></>;
 }
 
 export function SourcesInfoTab({ course }) {
   const sources = useStore((state) => state.sources);
-  const courseSourcesLength = getSources(course.sources, sources).length;
-
-  return <span>Available Sources: {courseSourcesLength}</span>;
+  return <span className={styles.countPill}>{relatedItems(course.sources, sources).length} sources</span>;
 }
 
 export function SourcesMainTab({ course }) {
   const sources = useStore((state) => state.sources);
-  const courseSources = getSources(course.sources, sources);
+  const courseSources = relatedItems(course.sources, sources);
+  if (!courseSources.length) return <EmptyState icon="file" title="No sources yet" copy="Course references and supporting material will appear here." />;
 
-  return (
-    <div className={styles.userContent}>
-      {courseSources?.length > 0 && (
-        <>
-          <h3>Sources related to this course</h3>
+  return <div className={styles.cardGrid}>{courseSources.map((source) => <Link key={source.id} href={`/sources/${source.publicId}?course=${encodeURIComponent(course.publicId)}`} className={styles.appCard}>
+    <div className={styles.cardTop}><span className={styles.typeIcon}><Icon name="file" /></span><span className={styles.cardStatus}>{source.medium || "Source"}</span></div>
+    <h3>{source.title}</h3>
+    <p>{source.credits?.length ? `Credited to ${source.credits.map((credit) => typeof credit === "string" ? credit : credit?.name).filter(Boolean).slice(0, 2).join(", ")}.` : "Supporting material for this course."}</p>
+    <footer><span>{source.tags?.length || 0} tags</span><strong>Open<Icon name="arrow" /></strong></footer>
+  </Link>)}</div>;
+}
 
-          <MasoneryList>
-            {courseSources.map((source) => (
-              <SourceDisplay source={source} contextCourse={course} key={source.id} />
-            ))}
-          </MasoneryList>
-        </>
-      )}
-
-      {!courseSources?.length && <h3>No Available Sources for this Course</h3>}
-    </div>
-  );
+function EmptyState({ icon, title, copy }) {
+  return <div className={styles.emptyState}><span><Icon name={icon} /></span><h3>{title}</h3><p>{copy}</p></div>;
 }

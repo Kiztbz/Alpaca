@@ -9,6 +9,7 @@ import styles from "./Dash.module.css";
 function Icon({ name }) {
   const paths = {
     arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,
+    award: <><circle cx="12" cy="8" r="5" /><path d="m8.5 12-1 9 4.5-2.5 4.5 2.5-1-9" /></>,
     bolt: <path d="m13 2-7 11h5l-1 9 8-12h-5V2Z" />,
     book: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" /><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5v-16Z" /></>,
     cards: <><rect x="5" y="3" width="14" height="18" rx="3" /><path d="M9 8h6M9 12h6" /></>,
@@ -64,13 +65,15 @@ export function Dashboard() {
   const firstName = (user.displayName || user.username || "Learner").trim().split(/\s+/)[0];
   const sortedCourses = [...courses].sort((a, b) => (b.level || 0) - (a.level || 0));
   const activeCourse = sortedCourses[0];
-  const courseLessons = activeCourse ? lessons.filter((note) => note.courses?.includes(activeCourse.id)) : [];
+  const courseLessons = activeCourse ? lessons.filter((note) => note.courses?.some((id) => String(id) === String(activeCourse.id))) : [];
   const pathLessons = (courseLessons.length ? courseLessons : lessons).slice(0, 8);
   const completed = pathLessons.filter((note) => savedProgress[note.publicId]?.complete).length;
   const continueNote = pathLessons.find((note) => savedProgress[note.publicId]?.index > 0 && !savedProgress[note.publicId]?.complete)
     || pathLessons.find((note) => !savedProgress[note.publicId]?.complete)
     || pathLessons[0];
   const progressPercent = pathLessons.length ? Math.round((completed / pathLessons.length) * 100) : 0;
+  const lessonsRemaining = Math.max(pathLessons.length - completed, 0);
+  const certificateReady = Boolean(activeCourse && pathLessons.length && lessonsRemaining === 0);
   const dueQuizzes = quizzes.filter((quiz) => !quiz.hiddenUntil || new Date(quiz.hiddenUntil) <= new Date());
   const today = new Date().toISOString().slice(0, 10);
   const learnedToday = streak.date === today;
@@ -104,7 +107,6 @@ export function Dashboard() {
         </section>
 
         {pathLessons.length ? <section className={styles.path} aria-label="Course lessons">
-          <div className={styles.pathTitle}><span>Section 1</span><h2>Start here</h2><p>Finish lessons in order or review anything you have completed.</p></div>
           <div className={styles.lessonPath}>
             {pathLessons.map((note, index) => {
               const progress = savedProgress[note.publicId];
@@ -159,10 +161,23 @@ export function Dashboard() {
         </section>
 
         <section className={styles.railCard}>
-          <header><span><Icon name="book" /></span><div><small>More learning</small><h2>Your courses</h2></div><Link href="/courses">View all</Link></header>
-          <div className={styles.courseList}>
-            {sortedCourses.slice(0, 3).map((course) => <Link href={`/courses/${encodeURIComponent(course.name)}`} key={course.id}><span>{course.name.slice(0, 1).toUpperCase()}</span><div><strong>{course.name}</strong><small>Level {course.level || 0}</small></div><Icon name="chevron" /></Link>)}
-            {!sortedCourses.length && <Link href="/courses"><span>+</span><div><strong>Find a course</strong><small>Browse learning paths</small></div><Icon name="chevron" /></Link>}
+          <header><span><Icon name="award" /></span><div><small>Course</small><h2>Options</h2></div></header>
+          <div className={styles.optionList}>
+            <div className={`${styles.optionRow} ${certificateReady ? styles.optionReady : ""}`}>
+              <span><Icon name={certificateReady ? "award" : "lock"} /></span>
+              <div><strong>Certificate</strong><small>{certificateReady ? "Course complete" : activeCourse ? `${lessonsRemaining} lesson${lessonsRemaining === 1 ? "" : "s"} remaining` : "Choose a course first"}</small></div>
+              <b>{certificateReady ? "Ready" : "Locked"}</b>
+            </div>
+            <Link href="/courses" className={styles.optionRow}>
+              <span><Icon name="book" /></span>
+              <div><strong>Other courses</strong><small>{sortedCourses.length > 1 ? `${sortedCourses.length - 1} more available` : "Browse learning paths"}</small></div>
+              <Icon name="chevron" />
+            </Link>
+            <Link href="/notes" className={styles.optionRow}>
+              <span><Icon name="cards" /></span>
+              <div><strong>Notes library</strong><small>{lessons.length} note{lessons.length === 1 ? "" : "s"}</small></div>
+              <Icon name="chevron" />
+            </Link>
           </div>
         </section>
       </aside>

@@ -49,11 +49,7 @@
   border-radius: 20px;
   background: var(--bg-2);
 }
-.pathTitle { padding-bottom: 23px; border-bottom: 1px solid var(--bg-3); }
-.pathTitle > span { color: var(--accent); font-size: 10px; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }
-.pathTitle h2 { margin: 5px 0 4px; font-size: 22px; letter-spacing: -.02em; }
-.pathTitle p { margin: 0; color: var(--fg-4); font-size: 13px; }
-.lessonPath { margin-top: 24px; }
+.lessonPath { margin-top: 0; }
 .lessonStep { display: grid; grid-template-columns: 62px minmax(0, 1fr); min-height: 116px; }
 .stepRail { display: flex; align-items: center; flex-direction: column; }
 .stepButton {
@@ -114,22 +110,26 @@
 .railCard header b { padding: 5px 8px; border-radius: 8px; color: var(--accent); background: var(--accent-08); font-size: 10px; }
 .railCard header > a { color: var(--accent); font-size: 10px; font-weight: 800; }
 .quests,
-.courseList { display: grid; gap: 4px; margin-top: 14px; }
+.optionList { display: grid; gap: 4px; margin-top: 14px; }
 .quests > a,
-.courseList > a { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 11px; }
+.optionRow { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 11px; }
 .quests > a:hover,
-.courseList > a:hover { background: var(--bg-3); }
+.optionList > a:hover { background: var(--bg-3); }
 .quests > a > span,
-.courseList > a > span { width: 32px; height: 32px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 9px; color: var(--fg-3); background: var(--bg-3); font-size: 12px; font-weight: 900; }
+.optionRow > span { width: 32px; height: 32px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 9px; color: var(--fg-3); background: var(--bg-3); font-size: 12px; font-weight: 900; }
 .quests > a > span.done { color: var(--accent-fg); background: var(--accent); }
-.quests svg { width: 15px; height: 15px; }
+.quests svg,
+.optionRow svg { width: 15px; height: 15px; }
 .quests > a > div,
-.courseList > a > div { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 2px; }
+.optionRow > div { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 2px; }
 .quests strong,
-.courseList strong { overflow: hidden; color: var(--fg-1); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.optionRow strong { overflow: hidden; color: var(--fg-1); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .quests small,
-.courseList small { color: var(--fg-4); font-size: 9px; }
-.courseList > a > svg { width: 14px; height: 14px; color: var(--fg-4); }
+.optionRow small { color: var(--fg-4); font-size: 9px; }
+.optionRow > svg { width: 14px; height: 14px; color: var(--fg-4); }
+.optionRow > b { padding: 4px 7px; border-radius: 7px; color: var(--fg-4); background: var(--bg-3); font-size: 8px; letter-spacing: .04em; text-transform: uppercase; }
+.optionReady > span { color: var(--accent-fg); background: var(--accent); }
+.optionReady > b { color: var(--accent); background: var(--accent-08); }
 .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 18px 0 12px; }
 .week > div { display: grid; justify-items: center; gap: 6px; }
 .week span { width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid var(--bg-4); border-radius: 50%; background: var(--bg-3); }
@@ -143,7 +143,7 @@
   .app { width: min(700px, calc(100% - 32px)); grid-template-columns: 1fr; padding-top: 30px; }
   .progressRail { position: static; display: grid; grid-template-columns: 1fr 1fr; }
   .statStrip { grid-column: 1 / 3; }
-  .railCard:last-child { display: none; }
+  .railCard:last-child { grid-column: 1 / 3; }
 }
 
 @media (max-width: 560px) {
@@ -156,9 +156,7 @@
   .courseHeader > p { -webkit-line-clamp: 3; }
   .progressRail { display: flex; }
   .statStrip { order: -1; }
-  .railCard:last-child { display: block; }
   .path { padding: 21px 14px; border-radius: 17px; }
-  .pathTitle { padding: 0 6px 20px; }
   .lessonStep { grid-template-columns: 54px minmax(0, 1fr); }
   .stepButton { width: 46px; height: 46px; }
   .lessonInfo { margin-left: 8px; padding-left: 8px; }
