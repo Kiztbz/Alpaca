@@ -3,36 +3,41 @@
   gap: 14px;
 }
 
-.quizList > li {
-  margin: 1rem 0;
-}
-
 .settingsButton {
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg-2);
-  border: none;
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-medium);
+  color: var(--fg-2);
+  transition: all 0.15s ease;
 }
 
 .settingsButton:hover {
   background: var(--bg-3);
+  color: var(--fg-1);
+  transform: translateY(-1px);
 }
 
 .settings > div {
-  border-radius: 4px;
+  border-radius: var(--radius-medium);
   border: 1px solid var(--border-color);
-  padding: 8px;
-  margin-top: 12px;
+  padding: 12px;
+  margin-top: 14px;
 }
 
 .settings > div > h3 {
   margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-2);
 }
+
+/* ──────────────────── Duolingo-Style Lesson Viewport ──────────────────── */
 
 .popup {
   position: fixed;
@@ -42,60 +47,616 @@
   width: 100dvw;
   height: 100vh;
   height: 100dvh;
-  background-color: var(--bg-1);
-  z-index: 10;
+  background-color: var(--bg-0);
+  z-index: 1000;
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top Bar ── */
+
+.trainHeader {
+  flex-shrink: 0;
+  height: 68px;
+  padding: 0 24px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  z-index: 50;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.exitButton {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  padding: 5rem 0.5rem;
-  overflow: auto;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: none;
+  color: var(--fg-4);
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+  transition: all 0.15s ease;
 }
 
-.popup::-webkit-scrollbar {
-  width: 0;
+.exitButton:hover {
+  background: var(--bg-3);
+  color: var(--fg-1);
+  transform: scale(1.08);
 }
 
-.popup > ol {
-  /* overflow: hidden; */
-  height: fit-content;
+/* Duolingo Chunky Progress Bar */
+
+.progressTrack {
+  flex: 1;
+  max-width: 620px;
+  height: 14px;
+  background: var(--bg-3);
+  border-radius: var(--radius-full);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.popup li {
-  transition:
-    opacity 3s ease-in-out,
-    max-height 3s ease-in-out,
-    margin 1s ease-in-out;
+.progressFill {
+  height: 100%;
+  background: linear-gradient(180deg, #58cc02 0%, #46a302 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
 }
 
-.showQuiz {
-  opacity: 1;
-  max-height: 100vh;
+/* Duolingo progress glossy highlight */
+.progressFill::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  right: 6px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-full);
 }
 
-.quizList > li.hideQuiz {
-  opacity: 0;
-  max-height: 0;
-  margin: 0;
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.popup .closeButton {
+.queueBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+  color: var(--fg-2);
+}
+
+.repeatIndicator {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  animation: pulseGentle 2s infinite ease-in-out;
+}
+
+@keyframes pulseGentle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+.headerIconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-medium);
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+  color: var(--fg-3);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.headerIconBtn:hover {
+  background: var(--bg-3);
+  color: var(--fg-1);
+}
+
+/* ── Main Lesson Canvas (Center) ── */
+
+.trainBody {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 36px 20px 160px; /* bottom padding so content is never covered by footer */
+}
+
+.cardWrapper {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: cardEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mistakeNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-medium);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ──────────────────── Duolingo Sticky Bottom Footer ──────────────────── */
+
+.duoFooter {
   position: fixed;
-  top: 24px;
-  right: 24px;
-  padding: 8px;
-  border-radius: 4px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  min-height: 110px;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  z-index: 100;
+  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+/* State 1: Unanswered footer */
+.footerNeutral {
+  background: var(--bg-1);
+  border-top: 2px solid var(--border-color);
+}
+
+.footerLeftNeutral {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skipBtn {
+  background: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--fg-4);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 20px;
+  border-radius: var(--radius-large);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.skipBtn:hover {
+  background: var(--bg-2);
+  color: var(--fg-2);
+}
+
+/* Duolingo 3D Tactile Buttons */
+
+.duoPrimaryBtn {
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 14px 32px;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #1d4ed8;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.duoPrimaryBtn:hover:not(:disabled) {
+  background: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #1d4ed8;
+}
+
+.duoPrimaryBtn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #1d4ed8;
+}
+
+.duoPrimaryBtn:disabled {
+  background: var(--bg-4);
+  color: var(--fg-4);
+  box-shadow: 0 4px 0 #1e293b;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* State 2: Correct answer footer (Vibrant Green) */
+.footerCorrect {
+  background: #064e3b;
+  border-top: 3px solid #10b981;
+  animation: slideUpFooter 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+}
+
+/* State 3: Incorrect answer footer (Vibrant Red/Crimson) */
+.footerWrong {
+  background: #450a0a;
+  border-top: 3px solid #f43f5e;
+  animation: slideUpFooter 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+}
+
+@keyframes slideUpFooter {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.feedbackBanner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.feedbackIconCircle {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  background: var(--bg-3);
-  color: var(--fg-2);
-  cursor: pointer;
+  font-size: 24px;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.closeButton:hover {
-  background: var(--bg-4);
+.circleCorrect {
+  background: #ffffff;
+  color: #059669;
+}
+
+.circleWrong {
+  background: #ffffff;
+  color: #dc2626;
+}
+
+.feedbackText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feedbackHeading {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.headingCorrect {
+  color: #a7f3d0;
+}
+
+.headingWrong {
+  color: #fecdd3;
+}
+
+.correctSolutionText {
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 2px;
+  letter-spacing: -0.01em;
+}
+
+.feedbackSubtext {
+  font-size: 13px;
+  color: #cbd5e1;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Green continue button */
+.duoSuccessBtn {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 14px 34px;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #047857;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.duoSuccessBtn:hover {
+  background: #34d399;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #047857;
+}
+
+.duoSuccessBtn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #047857;
+}
+
+/* Red / danger got it button */
+.duoDangerBtn {
+  background: #f43f5e;
+  color: #ffffff;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 14px 34px;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #be123c;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.duoDangerBtn:hover {
+  background: #fb7185;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #be123c;
+}
+
+.duoDangerBtn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #be123c;
+}
+
+/* FSRS Fine Tuning Rating Pills */
+.fsrsPills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fsrsPill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-medium);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fsrsPill:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.fsrsPillInterval {
+  font-size: 9px;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.keyHint {
+  font-size: 11px;
+  opacity: 0.75;
+  font-weight: 600;
+}
+
+/* ──────────────────── Duolingo Lesson Complete Screen ──────────────────── */
+
+.completionContainer {
+  width: 100%;
+  max-width: 600px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xlarge);
+  padding: 44px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  box-shadow: var(--boxshadow-dark);
+  animation: cardEnter 0.35s ease-out;
+}
+
+.trophyBadge {
+  width: 90px;
+  height: 90px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 46px;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
+  animation: bounceTrophy 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes bounceTrophy {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
+}
+
+.completionContainer h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--fg-1);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.completionContainer p {
+  font-size: 15px;
+  color: var(--fg-4);
+  max-width: 440px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.statCard {
+  background: var(--bg-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-large);
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 900;
   color: var(--fg-1);
 }
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ratingsBreakdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 18px;
+  background: var(--bg-1);
+  border-radius: var(--radius-medium);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-3);
+}
+
+.completionActions {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ──────────────────── Empty / Out of Quizzes ──────────────────── */
+
+.emptyContainer {
+  width: 100%;
+  max-width: 540px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xlarge);
+  padding: 40px 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+}
+
+.emptyContainer h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--fg-1);
+  margin: 0;
+}
+
+.emptyContainer p {
+  font-size: 14px;
+  color: var(--fg-4);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ──────────────────── Modals ──────────────────── */
 
 .blurContainer {
   position: fixed;
@@ -105,17 +666,85 @@
   width: 100dvw;
   height: 100vh;
   height: 100dvh;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  z-index: 11;
-}
-
-.blurContainer > div {
-  width: 100%;
-  height: 100%;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  background: rgba(0, 5, 17, 0.75);
+  z-index: 10000;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 24px;
+  padding: 20px;
+}
+
+.dialogModal {
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xlarge);
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  max-width: 440px;
+  box-shadow: var(--boxshadow-dark);
+  animation: cardEnter 0.2s ease-out;
+}
+
+.dialogModal h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--fg-1);
+  margin: 0;
+}
+
+.dialogModal p {
+  font-size: 14px;
+  color: var(--fg-4);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.modalActions > button {
+  flex: 1;
+}
+
+/* ── Mobile responsiveness ── */
+@media (max-width: 640px) {
+  .trainHeader {
+    padding: 0 16px;
+  }
+  .duoFooter {
+    padding: 14px 18px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .feedbackBanner {
+    gap: 12px;
+  }
+  .feedbackIconCircle {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+  .footerActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .duoPrimaryBtn,
+  .duoSuccessBtn,
+  .duoDangerBtn {
+    width: 100%;
+  }
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
 }

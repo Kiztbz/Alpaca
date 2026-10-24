@@ -84,9 +84,9 @@ export default async function DailyPage() {
     <main className={styles.screen}>
       {user && <FillStore user={user} relationships={relationships} {...resourcesObject} />}
       <header className={styles.screenHeader}>
-        <div><span>Spaced repetition</span><h1>Daily Train</h1><p>A focused session of questions that are ready for review today.</p></div>
+        <div><span>Spaced repetition (FSRS v5)</span><h1>Daily Train</h1><p>A focused, adaptive session of questions optimized by the Free Spaced Repetition Scheduler.</p></div>
       </header>
-      <section className={styles.content}><div className={styles.sessionPanel}><div><span>Today&apos;s queue</span><h2>{sortedQuizzes.length} questions ready</h2><p>Correct answers wait longer before returning. Missed answers come back sooner so you can strengthen them.</p></div>
+      <section className={styles.content}><div className={styles.sessionPanel}><div><span>Today&apos;s queue</span><h2>{sortedQuizzes.length} questions ready</h2><p>Adaptive intervals powered by FSRS. Mastered cards wait longer before returning, while tricky cards return sooner to reinforce retention.</p></div>
         {user ? (
           <DailyTrain quizzes={sortedQuizzes} />
         ) : (

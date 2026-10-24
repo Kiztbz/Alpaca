@@ -30,6 +30,7 @@ import { toUTCdatestring } from "@/lib/date";
 import checkAnswers from "@/lib/checkAnswers";
 import listPrint from "@/lib/listPrint";
 import { correctConfetti } from "@/lib/correctConfetti";
+import { playSuccessSound, playWrongSound } from "@/lib/audio";
 import Link from "next/link";
 
 export function QuizDisplay({
@@ -40,6 +41,11 @@ export function QuizDisplay({
   lighter,
   contextCourse,
   showDetailLink = true,
+  trainMode = false,
+  formId,
+  hideFormButtons = false,
+  onGraded,
+  onAnswerChange,
   handleWhenCorrect,
   handleWhenIncorrect,
 }) {
@@ -59,6 +65,24 @@ export function QuizDisplay({
   const [flashcard, setFlashcard] = useState(!!isFlashcard);
   const [reveal, setReveal] = useState(false);
   const [hints, setHints] = useState([]);
+
+  // Notify parent of answer changes
+  useEffect(() => {
+    onAnswerChange?.(answers);
+  }, [answers, onAnswerChange]);
+
+  // Reset internal state when a different quiz is presented
+  useEffect(() => {
+    setAnswers([]);
+    setIsCorrect(false);
+    setIncIndexes([]);
+    setSpelling(false);
+    setHasAnswered(false);
+    setFailures(0);
+    setHints([]);
+    setReveal(false);
+    setLoading(false);
+  }, [quiz?.id]);
 
   useEffect(() => {
     if (!hasAnswered || isFlashcard) return;
@@ -123,6 +147,7 @@ export function QuizDisplay({
       setReveal(true);
 
       if (!ansCheck.isCorrect) {
+        playWrongSound();
         setFailures((prev) => prev + 1);
         setIsCorrect(false);
         setIncIndexes(ansCheck.incorrectIndexes);
@@ -134,11 +159,12 @@ export function QuizDisplay({
           setHints(quiz.hints);
         }
 
-        if (handleWhenIncorrect & !flashcard) handleWhenIncorrect();
+        if (handleWhenIncorrect && !flashcard) handleWhenIncorrect();
 
         return setLoading(false);
       }
 
+      playSuccessSound();
       setHints([]);
       setIsCorrect(true);
       setSpelling(ansCheck.matchQuality);
@@ -180,8 +206,9 @@ export function QuizDisplay({
           setHints(hints);
 
           if (!isCorrect) {
-            if (handleWhenIncorrect & !flashcard) handleWhenIncorrect();
-            if (failures >= 2) {
+            playWrongSound();
+            if (handleWhenIncorrect && !flashcard) handleWhenIncorrect(data.content);
+            if (!trainMode && failures >= 2) {
               addAlert({
                 success: false,
                 message:
@@ -192,13 +219,18 @@ export function QuizDisplay({
               setFailures((prev) => prev + 1);
             }
           } else {
+            playSuccessSound();
             setHints([]);
 
-            if (handleWhenCorrect) handleWhenCorrect();
+            if (handleWhenCorrect) handleWhenCorrect(data.content);
 
-            if (showConfetti) {
+            if (showConfetti && !trainMode) {
               correctConfetti();
             }
+          }
+
+          if (onGraded) {
+            onGraded(data.content);
           }
         }
       } catch (error) {
@@ -226,6 +258,7 @@ export function QuizDisplay({
       </header>
 
       <Form
+        id={formId || undefined}
         singleColumn
         gap={
           quiz.type === "ordered-list-answer" ||
@@ -319,6 +352,22 @@ export function QuizDisplay({
           </InfoBox>
         )}
 
+        {hasAnswered && !isCorrect && (
+          <InfoBox fullWidth asDiv type="danger">
+            <h4>The correct answer is:</h4>
+            <div style={{ fontSize: "16px", fontWeight: "700", marginTop: "4px" }}>
+              {listPrint(
+                Array.isArray(quiz.answers)
+                  ? quiz.answers
+                  : typeof quiz.answers === "string"
+                  ? JSON.parse(quiz.answers)
+                  : [],
+                quiz.multipleAnswers ? "and" : "or"
+              )}
+            </div>
+          </InfoBox>
+        )}
+
         {!!hints.length && (
           <InfoBox fullWidth asDiv>
             <h4>Here are some hints to help you out</h4>
@@ -330,47 +379,49 @@ export function QuizDisplay({
           </InfoBox>
         )}
 
-        <FormButtons>
-          {!flashcard && (
-            <button
-              type="submit"
-              disabled={
-                (hasAnswered && !isCorrect) || !answers || loading || isCorrect
-              }
-              className={`button small ${hasAnswered ? (isCorrect ? "success" : "danger") : "primary"}`}
-            >
-              {isCorrect
-                ? "Correct!"
-                : hasAnswered
-                  ? "Incorrect"
-                  : "Check Answer "}{" "}
-              {loading && <Spinner primary size={14} margin={2} />}
-            </button>
-          )}
+        {!hideFormButtons && (
+          <FormButtons>
+            {!flashcard && (
+              <button
+                type="submit"
+                disabled={
+                  (hasAnswered && !isCorrect) || !answers || loading || isCorrect
+                }
+                className={`button small ${hasAnswered ? (isCorrect ? "success" : "danger") : "primary"}`}
+              >
+                {isCorrect
+                  ? "Correct!"
+                  : hasAnswered
+                    ? "Incorrect"
+                    : "Check Answer "}{" "}
+                {loading && <Spinner primary size={14} margin={2} />}
+              </button>
+            )}
 
-          {flashcard && (
-            <button type="submit" className={`button small primary`}>
-              Reveal Answer
-            </button>
-          )}
+            {flashcard && (
+              <button type="submit" className={`button small primary`}>
+                Reveal Answer
+              </button>
+            )}
 
-          {hasAnswered && isCorrect && (
-            <button
-              type="button"
-              className="button small border"
-              onClick={() => {
-                setAnswers([]);
-                setIsCorrect(false);
-                setHasAnswered(false);
-              }}
-            >
-              Try Again
-            </button>
-          )}
-        </FormButtons>
+            {hasAnswered && isCorrect && (
+              <button
+                type="button"
+                className="button small border"
+                onClick={() => {
+                  setAnswers([]);
+                  setIsCorrect(false);
+                  setHasAnswered(false);
+                }}
+              >
+                Try Again
+              </button>
+            )}
+          </FormButtons>
+        )}
       </Form>
 
-      {hasLevelUpDate && (
+      {!trainMode && hasLevelUpDate && (
         <div>
           {canLevelUp
             ? "Level Up Now!"
@@ -381,7 +432,7 @@ export function QuizDisplay({
         </div>
       )}
 
-      {!!canEditDelete && (!!canEdit || !!canDelete) && (
+      {!trainMode && !!canEditDelete && (!!canEdit || !!canDelete) && (
         <div className={styles.tools}>
           {!!canEdit && (
             <Tooltip>
@@ -509,24 +560,26 @@ export function QuizDisplay({
           )}
         </div>
       )}
-      <footer>
-        <p
-          title={`Created By ${quiz.creator ? quiz.creator.username : "No one"}`}
-        >
-          Created By {quiz.creator ? quiz.creator.username : "No one"}
-        </p>
-        <CardCreatedAt>
-          {new Date(quiz.createdAt).toLocaleDateString()}
-        </CardCreatedAt>
-        {showDetailLink && quiz.publicId && (
-          <Link
-            className={styles.detailLink}
-            href={`/quizzes/${quiz.publicId}${contextCourse ? `?course=${encodeURIComponent(contextCourse.publicId)}` : ""}`}
+      {!trainMode && (
+        <footer>
+          <p
+            title={`Created By ${quiz.creator ? quiz.creator.username : "No one"}`}
           >
-            Open details →
-          </Link>
-        )}
-      </footer>
+            Created By {quiz.creator ? quiz.creator.username : "No one"}
+          </p>
+          <CardCreatedAt>
+            {new Date(quiz.createdAt).toLocaleDateString()}
+          </CardCreatedAt>
+          {showDetailLink && quiz.publicId && (
+            <Link
+              className={styles.detailLink}
+              href={`/quizzes/${quiz.publicId}${contextCourse ? `?course=${encodeURIComponent(contextCourse.publicId)}` : ""}`}
+            >
+              Open details →
+            </Link>
+          )}
+        </footer>
+      )}
     </Card>
   );
 }

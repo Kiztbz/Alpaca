@@ -7,6 +7,13 @@ import { cookies } from "next/headers";
 import { useUser } from "@/lib/auth";
 import { db } from "@/lib/db/db.js";
 import {
+  reviewCard,
+  previewRatings,
+  cardFromRow,
+  formatInterval,
+  Rating,
+} from "@/lib/fsrs";
+import {
   getResourcePermissions,
   canDeleteResource,
   canEditResource,
@@ -122,10 +129,11 @@ export async function PATCH(req, { params }) {
   }
 }
 
-// GRADE QUIZ
+// GRADE QUIZ (with FSRS Spaced Repetition)
 export async function POST(req, props) {
   const params = await props.params;
-  const { answers } = await req.json();
+  const body = await req.json();
+  const { answers, rating: explicitRating } = body;
   const { id } = params;
 
   try {
@@ -149,69 +157,86 @@ export async function POST(req, props) {
       );
     }
 
-    const { isCorrect, matchQuality, incorrectIndexes } = checkAnswers({
-      userAnswers: answers,
-      quiz,
-    });
+    let isCorrect = false;
+    let matchQuality = 0;
+    let incorrectIndexes = [];
 
-    let quizInteraction = await db
+    // Check answers if provided
+    if (Array.isArray(answers)) {
+      const result = checkAnswers({
+        userAnswers: answers,
+        quiz,
+      });
+      isCorrect = result.isCorrect;
+      matchQuality = result.matchQuality;
+      incorrectIndexes = result.incorrectIndexes;
+    } else if (explicitRating) {
+      // Manual rating (e.g. from flashcard mode): 2, 3, 4 considered successful recall
+      isCorrect = explicitRating >= Rating.Hard;
+      matchQuality = isCorrect ? 1 : 0;
+    }
+
+    // Determine final FSRS rating: explicit rating takes priority, otherwise derived from isCorrect
+    let finalRating = Rating.Good;
+    if (explicitRating && [1, 2, 3, 4].includes(Number(explicitRating))) {
+      finalRating = Number(explicitRating);
+    } else {
+      finalRating = isCorrect ? Rating.Good : Rating.Again;
+    }
+
+    // Fetch existing user interaction
+    const quizInteraction = await db
       .selectFrom("user_quizzes")
-      .select(["level", "triesAtLevel", "lastCorrect", "hiddenUntil"])
+      .selectAll()
       .where("userId", "=", user.id)
       .where("quizId", "=", quiz.id)
       .executeTakeFirst();
 
-    let hasUserInteractedWithQuiz = !!quizInteraction;
-    let currentLevel = quizInteraction?.level || 0;
-    let canProgressLevel = false;
+    const hasUserInteractedWithQuiz = !!quizInteraction;
+    const now = new Date();
 
-    if (!quizInteraction) {
-      canProgressLevel = true;
+    // Convert existing DB row to FSRS card
+    const card = cardFromRow(quizInteraction);
 
-      quizInteraction = {
-        level: 0,
-        quizId: quiz.id,
-        triesAtLevel: 0,
-        hiddenUntil: new Date(),
-      };
+    // Compute preview of all rating options prior to applying
+    const ratingPreviews = previewRatings(card, now);
+
+    // Apply FSRS review transition
+    const { card: nextCard, interval, scheduledDays } = reviewCard(card, finalRating, now);
+
+    // Compute hiddenUntil timestamp
+    let nextHiddenUntil = new Date(now);
+    if (scheduledDays > 0) {
+      nextHiddenUntil.setDate(nextHiddenUntil.getDate() + scheduledDays);
     } else {
-      canProgressLevel =
-        !isValidDate(quizInteraction.hiddenUntil) ||
-        new Date(quizInteraction.hiddenUntil) < new Date();
+      // Lapse or learning: available again in 10 minutes
+      nextHiddenUntil = new Date(now.getTime() + 10 * 60 * 1000);
     }
 
-    if (isCorrect && canProgressLevel) {
-      let hiddenUntil = new Date();
+    // Backwards-compatible level and tries
+    const level = Math.max(0, Math.round(nextCard.stability));
+    const triesAtLevel = isCorrect ? 0 : ((quizInteraction?.triesAtLevel || 0) + 1);
 
-      quizInteraction.lastCorrect = new Date();
-      quizInteraction.level += 1;
-
-      quizInteraction.hiddenUntil = new Date(
-        hiddenUntil.setDate(hiddenUntil.getDate() + quizInteraction.level)
-      );
-    } else if (isCorrect) {
-      quizInteraction.lastCorrect = new Date();
-    } else {
-      quizInteraction.lastCorrect = 0;
-      quizInteraction.level =
-        quizInteraction.level > 0 ? quizInteraction.level - 1 : 0;
-    }
-
-    const lastCorrect = timestampFromDate(quizInteraction.lastCorrect);
-    const hiddenUntil = timestampFromDate(quizInteraction.hiddenUntil);
-    const hasLeveledUp = currentLevel < quizInteraction.level;
-    const level = quizInteraction.level;
+    const updatePayload = {
+      level,
+      triesAtLevel,
+      lastCorrect: isCorrect ? now : (quizInteraction?.lastCorrect || null),
+      hiddenUntil: nextHiddenUntil,
+      state: nextCard.state,
+      difficulty: nextCard.difficulty,
+      stability: nextCard.stability,
+      reps: nextCard.reps,
+      lapses: nextCard.lapses,
+      scheduledDays: nextCard.scheduledDays,
+      lastReview: now,
+    };
 
     if (hasUserInteractedWithQuiz) {
       await db
         .updateTable("user_quizzes")
-        .set((eb) => ({
-          level,
-          triesAtLevel: hasLeveledUp ? 0 : eb("triesAtLevel", "+", 1),
-          lastCorrect,
-          hiddenUntil,
-        }))
+        .set(updatePayload)
         .where("quizId", "=", quiz.id)
+        .where("userId", "=", user.id)
         .execute();
     } else {
       await db
@@ -219,14 +244,12 @@ export async function POST(req, props) {
         .values({
           userId: user.id,
           quizId: quiz.id,
-          level,
-          lastCorrect,
-          hiddenUntil,
+          ...updatePayload,
         })
         .execute();
     }
 
-    const sendHints = shouldSendHints(level, quizInteraction.triesAtLevel || 0);
+    const sendHints = shouldSendHints(level, triesAtLevel);
 
     return NextResponse.json(
       {
@@ -235,7 +258,25 @@ export async function POST(req, props) {
           isCorrect,
           incorrectIndexes,
           hints: sendHints ? hintsFromLevel(quiz.hints, level) : [],
-          matchQuality
+          matchQuality,
+          fsrs: {
+            state: nextCard.state,
+            difficulty: nextCard.difficulty,
+            stability: nextCard.stability,
+            reps: nextCard.reps,
+            lapses: nextCard.lapses,
+            scheduledDays: nextCard.scheduledDays,
+            interval,
+            intervalFormatted: formatInterval(interval),
+            hiddenUntil: nextHiddenUntil.toISOString(),
+            ratingApplied: finalRating,
+            previews: {
+              again: formatInterval(ratingPreviews.Again),
+              hard: formatInterval(ratingPreviews.Hard),
+              good: formatInterval(ratingPreviews.Good),
+              easy: formatInterval(ratingPreviews.Easy),
+            },
+          },
         },
       },
       { status: 200 }

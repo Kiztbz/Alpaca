@@ -160,6 +160,15 @@ CREATE TABLE IF NOT EXISTS `user_quizzes` (
     `last_correct` TIMESTAMP DEFAULT NOW(),
     `hidden_until` TIMESTAMP DEFAULT NOW(),
 
+    -- FSRS v5 scheduling columns
+    `state` SMALLINT DEFAULT 0,
+    `difficulty` DOUBLE PRECISION DEFAULT 0,
+    `stability` DOUBLE PRECISION DEFAULT 0,
+    `reps` INT DEFAULT 0,
+    `lapses` INT DEFAULT 0,
+    `scheduled_days` INT DEFAULT 0,
+    `last_review` TIMESTAMP DEFAULT NOW(),
+
     UNIQUE KEY `user_quizzes_user_id_quiz_id_idx` (`user_id`, `quiz_id`),
     KEY `user_quizzes_quiz_id_idx` (`quiz_id`)
 );
