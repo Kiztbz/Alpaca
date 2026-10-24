@@ -148,10 +148,10 @@ export function UserInput({ isRegistering, onSubmit }) {
             const data = await response.json();
             setErrors(data.errors || {});
 
-            if (errors.server) {
+            if (data.errors?.server) {
                 addAlert({
                     success: false,
-                    message: errors.server,
+                    message: data.errors.server,
                 });
             }
         }
@@ -203,10 +203,10 @@ export function UserInput({ isRegistering, onSubmit }) {
             const data = await response.json();
             setErrors(data.errors || {});
 
-            if (errors.server) {
+            if (data.errors?.server) {
                 addAlert({
                     success: false,
-                    message: errors.server,
+                    message: data.errors.server,
                 });
             }
         }

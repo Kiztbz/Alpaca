@@ -3,13 +3,21 @@ import pg from "pg";
 
 const { Client } = pg;
 
-if (!process.env.DATABASE_URL) {
+const rawConnectionString = process.env.DATABASE_URL?.trim();
+const connectionString =
+    rawConnectionString?.length >= 2 &&
+    ((rawConnectionString.startsWith('"') && rawConnectionString.endsWith('"')) ||
+        (rawConnectionString.startsWith("'") && rawConnectionString.endsWith("'")))
+        ? rawConnectionString.slice(1, -1)
+        : rawConnectionString;
+
+if (!connectionString) {
     console.error("DATABASE_URL is required. Copy the Supabase transaction-pooler URL into .env.");
     throw new Error("DATABASE_URL is not set");
 }
 
 const client = new Client({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
     ssl: process.env.DATABASE_SSL === "false"
         ? false
         : { rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== "false" },
