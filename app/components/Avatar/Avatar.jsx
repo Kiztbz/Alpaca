@@ -1,11 +1,10 @@
 import styles from "./Avatar.module.css";
 import Image from "next/image";
 
-const cdn = process.env.NEXT_PUBLIC_CDN_URL;
+const cdn = process.env.NEXT_PUBLIC_CDN_URL || "";
 
 if (!cdn) {
-    console.error("Please set NEXT_PUBLIC_CDN_URL in your .env file");
-    process.exit(1);
+    console.warn("Please set NEXT_PUBLIC_CDN_URL in your .env file");
 }
 
 export function Avatar({ src, username, size = 40, outline, background }) {
