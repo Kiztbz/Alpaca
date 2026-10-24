@@ -553,16 +553,18 @@ export function DailyTrain({ quizzes = [] }) {
                   </div>
                 )}
 
-                <QuizDisplay
-                  key={currentQuiz.id}
-                  quiz={currentQuiz}
-                  canClientCheck={false}
-                  trainMode={true}
-                  formId={formId}
-                  hideFormButtons={true}
-                  onGraded={handleGraded}
-                  onAnswerChange={handleAnswerChange}
-                />
+                <div className={styles.quizCardSlot}>
+                  <QuizDisplay
+                    key={currentQuiz.id}
+                    quiz={currentQuiz}
+                    canClientCheck={false}
+                    trainMode={true}
+                    formId={formId}
+                    hideFormButtons={true}
+                    onGraded={handleGraded}
+                    onAnswerChange={handleAnswerChange}
+                  />
+                </div>
               </div>
             )}
           </div>

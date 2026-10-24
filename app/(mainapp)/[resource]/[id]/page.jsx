@@ -110,6 +110,22 @@ export default async function ResourceDetailPage(props) {
     const title = config.title(res);
 
     if (resource === "notes") {
+        const sourceIds = relationships
+            .map((rel) => otherEnd(rel, res.id, "note"))
+            .filter((end) => end?.type === "source")
+            .map((end) => String(end.id));
+
+        const linkedSources = (resourcesObject.sources || [])
+            .filter((src) => sourceIds.includes(String(src.id)))
+            .map((src) => ({
+                id: src.id,
+                publicId: src.publicId,
+                title: src.title,
+                medium: src.medium,
+                url: src.url,
+                credits: src.credits,
+            }));
+
         return (
             <NoteReader
                 note={{
@@ -126,6 +142,7 @@ export default async function ResourceDetailPage(props) {
                 totalNotes={sequence.length}
                 previousNote={previous ? { publicId: previous.publicId, title: previous.title } : null}
                 nextNote={next ? { publicId: next.publicId, title: next.title } : null}
+                sources={linkedSources}
                 related={related.map((item) => ({
                     id: item.id,
                     publicId: item.publicId,

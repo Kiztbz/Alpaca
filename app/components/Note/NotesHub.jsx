@@ -101,6 +101,41 @@ export function NotesHub({ notes, page, maxPage, amount, activeTag }) {
               </div>
               <h3>{note.title}</h3>
               <p>{notePlainText(note.text).slice(0, 138)}{notePlainText(note.text).length > 138 ? "…" : ""}</p>
+              
+              {note.sources?.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", margin: "6px 0 8px" }}>
+                  {note.sources.slice(0, 2).map((src) => (
+                    <span
+                      key={src.id}
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        color: "var(--accent)",
+                        background: "var(--accent-08)",
+                        border: "1px solid var(--accent-20)",
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        maxWidth: "200px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                      title={`Source: ${src.title}`}
+                    >
+                      📖 {src.title}
+                    </span>
+                  ))}
+                  {note.sources.length > 2 && (
+                    <span style={{ fontSize: "11px", color: "var(--fg-4)", alignSelf: "center" }}>
+                      +{note.sources.length - 2}
+                    </span>
+                  )}
+                </div>
+              )}
+
               <div className={styles.tagRow}>{note.tags?.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}</div>
               <div className={styles.lessonFooter}>
                 <div><i style={{ width: `${percent}%` }} /></div>

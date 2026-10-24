@@ -35,11 +35,11 @@ export function NoteDisplay({ note, contextCourse }) {
   const sourcesStore = useStore((state) => state.sources);
 
   const courses = note.courses ? note.courses
-    .map((x) => coursesStore.find((crs) => String(crs.id) === String(x)))
+    .map((x) => (typeof x === "object" && x !== null) ? x : coursesStore.find((crs) => String(crs.id) === String(x)))
     .filter((x) => !!x) : [];
 
   const sources = note.sources ? note.sources
-    .map((x) => sourcesStore.find((src) => String(src.id) === String(x)))
+    .map((x) => (typeof x === "object" && x !== null) ? x : sourcesStore.find((src) => String(src.id) === String(x)))
     .filter((x) => !!x) : [];
 
   const canEdit =

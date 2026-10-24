@@ -108,6 +108,125 @@
   .extras { width: calc(100% - 24px); margin-top: 12px; grid-template-columns: 1fr; }
 }
 
+.railSources {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.railSourcesLabel {
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.railSourceLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-medium);
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+  color: var(--fg-2);
+  transition: all 0.15s ease;
+}
+
+.railSourceLink:hover {
+  background: var(--bg-3);
+  border-color: var(--accent-50);
+  color: var(--fg-1);
+}
+
+.railSourceLink small {
+  font-size: 11px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sourcesSection {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color);
+  grid-column: 1 / -1;
+}
+
+.sourcesSectionTitle {
+  display: block;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.sourceCardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sourceCardItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-medium);
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+}
+
+.sourceCardMain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sourceMediumBadge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-3);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.sourceTitleLink {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sourceTitleLink:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.sourceExternalLink {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.sourceExternalLink:hover {
+  text-decoration: underline;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fromBottom, .fromTop { animation: none; }
 }

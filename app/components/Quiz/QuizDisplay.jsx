@@ -246,26 +246,64 @@ export function QuizDisplay({
   }
 
   return (
-    <Card fullWidth lighter={lighter} border={isCorrect && "var(--success)"}>
-      <header>
-        <h4>
-          {quiz.type !== "fill-in-the-blank"
-            ? `${quiz.prompt} ${flashcard ? "(Flashcard)" : ""}`
-            : "Fill in the blank"}
-        </h4>
+    <Card fullWidth lighter={lighter} border={isCorrect && "var(--success)"} style={{ maxWidth: "100%" }}>
+      <header style={trainMode ? { marginBottom: "24px" } : undefined}>
+        {trainMode ? (
+          <div>
+            <div
+              style={{
+                fontSize: "12px",
+                fontWeight: "700",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "var(--accent)",
+                marginBottom: "8px",
+              }}
+            >
+              {quiz.type === "multiple-choice"
+                ? "Multiple Choice"
+                : quiz.type === "fill-in-the-blank"
+                ? "Fill In The Blank"
+                : quiz.type === "prompt-response"
+                ? "Recall & Type"
+                : "Quiz Question"}
+            </div>
+            <h2
+              style={{
+                fontSize: "clamp(22px, 3.5vw, 28px)",
+                fontWeight: "800",
+                lineHeight: "1.35",
+                color: "var(--fg-1)",
+                margin: 0,
+                letterSpacing: "-0.015em",
+              }}
+            >
+              {quiz.type !== "fill-in-the-blank"
+                ? `${quiz.prompt} ${flashcard ? "(Flashcard)" : ""}`
+                : "Fill in the missing words:"}
+            </h2>
+          </div>
+        ) : (
+          <h4>
+            {quiz.type !== "fill-in-the-blank"
+              ? `${quiz.prompt} ${flashcard ? "(Flashcard)" : ""}`
+              : "Fill in the blank"}
+          </h4>
+        )}
 
-        <CardChip>Level {storeQuiz?.level}</CardChip>
+        {!trainMode && <CardChip>Level {storeQuiz?.level}</CardChip>}
       </header>
 
       <Form
         id={formId || undefined}
+        fullWidth
         singleColumn
         gap={
           quiz.type === "ordered-list-answer" ||
           quiz.type === "unordered-list-answer" ||
           quiz.type === "unordered-list"
             ? 20
-            : 40
+            : 32
         }
         onSubmit={handleSubmitAnswer}
       >
@@ -352,7 +390,7 @@ export function QuizDisplay({
           </InfoBox>
         )}
 
-        {hasAnswered && !isCorrect && (
+        {hasAnswered && !isCorrect && !trainMode && (
           <InfoBox fullWidth asDiv type="danger">
             <h4>The correct answer is:</h4>
             <div style={{ fontSize: "16px", fontWeight: "700", marginTop: "4px" }}>

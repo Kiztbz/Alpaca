@@ -32,6 +32,7 @@ export function NoteReader({
   totalNotes,
   previousNote,
   nextNote,
+  sources = [],
   related = [],
 }) {
   const cards = useMemo(() => {
@@ -176,6 +177,23 @@ export function NoteReader({
             ))}
           </div>
 
+          {sources?.length > 0 && (
+            <div className={styles.railSources}>
+              <span className={styles.railSourcesLabel}>Sources Cited</span>
+              {sources.map((src) => (
+                <Link
+                  key={src.id}
+                  href={`/sources/${src.publicId}`}
+                  className={styles.railSourceLink}
+                  title={src.title}
+                >
+                  <span>📖</span>
+                  <small>{src.title}</small>
+                </Link>
+              ))}
+            </div>
+          )}
+
           {note.tags?.length > 0 && <div className={styles.railTags}>{note.tags.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}</div>}
         </aside>
 
@@ -241,7 +259,34 @@ export function NoteReader({
         </div>
       </footer>
 
-      {(courses.length > 1 || related.length > 0) && <section className={styles.extras}>
+      {(courses.length > 1 || related.length > 0 || sources.length > 0) && <section className={styles.extras}>
+        {sources.length > 0 && (
+          <div className={styles.sourcesSection}>
+            <span className={styles.sourcesSectionTitle}>Sources Cited for this Note</span>
+            <div className={styles.sourceCardsList}>
+              {sources.map((src) => (
+                <div key={src.id} className={styles.sourceCardItem}>
+                  <div className={styles.sourceCardMain}>
+                    <span className={styles.sourceMediumBadge}>{src.medium || "source"}</span>
+                    <Link href={`/sources/${src.publicId}`} className={styles.sourceTitleLink}>
+                      {src.title}
+                    </Link>
+                  </div>
+                  {src.url && (
+                    <a
+                      href={src.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.sourceExternalLink}
+                    >
+                      Open source ↗
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {courses.length > 1 && <div><span>Also in</span>{courses.filter((course) => course.id !== activeCourse?.id).map((course) => <Link key={course.id} href={`/notes/${note.publicId}?course=${encodeURIComponent(course.publicId)}`}>{course.name}</Link>)}</div>}
         {related.length > 0 && <div><span>Keep exploring</span>{related.slice(0, 3).map((item) => <Link key={`${item.resource}-${item.id}`} href={`/${item.resource}/${item.publicId}`}>{item.title}</Link>)}</div>}
       </section>}

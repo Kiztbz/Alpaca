@@ -77,7 +77,7 @@ export default async function ResourcePage(props) {
 
   const [resourcesObject, rawRelationships, maxPage] = await Promise.all([
     getPermittedResources({
-      withSources: current.name === "sources",
+      withSources: current.name === "sources" || current.name === "notes",
       withNotes: current.name === "notes",
       withQuizzes: current.name === "quizzes",
       withCourses: current.name === "courses",
@@ -139,20 +139,35 @@ export default async function ResourcePage(props) {
   }
 
   if (current.name === "notes") {
+    const allSources = resourcesObject.sources || [];
     const notes = resources
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, amount)
-      .map((note) => ({
-        id: note.id,
-        publicId: note.publicId,
-        title: note.title,
-        text: note.text,
-        tags: note.tags,
-        createdAt: note.createdAt,
-        creator: note.creator
-          ? { username: note.creator.username, displayName: note.creator.displayName }
-          : null,
-      }));
+      .map((note) => {
+        const linkedSources = (note.sources || [])
+          .map((sId) => allSources.find((s) => String(s.id) === String(sId)))
+          .filter(Boolean)
+          .map((s) => ({
+            id: s.id,
+            publicId: s.publicId,
+            title: s.title,
+            medium: s.medium,
+            url: s.url,
+          }));
+
+        return {
+          id: note.id,
+          publicId: note.publicId,
+          title: note.title,
+          text: note.text,
+          tags: note.tags,
+          sources: linkedSources,
+          createdAt: note.createdAt,
+          creator: note.creator
+            ? { username: note.creator.username, displayName: note.creator.displayName }
+            : null,
+        };
+      });
 
     return (
       <NotesHub
