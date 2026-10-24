@@ -95,9 +95,9 @@ export function QuizDisplay({
   const canEdit =
     !!user &&
     quiz.creator &&
-    (quiz.creator.id ||
-      quiz.permissions.write.includes(user?.id) ||
-      quiz.permissions.allWrite);
+    (quiz.creator?.id === user?.id ||
+      quiz.permissions?.write?.includes(user?.id) ||
+      quiz.permissions?.allWrite);
 
   const canDelete = quiz.creator && quiz.creator.id === user?.id;
 
@@ -474,7 +474,7 @@ export function QuizDisplay({
                   className="button danger"
                   onClick={async () => {
                     const response = await fetch(
-                      `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/quiz/${quiz ? `/${quiz.id}` : ""}`,
+                      `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/quiz/${quiz.id}`,
                       {
                         method: "DELETE",
                       }

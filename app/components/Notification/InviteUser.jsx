@@ -19,7 +19,7 @@ export function InviteUser({ groupId }) {
         setLoading(true);
 
         try {
-            let url = `${basePath}/api/associates`;
+            let url = `${basePath}/api/me/associates`;
             if (groupId) {
                 url = `${basePath}/api/groups/${groupId}/members`;
             }
@@ -36,9 +36,10 @@ export function InviteUser({ groupId }) {
                           }
                         : { userId }
                 ),
-            }).then((res) => res.json());
+            });
+            await response.json().catch(() => ({}));
 
-            if (response.success) {
+            if (response.ok) {
                 setUserId("");
             } else if (response.status === 401) {
                 // Not working currently, but we should use
@@ -50,8 +51,8 @@ export function InviteUser({ groupId }) {
             }
 
             // addAlert({
-            //     success: response.success,
-            //     message: response.message,
+            //     success: response.ok,
+            //     message: data.message,
             // });
         } catch (error) {
             // addAlert({

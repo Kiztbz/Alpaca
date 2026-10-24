@@ -30,14 +30,14 @@ export default async function CoursePage(props) {
   };
 
   expandedRelationships.forEach((rel) => {
-    if (rel.A === course.id && rel.AType === "course") {
+    if (String(rel.A) === String(course.id) && rel.AType === "course") {
       const listType = listName[rel.BType];
       if (!course[listType]) course[listType] = [];
       course[listType].push(rel.B);
       return;
     }
 
-    if (rel.B === course.id && rel.BType === "course") {
+    if (String(rel.B) === String(course.id) && rel.BType === "course") {
       const listType = listName[rel.AType];
       if (!course[listType]) course[listType] = [];
       course[listType].push(rel.A);

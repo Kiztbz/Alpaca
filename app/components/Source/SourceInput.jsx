@@ -96,8 +96,8 @@ export function SourceInput({ source, close }) {
       ...source,
       permissions: {
         ...source.permissions,
-        allRead: Boolean(source.permissions.allRead),
-        allWrite: Boolean(source.permissions.allWrite),
+        allRead: Boolean(source.permissions?.allRead),
+        allWrite: Boolean(source.permissions?.allWrite),
         groupLocked: Boolean(source.permissions.groupLocked),
       },
     };
@@ -110,7 +110,7 @@ export function SourceInput({ source, close }) {
   const user = useStore((state) => state.user);
   const inputDefaults = useStore((state) => state.inputDefaults);
 
-  const isOwner = source && user && source.creator.id === user.id;
+  const isOwner = source && user && source.creator?.id === user.id;
   const canChangePermissions = isOwner || !source;
 
   useEffect(() => {

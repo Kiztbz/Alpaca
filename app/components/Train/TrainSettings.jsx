@@ -36,17 +36,17 @@ export function TrainSettings({ tags, courses, sources, notes }) {
   const tagOptions = tags.map((tag, index) => ({ tag, id: index }));
   const courseOptions = courses
     .map((c_id) => {
-      return availableCourses.find((c) => c.id === c_id);
+      return availableCourses.find((c) => String(c.id) === String(c_id));
     })
     .filter((x) => x);
   const sourceOptions = sources
     .map((s_id) => {
-      return availableSources.find((s) => s.id === s_id);
+      return availableSources.find((s) => String(s.id) === String(s_id));
     })
     .filter((x) => x);
   const noteOptions = notes
     .map((n_id) => {
-      return availableNotes.find((n) => n.id === n_id);
+      return availableNotes.find((n) => String(n.id) === String(n_id));
     })
     .filter((x) => x);
 

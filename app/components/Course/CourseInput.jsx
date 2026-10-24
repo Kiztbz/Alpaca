@@ -90,9 +90,9 @@ export function CourseInput({ course, close }) {
       ...course,
       permissions: {
         ...course.permissions,
-        allRead: Boolean(course.permissions.allRead),
-        allWrite: Boolean(course.permissions.allWrite),
-        groupLocked: Boolean(course.permissions.groupLocked),
+        allRead: Boolean(course.permissions?.allRead),
+        allWrite: Boolean(course.permissions?.allWrite),
+        groupLocked: Boolean(course.permissions?.groupLocked),
       },
     };
   }
@@ -106,7 +106,7 @@ export function CourseInput({ course, close }) {
   const notes = useStore((state) => state.notes);
   const user = useStore((state) => state.user);
 
-  const isOwner = course && user && course.creator.id === user.id;
+  const isOwner = course && user && course.creator?.id === user.id;
   const canChangePermissions = isOwner || !course;
 
   useEffect(() => {

@@ -141,7 +141,7 @@ export function QuizInput({ quiz, setQuiz, close }) {
   const user = useStore((state) => state.user);
   const inputDefaults = useStore((state) => state.inputDefaults);
 
-  const isOwner = quiz && user && quiz.creator.id === user.id;
+  const isOwner = quiz && user && quiz.creator?.id === user.id;
   const canChangePermissions = isOwner || !quiz;
 
   useEffect(() => {

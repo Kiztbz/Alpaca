@@ -35,19 +35,19 @@ export function NoteDisplay({ note, contextCourse }) {
   const sourcesStore = useStore((state) => state.sources);
 
   const courses = note.courses ? note.courses
-    .map((x) => coursesStore.find((crs) => crs.id === x))
+    .map((x) => coursesStore.find((crs) => String(crs.id) === String(x)))
     .filter((x) => !!x) : [];
 
   const sources = note.sources ? note.sources
-    .map((x) => sourcesStore.find((src) => src.id === x))
+    .map((x) => sourcesStore.find((src) => String(src.id) === String(x)))
     .filter((x) => !!x) : [];
 
   const canEdit =
     !!user &&
     !!note.creator &&
     (note.creator.id === user?.id ||
-      note.permissions.write.includes(user?.id) ||
-      note.permissions.allWrite);
+      note.permissions?.write?.includes(user?.id) ||
+      note.permissions?.allWrite);
 
   const canDelete = !!note.creator && note.creator.id === user?.id;
 
@@ -66,7 +66,7 @@ export function NoteDisplay({ note, contextCourse }) {
           : note.text}
       </CardDescription>
 
-      {!!note.tags.length && (
+      {!!note.tags?.length && (
         <section>
           <h5>
             Tags

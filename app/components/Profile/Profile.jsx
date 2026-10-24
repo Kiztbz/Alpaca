@@ -151,14 +151,15 @@ export function Profile({ user, size = 44 }) {
             onClick: async () => {
                 const response = await fetch(`${basePath}/api/notifications`, {
                     method: "PATCH",
-                }).then((res) => res.json());
+                });
+                const data = await response.json().catch(() => ({}));
 
                 addAlert({
-                    success: response.success,
-                    message: response.message,
+                    success: response.ok,
+                    message: data.message || (response.ok ? "Notifications marked as read" : "Something went wrong"),
                 });
 
-                if (response.success) {
+                if (response.ok) {
                     readAll();
                 }
             },

@@ -102,7 +102,7 @@ export default async function ResourcePage(props) {
   function pushToList(rel, type) {
     if (rel.AType === type) {
       resourcesObject[current.name]
-        .filter((x) => x.id === rel.A)
+        .filter((x) => String(x.id) === String(rel.A))
         .forEach((x) => {
           const listType = resourceList.find(
             (x) => x.singular === rel.BType
@@ -114,7 +114,7 @@ export default async function ResourcePage(props) {
 
     if (rel.BType === type) {
       resourcesObject[current.name]
-        .filter((x) => x.id === rel.B)
+        .filter((x) => String(x.id) === String(rel.B))
         .forEach((x) => {
           const listType = resourceList.find(
             (x) => x.singular === rel.AType

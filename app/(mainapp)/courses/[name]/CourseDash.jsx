@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "@/app/(dashboard)/me/dashboard/Dash.module.css";
+import styles from "./CourseDash.module.css";
 import { useStore } from "@/store/store";
 import { useEffect, useState } from "react";
 import {
@@ -22,14 +22,9 @@ export function CourseDash({ course, isLogged }) {
   const user = useStore((state) => state.user);
 
   useEffect(() => {
-    setCurrentTab(
-      parseInt(
-        typeof window != "undefined"
-          ? localStorage?.getItem("currentTab") || 0
-          : 0
-      )
-    );
-  }, []);
+    const savedTab = Number.parseInt(localStorage.getItem(`course-tab:${course.id}`) || "0", 10);
+    setCurrentTab(Number.isInteger(savedTab) && savedTab >= 0 && savedTab < 4 ? savedTab : 0);
+  }, [course.id]);
 
   const isEnrolled = courses.find((c) => c.id === course.id);
 
@@ -103,12 +98,12 @@ export function CourseDash({ course, isLogged }) {
                 className={currentTab === index ? styles.active : ""}
                 onClick={() => {
                   setCurrentTab(index);
-                  localStorage.setItem("currentTab", index);
+                  localStorage.setItem(`course-tab:${course.id}`, index);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     setCurrentTab(index);
-                    localStorage.setItem("currentTab", index);
+                    localStorage.setItem(`course-tab:${course.id}`, index);
                   }
                 }}
               >

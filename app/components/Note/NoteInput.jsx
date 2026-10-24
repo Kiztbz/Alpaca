@@ -73,8 +73,8 @@ export function NoteInput({ note, close }) {
       ...note,
       permissions: {
         ...note.permissions,
-        allRead: Boolean(note.permissions.allRead),
-        allWrite: Boolean(note.permissions.allWrite),
+        allRead: Boolean(note.permissions?.allRead),
+        allWrite: Boolean(note.permissions?.allWrite),
         groupLocked: Boolean(note.permissions.groupLocked),
       },
     };
@@ -88,7 +88,7 @@ export function NoteInput({ note, close }) {
   const user = useStore((state) => state.user);
   const inputDefaults = useStore((state) => state.inputDefaults);
 
-  const isOwner = note && user && note.creator.id === user.id;
+  const isOwner = note && user && note.creator?.id === user.id;
   const canChangePermissions = isOwner || !note;
 
   useEffect(() => {

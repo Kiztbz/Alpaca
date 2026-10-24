@@ -10,7 +10,7 @@ import {
   MasoneryList,
 } from "@/app/components/client";
 import shuffleArray from "@/lib/shuffleArray";
-import styles from "@/app/(dashboard)/me/dashboard/Dash.module.css";
+import styles from "./CourseDash.module.css";
 import { useState } from "react";
 
 function getUserQuizzesStats(quizIDs, quizList) {
@@ -22,7 +22,7 @@ function getUserQuizzesStats(quizIDs, quizList) {
     ? quizIDs
         .map((q) => {
           const userQuiz = q
-            ? quizList.find((x) => x.id === q)
+            ? quizList.find((x) => String(x.id) === String(q))
             : {
                 id: 0,
                 createAt: 0,
@@ -54,15 +54,15 @@ function getUserQuizzesStats(quizIDs, quizList) {
 
 function getNotes(noteIDs, noteList) {
   return noteIDs?.length
-    ? noteIDs.map((noteId) => noteList.find((note) => note.id === noteId))
+    ? noteIDs.map((noteId) => noteList.find((note) => String(note.id) === String(noteId))).filter(Boolean)
     : [];
 }
 
 function getSources(sourceIDs, sourceList) {
   return sourceIDs?.length
     ? sourceIDs.map((sourceId) =>
-        sourceList.find((source) => source.id === sourceId)
-      )
+        sourceList.find((source) => String(source.id) === String(sourceId))
+      ).filter(Boolean)
     : [];
 }
 
@@ -89,7 +89,7 @@ export function CourseTabInfo({
       );
       const { message } = await response.json();
 
-      if (response.success) {
+      if (response.ok) {
         addAlert({
           success: true,
           message,
@@ -125,7 +125,7 @@ export function CourseTabInfo({
       );
       const { message } = await response.json();
 
-      if (response.success) {
+      if (response.ok) {
         addAlert({
           success: true,
           message,
@@ -269,7 +269,7 @@ export function CourseTabMain({ user, course, isLoading, setIsLoading }) {
 
   return (
     <div className={styles.userContent}>
-      {user?.id === course.creator.id && (
+      {user?.id === course.creator?.id && (
         <div className={styles.actionButtons}>
           {/* There are actually three choices for enrollment: "private", "open", and "paid" */}
           <button
@@ -291,7 +291,7 @@ export function CourseTabMain({ user, course, isLoading, setIsLoading }) {
 
           <button
             onClick={() => {
-              if (courseState.permissions.allRead) {
+              if (courseState.permissions?.allRead) {
                 permissions({
                   allRead: false,
                 });
@@ -303,7 +303,7 @@ export function CourseTabMain({ user, course, isLoading, setIsLoading }) {
             }}
             className="button"
           >
-            {courseState.permissions.allRead ? "Make private" : "Make public"}
+            {courseState.permissions?.allRead ? "Make private" : "Make public"}
 
             {isLoading && <Spinner />}
           </button>

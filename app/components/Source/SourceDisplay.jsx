@@ -31,7 +31,7 @@ export function SourceDisplay({ source, contextCourse }) {
 
   const courses = source.courses
     ? source.courses
-        .map((x) => coursesStore.find((crs) => crs.id === x))
+        .map((x) => coursesStore.find((crs) => String(crs.id) === String(x)))
         .filter((x) => !!x)
     : [];
 
@@ -39,8 +39,8 @@ export function SourceDisplay({ source, contextCourse }) {
     !!user &&
     source.creator &&
     (source.creator.id === user?.id ||
-      source.permissions.write.includes(user?.id) ||
-      source.permissions.allWrite);
+      source.permissions?.write?.includes(user?.id) ||
+      source.permissions?.allWrite);
 
   const canDelete = source.creator && source.creator.id === user?.id;
 
@@ -54,7 +54,7 @@ export function SourceDisplay({ source, contextCourse }) {
         <CardChip>{source.medium}</CardChip>
       </header>
 
-      {!!source.tags.length && (
+      {!!source.tags?.length && (
         <section>
           <h5>
             Tags
@@ -69,7 +69,7 @@ export function SourceDisplay({ source, contextCourse }) {
         </section>
       )}
 
-      {!!source.credits.length && (
+      {!!source.credits?.length && (
         <section>
           <h5>
             Credits
@@ -77,9 +77,12 @@ export function SourceDisplay({ source, contextCourse }) {
           </h5>
 
           <CardList>
-            {source.credits.map((credit) => (
-              <CardListItem key={credit}>{credit}</CardListItem>
-            ))}
+            {source.credits.map((credit, index) => {
+              const label = typeof credit === "string"
+                ? credit
+                : [credit?.name, credit?.type].filter(Boolean).join(" · ") || "Contributor";
+              return <CardListItem key={`${label}-${index}`}>{label}</CardListItem>;
+            })}
           </CardList>
         </section>
       )}
@@ -194,7 +197,7 @@ export function SourceDisplay({ source, contextCourse }) {
                   className="button danger"
                   onClick={async () => {
                     const response = await fetch(
-                      `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/source/${source ? `/${source.id}` : ""}`,
+                      `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/source/${source.id}`,
                       {
                         method: "DELETE",
                       }
