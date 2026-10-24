@@ -7,19 +7,24 @@
 
 .container {
     width: 100%;
-    max-width: 600px;
-    margin: 180px 0;
-    padding: var(--padding);
+    max-width: 460px;
+    margin: 90px 20px;
+    padding: 34px;
+    border: 1px solid var(--bg-4);
+    border-radius: 16px;
+    background: var(--bg-2);
+    box-shadow: 0 18px 55px rgba(0, 5, 17, .38);
 }
 
 .container > h2 {
-    font-size: 42px;
-    margin-bottom: 24px;
+    font-size: 36px;
+    margin-bottom: 10px;
+    letter-spacing: -.035em;
     font-family: var(--font-heading);
 }
 
 .container form {
-    padding-top: 24px;
+    padding-top: 28px;
     grid-template-columns: 1fr;
 }
 
@@ -41,12 +46,18 @@
 
 @media (max-height: 1024px) {
     .container {
-        margin: 80px 0;
+        margin: 60px 20px;
     }
 }
 
 @media (max-height: 768px) {
     .container {
-        margin: 40px 0;
+        margin: 30px 16px;
     }
+}
+
+@media (max-width: 520px) {
+    .main { align-items: flex-start; }
+    .container { margin: 18px 12px 50px; padding: 26px 20px; border-radius: 14px; }
+    .container > h2 { font-size: 31px; }
 }

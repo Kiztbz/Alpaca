@@ -20,7 +20,7 @@
     padding: 10px;
     cursor: pointer;
     position: relative;
-    border-radius: 8px;
+    border-radius: 10px;
     color: var(--fg-2);
     margin-right: -10px;
     background: transparent;
@@ -40,7 +40,7 @@
     min-height: 100vh;
     min-width: 100dvw;
     min-height: 100dvh;
-    background-color: var(--bg-1);
+    background-color: var(--bg-0);
     padding-left: calc(100vw - 100%);
     padding-left: calc(100dvw - 100%);
     animation: rightToLeft 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -88,15 +88,15 @@
     color: var(--fg-3);
     margin-bottom: 4px;
     align-items: center;
-    background-color: var(--bg-2);
+    background-color: var(--bg-3);
     justify-content: space-between;
-    border-radius: var(--radius-medium);
+    border-radius: 11px;
 }
 
 .link:hover,
 .link:focus-visible {
-    color: var(--accent);
-    background-color: var(--bg-0);
+    color: var(--fg-1);
+    background-color: var(--bg-4);
 }
 
 .link.active {

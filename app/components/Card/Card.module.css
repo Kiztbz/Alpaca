@@ -1,17 +1,15 @@
 .container {
-    padding: 22px;
+    padding: 20px;
     display: block;
     width: max-content;
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    border-radius: var(--radius-xlarge);
+    border-radius: 14px;
     max-width: min(100%, 550px);
     background-color: var(--bg-2);
     border: 1px solid var(--bg-4);
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.04) inset,
-        0 12px 30px rgba(2, 6, 23, 0.08);
+    box-shadow: 0 3px 0 var(--bg-3);
     transition:
         transform 0.18s ease,
         border-color 0.18s ease,
@@ -22,19 +20,17 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 2px;
     content: "";
     z-index: -1;
     position: absolute;
-    background: linear-gradient(90deg, var(--accent), var(--accent-50) 45%, transparent 88%);
+    background: var(--accent);
 }
 
 a.container:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     border-color: var(--accent-50);
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.05) inset,
-        0 18px 38px rgba(2, 6, 23, 0.14);
+    box-shadow: 0 3px 0 var(--accent-20);
 }
 
 /* .container:hover::before,
@@ -84,7 +80,7 @@ a.container:hover {
 
 .container > header > h4 {
     margin: 0;
-    font-size: 22px;
+    font-size: 19px;
     font-weight: 700;
     line-height: 1.2;
     max-width: 100%;

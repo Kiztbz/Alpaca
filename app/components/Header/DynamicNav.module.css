@@ -20,20 +20,22 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-radius: 3px;
-    padding: 7px 14px;
+    border-radius: 9px;
+    padding: 8px 13px;
     user-select: none;
-    color: var(--fg-3);
-    transition: color 0.1s ease-in-out;
-    font-size: 14px;
+    color: var(--fg-4);
+    transition: color 0.1s ease-in-out, background-color .1s ease-in-out;
+    font-size: 12px;
+    font-weight: 750;
 }
 
 .nav > ul > li > a:hover {
-    color: var(--accent);
+    color: var(--fg-1);
+    background: var(--bg-3);
 }
 
 .nav > ul > li { position: relative; }
-.createMenu { top: calc(100% + 8px); left: 50%; z-index: 80; display: grid; width: 250px; padding: 10px; position: absolute; visibility: hidden; opacity: 0; border-radius: 18px; background: var(--bg-1); border: 1px solid var(--bg-4); box-shadow: 0 22px 55px rgba(0, 5, 17, .35); transform: translate(-50%, -5px); transition: opacity .15s ease, transform .15s ease, visibility .15s ease; }
+.createMenu { top: calc(100% + 8px); left: 50%; z-index: 80; display: grid; width: 250px; padding: 10px; position: absolute; visibility: hidden; opacity: 0; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--bg-4); box-shadow: 0 22px 55px rgba(0, 5, 17, .5); transform: translate(-50%, -5px); transition: opacity .15s ease, transform .15s ease, visibility .15s ease; }
 .hasMenu:hover .createMenu, .hasMenu:focus-within .createMenu { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
 .createMenu > span { padding: 8px 10px 10px; color: var(--fg-4); font-size: 9px; font-weight: 850; letter-spacing: .09em; text-transform: uppercase; }
 .createMenu > a { display: grid; padding: 10px 12px; border-radius: 11px; }

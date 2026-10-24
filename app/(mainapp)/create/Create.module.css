@@ -47,7 +47,7 @@
 .content > div {
     margin: 0;
     padding: clamp(20px, 4vw, 34px);
-    border-radius: 20px;
+    border-radius: 16px;
     background-color: var(--bg-2);
 }
 

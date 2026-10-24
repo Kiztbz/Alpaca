@@ -4,8 +4,8 @@
 .appHeader h1 { margin-top: 5px; color: var(--fg-1); font-size: clamp(38px, 5vw, 54px); line-height: 1; letter-spacing: -.045em; }
 .appHeader p { margin-top: 10px; color: var(--fg-4); font-size: 14px; }
 .appActions { gap: 9px; display: flex; flex-wrap: wrap; justify-content: flex-end; }
-.hero { gap: 48px; display: grid; min-height: 510px; padding: clamp(34px, 6vw, 72px); position: relative; overflow: hidden; align-items: center; border-radius: 34px; background: linear-gradient(140deg, var(--bg-2), color-mix(in srgb, var(--bg-1) 86%, var(--accent))); border: 1px solid var(--bg-4); grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr); box-shadow: 0 28px 80px rgba(0, 5, 17, .18); }
-.hero::after { width: 360px; height: 360px; right: -120px; top: -140px; content: ""; position: absolute; border-radius: 50%; background: var(--accent-08); }
+.hero { gap: 48px; display: grid; min-height: 510px; padding: clamp(34px, 6vw, 72px); position: relative; overflow: hidden; align-items: center; border-radius: 18px; background: var(--bg-2); border: 1px solid var(--bg-4); grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr); }
+.hero::after { display: none; }
 .heroCopy { z-index: 2; position: relative; }
 .eyebrow, .sectionHeading span, .libraryTop > div > span { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }
 .hero h1 { max-width: 660px; margin-top: 14px; color: var(--fg-1); font-size: clamp(48px, 7vw, 78px); line-height: .94; letter-spacing: -.06em; }
@@ -14,7 +14,7 @@
 .heroActions { gap: 10px; display: flex; margin-top: 30px; flex-wrap: wrap; }
 
 .heroVisual { min-height: 370px; z-index: 2; position: relative; perspective: 1000px; }
-.heroVisual > div { position: absolute; border-radius: 24px; background: var(--bg-1); border: 1px solid var(--bg-4); box-shadow: 0 22px 55px rgba(0, 5, 17, .3); }
+.heroVisual > div { position: absolute; border-radius: 14px; background: var(--bg-0); border: 1px solid var(--bg-4); box-shadow: 0 18px 45px rgba(0, 5, 17, .38); }
 .backCard, .middleCard { display: flex; width: 74%; height: 72%; right: 4%; padding: 26px; flex-direction: column; justify-content: space-between; }
 .backCard { top: 0; opacity: .38; transform: rotate(8deg) translateX(22px); }
 .middleCard { top: 28px; opacity: .65; transform: rotate(3deg) translateX(5px); }
@@ -26,7 +26,7 @@
 .frontCard h2 { margin-top: 70px; color: var(--fg-1); font-size: clamp(25px, 3.3vw, 38px); line-height: 1.08; letter-spacing: -.035em; }
 .frontCard p { margin-top: 44px; color: var(--fg-4); font-size: 11px; font-weight: 750; text-align: center; }
 
-.stats { display: grid; overflow: hidden; margin-top: 22px; border-radius: 18px; background: var(--bg-4); border: 1px solid var(--bg-4); grid-template-columns: repeat(3, 1fr); gap: 1px; }
+.stats { display: grid; overflow: hidden; margin-top: 22px; border-radius: 14px; background: var(--bg-4); border: 1px solid var(--bg-4); grid-template-columns: repeat(3, 1fr); gap: 1px; }
 .stats > div { display: grid; padding: 24px 28px; background: var(--bg-2); }
 .stats span { color: var(--fg-4); font-size: 10px; font-weight: 850; letter-spacing: .07em; text-transform: uppercase; }
 .stats strong { margin-top: 7px; color: var(--fg-1); font-size: 32px; line-height: 1; }
@@ -37,7 +37,7 @@
 .sectionHeading, .libraryTop { display: flex; margin-bottom: 20px; align-items: flex-end; justify-content: space-between; }
 .sectionHeading h2, .libraryTop h2 { margin-top: 6px; color: var(--fg-1); font-size: 32px; letter-spacing: -.035em; }
 .sectionHeading > small { color: var(--fg-4); font-size: 11px; }
-.continueCard { display: grid; min-height: 180px; padding: 28px; align-items: center; border-radius: 26px; background: linear-gradient(110deg, var(--bg-2), var(--bg-1)); border: 1px solid var(--bg-4); grid-template-columns: 76px minmax(0, 1fr) 80px 32px; gap: 26px; transition: transform .18s ease, border-color .18s ease; }
+.continueCard { display: grid; min-height: 180px; padding: 28px; align-items: center; border-radius: 16px; background: var(--bg-2); border: 1px solid var(--bg-4); grid-template-columns: 76px minmax(0, 1fr) 80px 32px; gap: 26px; transition: transform .18s ease, border-color .18s ease; }
 .continueCard:hover { transform: translateY(-3px); border-color: var(--accent-50); }
 .continueIndex { display: grid; width: 70px; height: 92px; color: var(--accent); font-size: 25px; font-weight: 900; place-items: center; border-radius: 20px; background: var(--accent-08); border: 1px solid var(--accent-20); }
 .continueCopy { min-width: 0; }
@@ -58,8 +58,8 @@
 .activeFilter strong { color: var(--accent); }
 .activeFilter a { margin-left: auto; font-weight: 750; }
 .lessonGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.lessonCard { display: flex; min-height: 290px; padding: 26px; position: relative; overflow: hidden; flex-direction: column; border-radius: 24px; background: var(--bg-2); border: 1px solid var(--bg-4); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
-.lessonCard::before { width: 100px; height: 100px; right: -40px; top: -45px; content: ""; position: absolute; border-radius: 50%; background: var(--accent-08); }
+.lessonCard { display: flex; min-height: 290px; padding: 26px; position: relative; overflow: hidden; flex-direction: column; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--bg-4); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.lessonCard::before { display: none; }
 .lessonCard:hover { transform: translateY(-4px); border-color: var(--accent-50); box-shadow: 0 18px 42px rgba(0, 5, 17, .16); }
 .lessonTop { display: flex; align-items: center; justify-content: space-between; }
 .lessonTop span { padding: 5px 8px; color: var(--accent); font-size: 9px; font-weight: 900; border-radius: var(--radius-full); letter-spacing: .08em; text-transform: uppercase; background: var(--accent-08); border: 1px solid var(--accent-20); }

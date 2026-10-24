@@ -5,22 +5,22 @@
     --gutter-y: 150px;
     --gutter: var(--gutter-y) var(--gutter-x);
 
-    --bg-0: #ffffff;
-    --bg-1: #eff1f5;
-    --bg-2: #e6e9ef;
-    --bg-3: #dce0e8;
-    --bg-4: #ccd0da;
+    --bg-0: #000511;
+    --bg-1: #000511;
+    --bg-2: #0a1222;
+    --bg-3: #141d2c;
+    --bg-4: #243248;
 
-    --fg-1: #020617;
-    --fg-2: #0f172a;
-    --fg-3: #1e293b;
-    --fg-4: #334155;
+    --fg-1: #ffffff;
+    --fg-2: #eaf2ff;
+    --fg-3: #bfdbfe;
+    --fg-4: #8ba0bd;
 
-    --accent: #10b981;
-    --accent-50: #10b98180;
-    --accent-20: #10b98156;
-    --accent-08: #10b98114;
-    --accent-fg: #000000;
+    --accent: #2563eb;
+    --accent-50: #2563eb80;
+    --accent-20: #2563eb33;
+    --accent-08: #2563eb14;
+    --accent-fg: #ffffff;
 
     --success: #4ade80;
     --success-50: #4ade8080;
@@ -40,11 +40,11 @@
     --danger-08: #e11d4814;
     --danger-fg: #ffffff;
 
-    --border-color: #ccd0da56;
+    --border-color: #60a5fa24;
 
-    --radius-small: 2px;
-    --radius-medium: 4px;
-    --radius-large: 8px;
+    --radius-small: 6px;
+    --radius-medium: 9px;
+    --radius-large: 12px;
     --radius-xlarge: 16px;
     --radius-full: 1000px;
 
@@ -56,17 +56,17 @@
 @media screen and (prefers-color-scheme: dark) {
     :root {
         --bg-0: #000511;
-        --bg-1: #020617;
-        --bg-2: #0f172a;
-        --bg-3: #1e293b;
-        --bg-4: #334155;
+        --bg-1: #000511;
+        --bg-2: #0a1222;
+        --bg-3: #141d2c;
+        --bg-4: #243248;
 
-        --fg-1: #f8fafc;
-        --fg-2: #e2e8f0;
-        --fg-3: #cbd5e1;
-        --fg-4: #989fa8;
+        --fg-1: #ffffff;
+        --fg-2: #eaf2ff;
+        --fg-3: #bfdbfe;
+        --fg-4: #8ba0bd;
 
-        --border-color: #33415556;
+        --border-color: #60a5fa24;
     }
 }
 
@@ -106,7 +106,7 @@ body {
     min-height: 100dvh;
     color: var(--fg-2);
     scroll-behavior: smooth;
-    color-scheme: light dark;
+    color-scheme: dark;
     font-family: var(--font-body);
     background-color: var(--bg-1);
 }
@@ -178,17 +178,17 @@ button {
     --color-4: var(--accent-08);
     --color-fg: var(--accent-fg);
     gap: 12px;
-    height: 36px;
+    min-height: 42px;
     display: flex;
     outline: none;
     padding: 0 24px;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     color: var(--fg);
     font-weight: 700;
     line-height: 16px;
     user-select: none;
-    border-radius: 3px;
+    border-radius: 10px;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--bg);
@@ -199,16 +199,19 @@ button {
         box-shadow 0.1s ease,
         border 0.1s ease,
         color 0.1s ease,
-        background-color 0.1s ease;
+        background-color 0.1s ease,
+        transform 0.1s ease;
 }
 
 .button:hover:not(:disabled),
 .button:focus:not(:disabled) {
-    filter: brightness(0.9);
+    filter: brightness(1.08);
+    transform: translateY(-1px);
 }
 
 .button:active:not(:disabled) {
-    filter: brightness(0.8);
+    filter: brightness(0.92);
+    transform: translateY(1px);
 }
 
 .button:focus-visible {
@@ -247,6 +250,7 @@ button {
     --color-3: var(--accent-20);
     --color-4: var(--accent-08);
     --color-fg: var(--accent-fg);
+    box-shadow: 0 3px 0 #1d4ed8;
 }
 
 .button.success {

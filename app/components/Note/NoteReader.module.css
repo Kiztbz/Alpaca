@@ -1,4 +1,4 @@
-.reader { min-height: calc(100vh - 76px); background: radial-gradient(circle at 50% 20%, var(--accent-08), transparent 34%), var(--bg-0); }
+.reader { min-height: calc(100vh - 76px); background: var(--bg-0); }
 .topbar { display: grid; height: 76px; padding: 0 32px; position: sticky; top: 0; z-index: 20; align-items: center; background: color-mix(in srgb, var(--bg-0) 88%, transparent); border-bottom: 1px solid var(--bg-4); backdrop-filter: blur(18px); grid-template-columns: 42px minmax(0, 1fr) 190px; }
 .back { display: grid; width: 36px; height: 36px; color: var(--fg-2); font-size: 20px; place-items: center; border-radius: 50%; background: var(--bg-2); border: 1px solid var(--bg-4); }
 .back:hover { color: var(--accent); border-color: var(--accent-50); }
@@ -28,8 +28,8 @@
 .railTags span { padding: 5px 8px; color: var(--fg-4); font-size: 10px; font-weight: 700; border-radius: var(--radius-full); background: var(--bg-2); }
 
 .stage { min-width: 0; }
-.flashcard, .completionCard { min-height: min(620px, calc(100vh - 190px)); padding: clamp(28px, 5vw, 58px); position: relative; overflow: hidden; border-radius: 30px; background: linear-gradient(145deg, color-mix(in srgb, var(--bg-2) 92%, var(--accent)), var(--bg-1)); border: 1px solid var(--bg-4); box-shadow: 0 30px 80px rgba(0, 5, 17, .28), inset 0 1px 0 rgba(255, 255, 255, .04); touch-action: pan-x; }
-.flashcard::before { width: 180px; height: 180px; right: -70px; top: -80px; content: ""; position: absolute; border-radius: 50%; background: var(--accent-08); filter: blur(2px); }
+.flashcard, .completionCard { min-height: min(620px, calc(100vh - 190px)); padding: clamp(28px, 5vw, 58px); position: relative; overflow: hidden; border-radius: 18px; background: var(--bg-2); border: 1px solid var(--bg-4); box-shadow: 0 24px 60px rgba(0, 5, 17, .32); touch-action: pan-x; }
+.flashcard::before { display: none; }
 .fromBottom { animation: fromBottom .32s cubic-bezier(.2,.75,.25,1); }
 .fromTop { animation: fromTop .32s cubic-bezier(.2,.75,.25,1); }
 @keyframes fromBottom { from { opacity: 0; transform: translateY(45px) scale(.98); } }
@@ -48,7 +48,7 @@
 .swipeHint span { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; border: 1px solid var(--bg-4); }
 
 .actionRail { gap: 12px; display: grid; }
-.actionRail button { gap: 4px; display: grid; width: 70px; height: 70px; cursor: pointer; place-items: center; align-content: center; border-radius: 22px; background: var(--bg-2); border: 1px solid var(--bg-4); transition: transform .15s ease, border-color .15s ease, background-color .15s ease; }
+.actionRail button { gap: 4px; display: grid; width: 70px; height: 70px; cursor: pointer; place-items: center; align-content: center; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--bg-4); transition: transform .15s ease, border-color .15s ease, background-color .15s ease; }
 .actionRail button:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--accent-50); }
 .actionRail button:disabled { cursor: not-allowed; opacity: .35; }
 .actionRail button span { color: var(--fg-2); font-size: 21px; }
