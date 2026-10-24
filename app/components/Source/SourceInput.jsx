@@ -96,9 +96,9 @@ export function SourceInput({ source, close }) {
       ...source,
       permissions: {
         ...source.permissions,
-        allRead: source.permissions.allRead === 1,
-        allWrite: source.permissions.allWrite === 1,
-        groupLocked: source.permissions.groupLocked === 1,
+        allRead: Boolean(source.permissions.allRead),
+        allWrite: Boolean(source.permissions.allWrite),
+        groupLocked: Boolean(source.permissions.groupLocked),
       },
     };
   }

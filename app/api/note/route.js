@@ -33,7 +33,7 @@ export async function POST(req) {
 
         validator.validate([{ field: "tags", value: tags, type: "misc" }]);
 
-        let permissions = validator.validatePermissions(perm, true);
+        const permissions = validator.validatePermissions(perm, true);
 
         if (!validator.isValid) {
             return NextResponse.json(
@@ -63,14 +63,6 @@ export async function POST(req) {
                 .where("publicId", "=", publicId)
                 .executeTakeFirstOrThrow()
         ).id;
-
-        // If no permissions are set, give the creator read access
-        if (!permissions.allRead && !permissions.allWrite && (!permissions.read || permissions.read === "[]")) {
-            permissions = {
-                ...permissions,
-                allRead: true,
-            };
-        }
 
         await db
             .insertInto("resource_permissions")

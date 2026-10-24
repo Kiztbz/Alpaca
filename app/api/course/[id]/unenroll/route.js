@@ -13,9 +13,9 @@ export async function POST(req, props) {
         const user = await useUser({ token: (await cookies()).get("token")?.value });
         if (!user) return unauthorized;
 
-        const { courseId } = params;
+        const { id } = params;
 
-        if (!(await canUnenrollFromCourse(user.courseId, courseId))) {
+        if (!(await canUnenrollFromCourse(user.id, id))) {
             return NextResponse.json(
                 {
                     message: "You are not allowed to unenroll from this course",
@@ -27,8 +27,8 @@ export async function POST(req, props) {
         await db
             .deleteFrom("course_users")
             .where({
-                courseId: courseId,
-                userId: user.courseId,
+                courseId: id,
+                userId: user.id,
             })
             .execute();
 

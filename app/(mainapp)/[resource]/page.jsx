@@ -367,13 +367,13 @@ async function getMaxPage({ userId, resource, type, amount }) {
           eb("createdBy", "=", userId),
           and([
             or([
-              sql`JSON_CONTAINS(rp.read, ${userId})`,
-              sql`JSON_CONTAINS(rp.write, ${userId})`,
-              eb("rp.allRead", "=", 1),
-              eb("rp.allWrite", "=", 1),
+              sql`rp.read @> jsonb_build_array(${userId}::bigint)`,
+              sql`rp.write @> jsonb_build_array(${userId}::bigint)`,
+              eb("rp.allRead", "=", true),
+              eb("rp.allWrite", "=", true),
             ]),
             or([
-              eb("rp.groupLocked", "=", 0),
+              eb("rp.groupLocked", "=", false),
               exists(
                 eb
                   .selectFrom("members")

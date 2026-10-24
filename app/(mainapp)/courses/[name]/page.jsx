@@ -10,7 +10,7 @@ export default async function CoursePage(props) {
   const name = decodeURIComponent(params.name);
 
   const resources = await getPermittedResources({
-    userId: user.id,
+    userId: user?.id,
     takeAll: true,
   });
 

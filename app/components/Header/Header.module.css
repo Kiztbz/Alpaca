@@ -1,144 +1,57 @@
-.headerWrap {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-bottom: 1px solid var(--surface-border);
-    background: color-mix(in srgb, var(--bg-0) 88%, transparent);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-}
-
-.headerTop {
-    border-bottom: 1px solid var(--surface-border);
-    background: color-mix(in srgb, var(--bg-0) 88%, black);
-}
-
-.metrics {
-    max-width: 1180px;
-    margin: 0 auto;
-    min-height: 38px;
-    padding: 7px 24px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.metricPill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 26px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--fg-3);
-    background: var(--surface-0);
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-large);
-    padding: 5px 10px;
-}
-
-.metricPill svg {
-    flex-shrink: 0;
-}
-
-.goal {
-    margin-left: auto;
-    gap: 10px;
-}
-
-.streakPill {
-    color: var(--gold);
-    background: color-mix(in srgb, var(--gold-08) 70%, var(--surface-0));
-    border-color: color-mix(in srgb, var(--gold) 30%, var(--surface-border));
-}
-
-.xpPill {
-    color: var(--purple);
-    background: color-mix(in srgb, var(--purple-08) 70%, var(--surface-0));
-    border-color: color-mix(in srgb, var(--purple) 30%, var(--surface-border));
-}
-
-.goalBar {
-    width: 112px;
-    height: 7px;
-    border-radius: 999px;
-    background-color: var(--bg-3);
-    overflow: hidden;
-}
-
-.goalBar>span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, var(--accent), var(--sky));
-}
-
 .header {
-    max-width: 1180px;
-    margin: 0 auto;
-    height: 66px;
+    padding: var(--padding);
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.header > header {
+    width: 100%;
+    height: 80px;
     display: flex;
+    margin: 0 auto;
+    user-select: none;
     align-items: center;
-    gap: 16px;
-    padding: 0 24px;
+    max-width: var(--max-width);
+    justify-content: space-between;
 }
 
 .link {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-heading);
-    font-size: 22px;
-    font-weight: 900;
+    font-size: 32px;
     color: var(--fg-1);
-    letter-spacing: 0;
-    flex-shrink: 0;
+    position: relative;
+    outline-offset: 4px;
+    display: inline-block;
+    font-family: var(--font-heading);
+    border-radius: var(--radius-medium);
+    z-index: 1000;
 }
 
-.link::after {
-    display: none;
-}
-
-.brandBadge {
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
-    border-radius: var(--radius-large);
-    color: var(--accent-fg);
-    font-size: 18px;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 94%, white), var(--accent));
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.16);
-}
-
-.header>nav {
+.header > header > nav {
     flex: 1;
-    min-width: 0;
 }
 
-.header> :last-child {
-    width: auto;
+.header > header > :not(:nth-child(2)) {
+    width: 120px;
 }
 
 @media screen and (max-width: 900px) {
-    .metrics {
-        padding: 7px 16px;
-    }
-
-    .goal {
+    .header > header > nav {
         display: none;
     }
+}
 
+@media screen and (max-width: 550px) {
     .header {
-        height: 62px;
-        padding: 0 16px;
+        padding: 0 20px;
     }
 
-    .link {
-        font-size: 20px;
+    .header > header {
+        height: 60px;
     }
+}
 
-    .header>nav {
-        display: none;
+@media screen and (max-width: 320px) {
+    .header {
+        padding: 0 12px;
     }
 }

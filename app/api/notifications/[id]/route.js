@@ -17,7 +17,7 @@ export async function PATCH(req, props) {
 
         await db
             .updateTable("notifications")
-            .set({ isRead: 1 })
+            .set({ isRead: true })
             .where("id", "=", id)
             .where("recipientId", "=", user.id)
             .execute();

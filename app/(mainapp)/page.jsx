@@ -1,126 +1,75 @@
-﻿import styles from "./page.module.css";
 import Link from "next/link";
-import { AlpacaSVG } from "@/app/components/AlpacaSVG";
-import { AvailableCourses } from "@/app/components/Course/AvailableCourses";
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { useUser } from "@/lib/auth";
+import styles from "./page.module.css";
 
-export default async function HomePage() {
-    const user = await useUser({
-        token: (await cookies()).get("token")?.value,
-        select: ["id"],
-    });
+const steps = [
+    ["↗", "Bring your sources", "Keep books, articles, videos, and websites together so every idea has context."],
+    ["✦", "Make knowledge yours", "Turn what matters into connected notes that are easy to revisit and build on."],
+    ["✓", "Practice until it sticks", "Create flexible quizzes and use active recall to strengthen what you remember."],
+];
 
-    if (user) {
-        redirect("/me/dashboard");
-    }
+const quizTypes = ["Flashcards", "Multiple choice", "Fill in the blank", "Ordered lists", "Verbatim recall"];
 
+export default function HomePage() {
     return (
-        <main className={styles.main}>
-            <div className={styles.homeWrap}>
-                <section className={styles.homeHero}>
-                    <div className={styles.introCard}>
-                        <div className={styles.heroCopy}>
-                            <p className={styles.kicker}>Quest Mode</p>
-                            <h1>Build streaks, earn XP, and level your skills every day.</h1>
-                            <p>
-                                Alpaca is now designed like a learning app: skill paths, daily missions, and tiny wins that stack into deep mastery.
-                            </p>
-                            <div className={styles.heroActions}>
-                                <Link href="/login" className={`${styles.cta} button round primary`}>
-                                    Start learning
-                                </Link>
-                                <Link href="/about" className={`${styles.ctaAlt} button round`}>
-                                    See how it works
-                                </Link>
-                            </div>
-                        </div>
-                        <div className={styles.heroArt}>
-                            <AlpacaSVG />
-                            <div className={styles.floatingBadge}>+50 XP</div>
-                        </div>
+        <main className={styles.landing}>
+            <section className={styles.hero}>
+                <div className={styles.heroContent}>
+                    <h1>Turn what you learn into what you <em>remember.</em></h1>
+                    <p>Alpaca connects your sources, notes, and quizzes in one calm place—so studying feels less scattered and progress feels natural.</p>
+                    <div className={styles.actions}>
+                        <Link href="/register" className={styles.primary}>Start learning <span>→</span></Link>
+                        <Link href="/courses" className={styles.secondary}>Explore courses</Link>
                     </div>
-                </section>
-
-                <section className={styles.pathSection}>
-                    <header>
-                        <h2>Learning Path</h2>
-                        <p>Follow a route of bite-sized goals. Each completed step unlocks the next one.</p>
-                    </header>
-
-                    <div className={styles.pathMap}>
-                        <div className={`${styles.node} ${styles.done}`}>
-                            <span>1</span>
-                            <p>Add a source</p>
-                        </div>
-                        <div className={styles.connector} aria-hidden="true" />
-                        <div className={`${styles.node} ${styles.done}`}>
-                            <span>2</span>
-                            <p>Create notes</p>
-                        </div>
-                        <div className={styles.connector} aria-hidden="true" />
-                        <div className={`${styles.node} ${styles.active}`}>
-                            <span>3</span>
-                            <p>Play quiz round</p>
-                        </div>
-                        <div className={styles.connector} aria-hidden="true" />
-                        <div className={styles.node}>
-                            <span>4</span>
-                            <p>Complete daily mission</p>
-                        </div>
+                    <div className={styles.proof}>
+                        <span className={styles.proofLine} />
+                        <p>Built for curious people who want learning to last.</p>
                     </div>
-                </section>
+                </div>
 
-                <section className={styles.statsSection}>
-                    <div className={styles.statCard}>
-                        <h3>Daily XP Goal</h3>
-                        <div className={styles.progressTrack}>
-                            <span style={{ width: "74%" }} />
-                        </div>
-                        <p>74 / 100 XP today</p>
+                <div className={styles.preview} aria-label="Alpaca learning flow preview">
+                    <header><span className={styles.logo}>A</span><strong>Learning Fundamentals</strong><b>7 day streak</b></header>
+                    <div className={styles.previewBody}>
+                        <article><span className={styles.sourceIcon}>↗</span><div><small>SOURCE</small><strong>Learning how to learn</strong><p>Book · 4 key ideas</p></div><i>✓</i></article>
+                        <article><span className={styles.noteIcon}>✦</span><div><small>NOTE</small><strong>Active recall</strong><p>Connected to 2 sources</p></div><i>✓</i></article>
+                        <article className={styles.quizCard}><span className={styles.quizIcon}>?</span><div><small>QUIZ</small><strong>What makes recall active?</strong><div className={styles.progress}><span /></div></div><b>LV 4</b></article>
                     </div>
-                    <div className={`${styles.statCard} ${styles.streakCard}`}>
-                        <h3>Current Streak</h3>
-                        <p className={styles.big}>7 days</p>
-                        <Link href="/daily" className="link">Keep streak alive</Link>
-                    </div>
-                    <div className={`${styles.statCard} ${styles.leagueCard}`}>
-                        <h3>League</h3>
-                        <p className={styles.big}>Gold Learner</p>
-                        <p>Top 18% this week</p>
-                    </div>
-                </section>
+                    <footer><span>Today&apos;s progress</span><strong>8 / 10 complete</strong></footer>
+                </div>
+            </section>
 
-                <AvailableCourses />
+            <section className={styles.method}>
+                <div className={styles.intro}><span className={styles.tag}>A better learning loop</span><h2>Everything connects. Nothing gets lost.</h2><p>Alpaca gives each part of your learning a clear role, then links it into one system you can return to every day.</p></div>
+                <div className={styles.stepGrid}>
+                    {steps.map(([icon, title, text], index) => <article key={title}><div><span>{icon}</span><b>0{index + 1}</b></div><h3>{title}</h3><p>{text}</p></article>)}
+                </div>
+            </section>
 
-                <section className={styles.modeSection}>
-                    <h2>Training Modes</h2>
-                    <div className={styles.modeGrid}>
-                        <article>
-                            <h3>Speed Review</h3>
-                            <p>Quick rounds for confidence and momentum.</p>
-                        </article>
-                        <article className={styles.modeFocus}>
-                            <h3>Deep Focus</h3>
-                            <p>Long-form practice with notes and references side by side.</p>
-                        </article>
-                        <article className={styles.modeChallenge}>
-                            <h3>Challenge Arena</h3>
-                            <p>Mixed-mode questions that push retention and recall.</p>
-                        </article>
-                    </div>
-                </section>
+            <section className={styles.practice}>
+                <div className={styles.mascotWrap}>
+                    <div className={styles.orbit} />
+                    <div className={styles.mascot}><span>A</span><b>Daily review</b><strong>8 of 10 complete</strong></div>
+                    <i className={styles.xp}>Level 4</i><i className={styles.nice}>On track</i>
+                </div>
+                <div className={styles.practiceCopy}>
+                    <span className={styles.tag}>Practice your way</span>
+                    <h2>Recall that feels rewarding, not repetitive.</h2>
+                    <p>Choose the question style that fits the idea. Mix quick checks with deeper recall, and keep every answer grounded in your own sources and notes.</p>
+                    <div className={styles.pills}>{quizTypes.map((type) => <span key={type}>{type}</span>)}</div>
+                    <Link href="/quizzes" className={styles.textLink}>See public quizzes <span>→</span></Link>
+                </div>
+            </section>
 
-                <section className={styles.finalCta}>
-                    <h2>Ready for your next lesson?</h2>
-                    <p>Jump in, complete one mission, and let momentum do the rest.</p>
-                    <Link href="/register" className={`${styles.cta} button round primary`}>
-                        Create account
-                    </Link>
-                </section>
-            </div>
+            <section className={styles.community}>
+                <div><span className={styles.tag}>Learn together</span><h2>Your knowledge can be personal. Learning doesn&apos;t have to be lonely.</h2></div>
+                <p>Organize courses, share useful resources, and learn alongside a group while keeping control over what stays private.</p>
+                <div className={styles.people}><span>AM</span><span>SK</span><span>JP</span><span>RL</span></div>
+            </section>
+
+            <section className={styles.finalCta}>
+                <span className={styles.alpaca}>A</span>
+                <div><span className={styles.tag}>Ready when you are</span><h2>Build a learning habit that actually sticks.</h2><p>Start with one source. Turn it into knowledge you can use.</p></div>
+                <Link href="/register" className={styles.primary}>Create your account <span>→</span></Link>
+            </section>
         </main>
     );
 }
-

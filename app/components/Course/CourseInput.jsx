@@ -90,9 +90,9 @@ export function CourseInput({ course, close }) {
       ...course,
       permissions: {
         ...course.permissions,
-        allRead: course.permissions.allRead === 1,
-        allWrite: course.permissions.allWrite === 1,
-        groupLocked: course.permissions.groupLocked === 1,
+        allRead: Boolean(course.permissions.allRead),
+        allWrite: Boolean(course.permissions.allWrite),
+        groupLocked: Boolean(course.permissions.groupLocked),
       },
     };
   }

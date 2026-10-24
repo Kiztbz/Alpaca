@@ -18,9 +18,9 @@ export async function POST(req, props) {
     });
     if (!user) return unauthorized;
 
-    const { courseId } = params;
+    const { id } = params;
 
-    if (!(await canEnrollInCourse(user.courseId, courseId))) {
+    if (!(await canEnrollInCourse(user.id, id))) {
       return NextResponse.json(
         {
           message: "You are not allowed to enroll in this course",
@@ -29,7 +29,7 @@ export async function POST(req, props) {
       );
     }
 
-    if (!doesUserMeetPrerequisites(user.courseId, courseId)) {
+    if (!doesUserMeetPrerequisites(user.id, id)) {
       return NextResponse.json(
         {
           message: "You do not meet the prerequisites for this course",
@@ -41,8 +41,8 @@ export async function POST(req, props) {
     await db
       .insertInto("course_users")
       .values({
-        courseId: courseId,
-        userId: user.courseId,
+        courseId: id,
+        userId: user.id,
       })
       .execute();
 

@@ -26,7 +26,7 @@ export default async function GroupPage(props) {
             selectFrom("members as m")
                 .innerJoin("users as u", "m.userId", "u.id")
                 .select(
-                    sql`JSON_ARRAYAGG(JSON_OBJECT(
+                    sql`jsonb_agg(jsonb_build_object(
                                 'id', u.id,
                                 'username', u.username,
                                 'displayName', u.display_name,
@@ -46,7 +46,7 @@ export default async function GroupPage(props) {
                         .where("userId", "=", user.id)
                         .whereRef("groupId", "=", "groups.id"),
                 ),
-                eb("isPublic", "=", 1),
+                eb("isPublic", "=", true),
             ]),
         )
         .executeTakeFirst();

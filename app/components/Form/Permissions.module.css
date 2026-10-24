@@ -29,11 +29,7 @@
 
 .permissions > header > button:hover {
     color: var(--fg-1);
-    background-color: var(--bg-3
-    
-    
-    
-    );
+    background-color: var(--bg-4);
 }
 
 .error {
@@ -46,7 +42,7 @@
 
 .permissions > div {
     padding: 8px;
-    background-color: var(--bg-1);
+    background-color: var(--bg-2);
     border-radius: var(--radius-medium);
     border: 1px solid var(--border-color);
 }

@@ -9,12 +9,10 @@ export default async function RootLayout({ children }) {
     });
 
     return (
-        <div className="appShell">
+        <>
             <Header user={user} />
-            <div className="appViewport">
-                <main className="appMain">{children}</main>
-                <Footer />
-            </div>
-        </div>
+            {children}
+            <Footer />
+        </>
     );
 }

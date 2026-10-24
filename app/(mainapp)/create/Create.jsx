@@ -8,10 +8,10 @@ export default function Create() {
     const [tab, setTab] = useState("Note");
 
     const tabs = {
-        NOTE: <NoteInput />,
-        QUIZ: <QuizInput />,
-        SOURCE: <SourceInput />,
-        COURSE: <CourseInput />,
+        Note: <NoteInput />,
+        Quiz: <QuizInput />,
+        Source: <SourceInput />,
+        Course: <CourseInput />,
     };
 
     useEffect(() => {
@@ -25,7 +25,7 @@ export default function Create() {
             <nav>
                 <div className={styles.tabs}>
                     <ol>
-                        {["NOTE", "QUIZ", "SOURCE", "COURSE"].map((tabName) => (
+                        {["Note", "Quiz", "Source", "Course"].map((tabName) => (
                             <li
                                 tabIndex={0}
                                 key={tabName}

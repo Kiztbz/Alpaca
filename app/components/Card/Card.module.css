@@ -1,18 +1,52 @@
 .container {
-    padding: 18px;
+    /* z-index: 2; */
+    padding: 16px;
     display: block;
     width: max-content;
     position: relative;
-    border-radius: var(--radius-xlarge);
+    border-radius: 4px;
     max-width: min(100%, 550px);
-    background: var(--surface-0);
-    border: 1px solid var(--surface-border);
-    box-shadow: var(--boxshadow-light);
+    background-color: var(--bg-2);
+    border: 1px solid transparent;
 }
 
 a.container:hover {
-    border-color: var(--accent-20);
-    background: var(--surface-hover);
+    border: 1px solid var(--accent);
+}
+
+/* .container:hover::before,
+.container:focus-visible::before {
+    content: "";
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background-image: conic-gradient(
+        var(--accent),
+        transparent,
+        transparent,
+        var(--accent-50),
+        transparent,
+        transparent,
+        var(--accent),
+        transparent,
+        transparent
+    );
+    opacity: 0;
+    z-index: 0;
+    animation: animate 4s linear infinite;
+} */
+
+@keyframes animate {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
 }
 
 .container > header {
@@ -21,56 +55,64 @@ a.container:hover {
     max-width: 100%;
     overflow: hidden;
     align-items: center;
-    margin-bottom: 18px;
+    margin-bottom: 24px;
 }
 
 .container > header > h4 {
     margin: 0;
-    font-size: 19px;
-    font-weight: 800;
+    font-size: 20px;
+    font-weight: 500;
     max-width: 100%;
     overflow: hidden;
     white-space: wrap;
     word-break: break-word;
     text-overflow: ellipsis;
-    color: var(--fg-1);
+    color: var(--text-1);
 }
 
-.container > header > .chip,
-.container > section > h5 > .chip {
+.container > header > .chip {
     font-size: 12px;
-    padding: 3px 8px;
-    font-weight: 800;
-    color: var(--accent-fg);
+    padding: 2px 8px;
+    font-weight: 600;
+    color: var(--fg-2);
     white-space: nowrap;
-    border-radius: var(--radius-full);
+    border-radius: 1000px;
     text-transform: capitalize;
-    background-color: var(--accent);
+    background-color: var(--accent-50);
 }
 
 .container > section {
-    padding: 10px;
-    border-radius: var(--radius-large);
-    background: var(--surface-1);
-    border: 1px solid var(--surface-border);
+    padding: 6px;
+    border-radius: 4px;
+    background-color: var(--bg-3);
 }
 
 .container.lighter > section {
-    background: var(--surface-2);
+    background-color: var(--bg-4);
 }
 
 .container > section:not(:last-child) {
-    margin-bottom: 18px;
+    margin-bottom: 24px;
 }
 
 .container > section > h5 {
     gap: 8px;
     display: flex;
     font-size: 16px;
-    font-weight: 800;
+    font-weight: 500;
     color: var(--fg-2);
     margin-bottom: 6px;
     align-items: center;
+}
+
+.container > section > h5 > .chip {
+    font-size: 12px;
+    padding: 1px 6px;
+    font-weight: 700;
+    color: var(--fg-2);
+    border-radius: 1000px;
+    text-transform: capitalize;
+    background-color: var(--accent-50);
 }
 
 .container > section > p {
@@ -81,9 +123,9 @@ a.container:hover {
 
 .description {
     font-size: 15px;
-    line-height: 1.55;
+    line-height: 1.5;
     color: var(--fg-3);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     white-space: pre-wrap;
     word-break: break-word;
 }
@@ -98,20 +140,23 @@ a.container:hover {
     gap: 8px;
     display: flex;
     font-size: 13px;
-    font-weight: 700;
-    padding: 5px 8px;
+    font-weight: 500;
+    padding: 4px 8px;
     color: var(--fg-3);
-    border-radius: var(--radius-medium);
+    border-radius: 4px;
     align-items: center;
-    background: var(--surface-2);
-    border: 1px solid var(--surface-border);
+    background-color: var(--bg-2);
+}
+
+.lighter .listItem {
+    background-color: var(--bg-3);
 }
 
 .container > footer {
-    gap: 24px;
+    gap: 40px;
     display: flex;
-    font-size: 13px;
-    margin-top: 24px;
+    font-size: 14px;
+    margin-top: 40px;
     color: var(--fg-4);
     align-items: center;
     justify-content: space-between;
@@ -127,38 +172,39 @@ a.container:hover {
 .createdAt {
     font-size: 11px;
     cursor: default;
-    padding: 3px 6px;
-    font-weight: 800;
-    background: var(--surface-1);
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-medium);
+    padding: 2px 4px;
+    font-weight: 600;
+    background-color: var(--bg-3);
+    border-radius: var(--radius-small);
 }
 
-.lighter .createdAt,
+.lighter .createdAt {
+    background-color: var(--bg-2);
+}
+
 .lighter input,
 .lighter textarea,
 .lighter select {
-    background: var(--surface-0);
+    background-color: var(--bg-1);
 }
 
 .tools {
-    gap: 8px;
+    gap: 12px;
     display: flex;
 }
 
 .edit,
 .delete {
-    padding: 8px;
+    padding: 6px;
     display: flex;
     cursor: pointer;
-    margin-top: 16px;
+    margin-top: 20px;
     color: var(--fg-3);
     align-items: center;
-    margin-bottom: -12px;
+    margin-bottom: -20px;
     justify-content: center;
-    background: var(--surface-1);
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-large);
+    background-color: var(--bg-3);
+    border-radius: var(--radius-small);
 }
 
 .edit:hover,
@@ -170,6 +216,8 @@ a.container:hover {
 .delete:focus-visible {
     color: var(--danger);
 }
+
+/* Note style */
 
 .description ul,
 .description ol {
@@ -202,30 +250,28 @@ a.container:hover {
     top: 50%;
     left: -10px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--fg-4);
     position: absolute;
     transform: translateY(-50%);
     content: counter(list-item) ". ";
 }
 
-.description code,
-.description pre {
-    border-radius: var(--radius-medium);
-    background: var(--bg-0);
-}
-
 .description code {
     padding: 1px 4px;
+    border-radius: 4px;
+    background-color: var(--bg-4);
 }
 
 .description pre {
     margin: 4px 0;
-    padding: 8px 10px;
+    padding: 4px 8px;
     overflow-x: auto;
+    border-radius: 4px;
     overflow-y: hidden;
     white-space: pre-wrap;
     word-break: break-word;
+    background-color: var(--bg-4);
 }
 
 .description pre > code {
@@ -237,8 +283,13 @@ a.container:hover {
     background-color: transparent;
 }
 
-.description s { text-decoration: line-through; }
-.description u { text-decoration: underline; }
+.description s {
+    text-decoration: line-through;
+}
+
+.description u {
+    text-decoration: underline;
+}
 
 .description a {
     cursor: pointer;
@@ -253,5 +304,5 @@ a.container:hover {
 
 .description mark {
     padding: 1px 2px;
-    border-radius: var(--radius-medium);
+    border-radius: 4px;
 }

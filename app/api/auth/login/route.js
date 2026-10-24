@@ -7,8 +7,9 @@ import { nanoid } from "nanoid";
 import bcrypt from "bcrypt";
 
 async function getIp() {
-    const forwardedFor = await headers().get("x-forwarded-for");
-    const realIp = await headers().get("x-real-ip");
+    const requestHeaders = await headers();
+    const forwardedFor = requestHeaders.get("x-forwarded-for");
+    const realIp = requestHeaders.get("x-real-ip");
 
     if (forwardedFor) {
         return forwardedFor.split(",")[0].trim();
@@ -41,7 +42,7 @@ export async function POST(req) {
                 .select(select)
                 .where("username", "=", username)
                 .executeTakeFirst();
-        } else if (user.emailVerified === 0) {
+        } else if (!user.emailVerified) {
             return NextResponse.json(
                 {
                     errors: {

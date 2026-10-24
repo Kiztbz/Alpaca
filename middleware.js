@@ -36,11 +36,11 @@ const isAuthenticated = async (req) => {
         );
 
         const { payload } = await jwtVerify(token, secret, {
-            issuer: process.env.BASE_URL || "http://localhost:3000",
-            audience: process.env.BASE_URL || "http://localhost:3000",
+            issuer: "mnemefeast",
+            audience: "mnemefeast",
         });
 
-        return !!payload.id;
+        return !!payload.username;
     } catch (error) {
         console.error(error);
         return false;
@@ -55,23 +55,19 @@ export async function middleware(req) {
         return NextResponse.next();
     }
 
-    restrictedRoutes.forEach(async (route) => {
+    for (const route of restrictedRoutes) {
         if (pathname.startsWith(route.start)) {
             if (!(await isAuthenticated(req))) {
                 return NextResponse.redirect(new URL(route.redirect, req.url));
-            } else {
-                if (route.include) {
-                    if (!route.include.includes(pathname)) {
-                        return NextResponse.redirect(
-                            new URL(route.rewrite, req.url),
-                        );
-                    }
-                }
-
-                return NextResponse.next();
             }
+
+            if (route.include && !route.include.includes(pathname)) {
+                return NextResponse.redirect(new URL(route.rewrite, req.url));
+            }
+
+            return NextResponse.next();
         }
-    });
+    }
 
     return NextResponse.next();
 }

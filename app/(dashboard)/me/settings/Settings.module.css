@@ -1,95 +1,91 @@
 .wrapper {
-    width: min(1180px, calc(100% - 48px));
-    margin: 32px auto 96px;
+    width: 100%;
+    padding: var(--padding);
 }
 
 .wrapper > div {
     display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
-    gap: 24px;
     margin: 0 auto;
-    max-width: 100%;
+    grid-template-columns: 270px 1fr;
+    max-width: min(var(--max-width), 100%);
 }
 
 .tabs {
-    gap: 6px;
+    gap: 4px;
     display: flex;
-    padding: 8px;
-    height: fit-content;
+    padding-right: 24px;
     flex-direction: column;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-xlarge);
-    background: var(--surface-0);
-    box-shadow: var(--boxshadow-light);
 }
 
 .tabs > li {
     cursor: pointer;
     user-select: none;
-    padding: 10px 12px;
-    color: var(--fg-3);
+    padding: 8px 12px;
+    color: var(--fg-2);
     position: relative;
-    border-radius: var(--radius-large);
-    font-weight: 750;
+    border-radius: var(--radius-medium);
 }
 
 .tabs > li:hover,
 .tabs > li:focus-within {
     color: var(--fg-1);
-    background: var(--surface-hover);
+    background-color: var(--bg-3);
 }
 
 .tabs > li:active,
 .tabs > li.active {
-    color: var(--accent-fg);
-    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 94%, white), var(--accent));
-    font-weight: 850;
+    color: var(--fg-1);
+    background-color: var(--bg-4);
 }
 
 .tabs > li.active::before {
-    display: none;
+    top: 50%;
+    bottom: 0;
+    left: -6px;
+    width: 3px;
+    content: "";
+    height: 60%;
+    position: absolute;
+    transform: translateY(-50%);
+    background-color: var(--accent);
+    border-radius: var(--radius-full);
 }
 
 .main {
-    padding: 22px;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-xlarge);
-    background: var(--surface-0);
-    box-shadow: var(--boxshadow-light);
-    min-width: 0;
+    padding-left: 32px;
 }
 
 .main > h1 {
     display: flex;
-    font-size: clamp(28px, 3vw, 36px);
-    font-weight: 900;
-    margin-bottom: 34px;
-    padding-bottom: 14px;
+    font-size: 32px;
+    font-weight: 500;
+    margin-bottom: 60px;
+    padding-bottom: 8px;
     align-items: center;
-    border-bottom: 1px solid var(--surface-border);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .main > h1 > button {
-    width: 34px;
-    height: 34px;
-    border: 1px solid var(--surface-border);
+    width: 32px;
+    height: 32px;
+    border: none;
     cursor: pointer;
     margin-left: 8px;
-    color: var(--fg-3);
+    color: var(--fg-2);
     align-items: center;
     display: inline-flex;
     justify-content: center;
-    background: var(--surface-1);
-    border-radius: var(--radius-large);
+    background-color: transparent;
+    border-radius: var(--radius-medium);
 }
 
 .main > h1 > button:hover {
     color: var(--fg-1);
-    background: var(--surface-hover);
+    background-color: var(--bg-2);
 }
 
 .column {
-    gap: 48px;
+    gap: 120px;
     display: flex;
 }
 
@@ -99,27 +95,31 @@
 }
 
 .content > h2 {
-    font-size: 22px;
-    font-weight: 850;
-    color: var(--fg-1);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--fg-2);
     width: fit-content;
-    margin-bottom: 24px;
+    margin-bottom: 40px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .content > div > p {
-    font-size: 15px;
-    line-height: 1.55;
-    color: var(--fg-3);
-    margin-bottom: 20px;
+    font-size: 16px;
+    line-height: 1.375;
+    color: var(--fg-2);
+    margin-bottom: 24px;
 }
 
 .content > div > article {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .content > div:not(:last-child) {
-    margin-bottom: 56px;
+    margin-bottom: 120px;
 }
+
+/* PROFILE */
 
 .avatar {
     display: flex;
@@ -131,8 +131,7 @@
     width: 125px;
     height: 125px;
     border-radius: 1000px;
-    background: var(--surface-1);
-    border: 1px solid var(--surface-border);
+    background-color: var(--bg-3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -152,23 +151,26 @@
 }
 
 .avatar > div > button {
-    gap: 8px;
+    gap: 10px;
     left: 50%;
-    padding: 7px 9px;
+    padding: 6px;
     bottom: -20px;
     display: flex;
     font-size: 12px;
     cursor: pointer;
-    font-weight: 800;
+    font-weight: 600;
     position: absolute;
-    border-radius: var(--radius-large);
+    border-radius: 5px;
     color: var(--fg-2);
     align-items: center;
     justify-content: center;
     transform: translateX(-50%);
     font-family: var(--font-body);
-    background: var(--surface-0);
-    border: 1px solid var(--surface-border);
+    background-color: var(--bg-1);
+    border: 1px solid var(--border-color);
+    transition:
+        background-color 0.1s ease-in-out,
+        color 0.1s ease-in-out;
 }
 
 .avatar > div > button > p {
@@ -181,11 +183,11 @@
     top: 0;
     transform: none;
     bottom: auto;
-    padding: 7px;
+    padding: 6px;
 }
 
 .avatar > div > button:hover {
-    background: var(--surface-hover);
+    background-color: var(--bg-2);
     color: var(--fg-1);
 }
 
@@ -195,12 +197,12 @@
 
 .emailChip {
     border: none;
-    height: 18px;
-    padding: 0 7px;
+    height: 15px;
+    padding: 0 6px;
     cursor: default;
     font-size: 11px;
     margin-left: 8px;
-    font-weight: 800;
+    font-weight: 700;
     font-style: normal;
     pointer-events: none;
     color: var(--success-fg);
@@ -215,19 +217,8 @@
     background-color: var(--danger);
 }
 
-.expectationsBox {
-    padding: 14px;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-large);
-    background: var(--surface-1);
-}
-
-.expectationsBox > p,
-.expectationsBox > ul > li {
-    font-size: 14px;
-}
-
 .expectationsBox > p {
+    font-size: 14px;
     margin-bottom: 14px;
 }
 
@@ -235,9 +226,9 @@
     margin-bottom: 4px;
     display: flex;
     align-items: center;
+    font-size: 14px;
     line-height: 18px;
-    font-weight: 500;
-    color: var(--fg-3);
+    font-weight: 300;
 }
 
 .expectationsBox > ul > li::before {
@@ -248,11 +239,13 @@
     border-radius: 50%;
     margin-right: 8px;
     background-color: var(--accent);
+    color: var(--accent-fg);
 }
 
 .expectationsBox > ul > li.valid > span {
     text-decoration: line-through;
-    opacity: 0.45;
+    opacity: 0.3;
+    font-weight: 200;
 }
 
 .expectationsBox > ul > li.valid > svg {
@@ -271,8 +264,20 @@
     display: none;
 }
 
+@media (max-width: 1100px) {
+    .hideBox {
+        display: flex;
+    }
+
+    .expectations {
+        display: none;
+    }
+}
+
+/* APPEARANCE */
+
 .list {
-    gap: 18px;
+    gap: 44px;
     display: flex;
     flex-wrap: wrap;
 }
@@ -281,62 +286,62 @@
     width: 80px;
     height: 80px;
     cursor: pointer;
-    border-radius: var(--radius-xlarge);
-    border: 2px solid var(--surface-border);
-    box-shadow: var(--boxshadow-light);
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
 }
 
 .theme:hover {
     border-color: var(--accent);
 }
 
+/* SECURITY */
+
 .totp {
-    gap: 20px;
+    gap: 24px;
     display: flex;
     flex-direction: column;
 }
 
 .totp > h3 {
-    font-size: 22px;
-    font-weight: 850;
+    font-size: 24px;
+    font-weight: 500;
 }
 
 .qr {
-    padding: 8px;
-    margin: 16px 0;
+    padding: 6px;
+    margin: 20px 0;
     width: fit-content;
     background-color: #ffffff;
-    border-radius: var(--radius-large);
+    border-radius: var(--radius-medium);
 }
 
 .totp > p {
-    font-size: 15px;
-    line-height: 1.55;
-    color: var(--fg-3);
+    font-size: 16px;
+    line-height: 1.375;
+    color: var(--fg-2);
 }
 
 .totp > p > code {
-    padding: 4px 6px;
+    padding: 4px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 800;
-    background: var(--surface-1);
+    font-weight: 700;
+    background-color: var(--bg-0);
     border-radius: var(--radius-medium);
 }
 
 .totp > .codes {
-    gap: 12px;
-    padding: 14px;
+    gap: 16px;
+    padding: 16px;
     display: grid;
-    background: var(--surface-1);
-    border: 1px solid var(--surface-border);
+    background-color: var(--bg-0);
     grid-template-columns: 1fr 1fr;
-    border-radius: var(--radius-large);
+    border-radius: var(--radius-medium);
 }
 
 .totp > .codes > li {
     display: flex;
-    font-size: 18px;
+    font-size: 20px;
     align-items: center;
     justify-content: center;
 }
@@ -350,19 +355,19 @@
 }
 
 .totp > .right {
-    gap: 12px;
+    gap: 16px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: end;
 }
 
 .regenerate,
 .toggle {
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 700;
-    margin-top: -12px;
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: -20px;
     width: fit-content;
     color: var(--fg-3);
     font-family: var(--font-body);
@@ -376,21 +381,20 @@
 
 .regenerate:hover,
 .toggle:hover {
-    color: var(--fg-1);
+    color: var(--fg-2);
     text-decoration: underline;
 }
 
 .device {
-    gap: 18px;
-    padding: 14px;
+    gap: 24px;
+    padding: 16px;
     display: flex;
     width: max-content;
-    max-width: 100%;
     align-items: center;
-    margin-bottom: 18px;
-    background: var(--surface-1);
-    border-radius: var(--radius-xlarge);
-    border: 1px solid var(--surface-border);
+    margin-bottom: 24px;
+    background-color: var(--bg-2);
+    border-radius: var(--radius-large);
+    border: 1px solid var(--border-color);
 }
 
 .device > aside {
@@ -399,22 +403,20 @@
 
 .device > main > header {
     display: flex;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
+    margin-bottom: 12px;
 }
 
 .device > main > header > p {
-    font-size: 15px;
+    font-size: 16px;
     color: var(--fg-2);
-    font-weight: 700;
 }
 
 .device > main > header > span {
     display: flex;
-    font-size: 11px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 700;
     padding: 2px 8px;
-    margin-left: 10px;
+    margin-left: 12px;
     align-items: center;
     justify-content: center;
     color: var(--accent-fg);
@@ -423,33 +425,35 @@
 }
 
 .device > main > p {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--fg-3);
 }
 
 .revoke {
     border: none;
     display: flex;
-    margin: -14px;
+    margin: -16px;
     margin-left: 0;
     padding: 0 12px;
     cursor: pointer;
     align-self: stretch;
     align-items: center;
-    border-radius: 0 var(--radius-large) var(--radius-large) 0;
+    border-radius: 0 5px 5px 0;
     justify-content: center;
     background-color: transparent;
-    border-left: 1px solid var(--surface-border);
+    transition: background-color 0.1s ease;
+    border-left: 1px solid var(--border-color);
 }
 
 .revoke:hover {
-    background: var(--surface-hover);
+    background-color: var(--bg-3);
 }
 
 .revoke > div {
     border: none;
     cursor: pointer;
     color: var(--fg-4);
+    transition: color 0.1s ease;
     background-color: transparent;
 }
 
@@ -460,7 +464,7 @@
 
 @media screen and (max-width: 1024px) {
     .column {
-        gap: 48px;
+        gap: 60px;
         flex-direction: column-reverse;
     }
 
@@ -471,30 +475,51 @@
     .accountForm {
         grid-template-columns: 1fr;
     }
+
+    .device {
+        gap: 16px;
+        padding: 12px;
+    }
+
+    .device > aside > svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .device > main > header > p {
+        font-size: 14px;
+    }
+
+    .device > main > p {
+        font-size: 12px;
+    }
+
+    .device > main > header > span {
+        font-size: 10px;
+    }
+
+    .revoke {
+        margin: -12px;
+        padding: 0 10px;
+    }
 }
 
 @media screen and (max-width: 768px) {
-    .wrapper {
-        width: min(100% - 24px, 1180px);
-        margin: 18px auto 96px;
-    }
-
     .wrapper > div {
-        gap: 14px;
+        gap: 120px;
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .tabs {
-        flex-direction: row;
-        overflow-x: auto;
+    .main {
+        gap: 60px;
+        flex-direction: column;
     }
 
-    .tabs > li {
-        white-space: nowrap;
+    .tabs {
+        padding-right: 0;
     }
 
     .main {
-        padding: 16px;
+        padding-left: 0;
     }
 }
-

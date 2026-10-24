@@ -1,50 +1,25 @@
-import "dotenv/config";
-import mysql from "mysql2";
-import util from "util";
-import fs from "fs";
+import fs from "node:fs/promises";
+import pg from "pg";
 
-if (
-    !process.env.DATABASE_HOST ||
-    !process.env.DATABASE_USER ||
-    !process.env.DATABASE_PASSWORD ||
-    !process.env.DATABASE_NAME
-) {
-    console.error(
-        "Please set DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, and DATABASE_NAME environment variables.",
-    );
+const { Client } = pg;
+
+if (!process.env.DATABASE_URL) {
+    console.error("DATABASE_URL is required. Copy the Supabase transaction-pooler URL into .env.");
     process.exit(1);
 }
 
-(async () => {
-    const conn = mysql.createConnection({
-        host: process.env.DATABASE_HOST,
-        user: process.env.DATABASE_USER,
-        password: process.env.DATABASE_PASSWORD,
-    });
+const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_SSL === "false"
+        ? false
+        : { rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== "false" },
+});
 
-    const query = util.promisify(conn.query).bind(conn);
-    const db = process.env.DATABASE_NAME;
-
-    try {
-        await query(
-            `CREATE DATABASE IF NOT EXISTS ${db} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`,
-        );
-
-        await query(`USE ${db}`);
-
-        const queries = fs
-            .readFileSync("./lib/db/tables2.sql")
-            .toString()
-            .split(";");
-
-        queries.forEach(async (q) => {
-            if (q.trim() !== "") {
-                await query(q);
-            }
-        });
-    } catch (error) {
-        console.error(error);
-    } finally {
-        conn.end();
-    }
-})();
+try {
+    const migration = await fs.readFile("./supabase/migrations/0001_initial_schema.sql", "utf8");
+    await client.connect();
+    await client.query(migration);
+    console.log("Supabase schema initialized successfully.");
+} finally {
+    await client.end().catch(() => {});
+}
