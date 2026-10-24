@@ -48,14 +48,25 @@ export default async function RootLayout({ children }) {
         withNotifications: true,
     });
 
-    const { sources, notes, quizzes, courses } = await getPermittedResources({
-        userId: user?.id,
-        takeAll: true,
-    });
+    let resources = { sources: [], notes: [], quizzes: [], courses: [] };
+    let groups = [];
+    let relationships = [];
 
-    const groups = await getGroups(user?.id);
+    // The public pages do not need application data. Avoid opening a database
+    // connection for anonymous requests so the landing and auth pages remain
+    // available during a database outage.
+    if (user) {
+        [resources, groups, relationships] = await Promise.all([
+            getPermittedResources({
+                userId: user.id,
+                takeAll: true,
+            }),
+            getGroups(user.id),
+            getRelationships(),
+        ]);
+    }
 
-    const relationships = await getRelationships();
+    const { sources, notes, quizzes, courses } = resources;
 
     return (
         <html
