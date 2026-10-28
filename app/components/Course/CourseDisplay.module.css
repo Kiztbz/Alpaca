@@ -1,0 +1,181 @@
+.compactCard {
+  display: flex;
+  min-height: 292px;
+  height: 100%;
+  padding: 18px;
+  overflow: hidden;
+  position: relative;
+  flex-direction: column;
+  border: 1px solid var(--bg-4);
+  border-radius: 16px;
+  background: var(--bg-2);
+  box-shadow: 0 3px 0 var(--bg-3);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.compactCard::before {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  content: "";
+  position: absolute;
+  background: var(--accent);
+}
+
+.compactCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-50);
+  box-shadow: 0 7px 24px rgba(0, 5, 17, .22);
+}
+
+.marketCard::before { background: color-mix(in srgb, var(--fg-4) 45%, transparent); }
+
+.cardTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTopline span {
+  color: var(--fg-4);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.cardTopline span:first-child { color: var(--accent); }
+.marketCard .cardTopline span:first-child { color: var(--fg-3); }
+
+.cardTopline span:last-child {
+  padding: 4px 7px;
+  color: var(--accent);
+  letter-spacing: 0;
+  border: 1px solid var(--accent-20);
+  border-radius: 99px;
+  background: var(--accent-08);
+}
+
+.cardBody {
+  display: block;
+  margin-top: 15px;
+}
+
+.cardBody h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--fg-1);
+  font-size: 18px;
+  line-height: 1.18;
+  letter-spacing: -.02em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.cardBody p {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 54px;
+  margin-top: 10px;
+  color: var(--fg-4);
+  font-size: 11px;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.courseMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.courseMeta span {
+  padding: 5px 8px;
+  color: var(--fg-3);
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+  border: 1px solid var(--bg-4);
+  border-radius: 99px;
+  background: var(--bg-3);
+}
+
+.progressBlock {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.progressBlock > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.progressBlock span,
+.progressBlock small {
+  color: var(--fg-4);
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.progressBlock strong { color: var(--fg-2); font-size: 11px; }
+.progressBlock small { display: block; margin-top: 6px; }
+
+.progressTrack {
+  height: 6px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--bg-4);
+}
+
+.progressTrack i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.cardActions {
+  margin-top: auto;
+  padding-top: 15px;
+}
+
+.progressBlock + .cardActions { margin-top: 0; }
+
+.cardActions a,
+.cardActions button {
+  display: flex;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  cursor: pointer;
+  color: var(--accent-fg);
+  font-size: 10px;
+  font-weight: 850;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent);
+}
+
+.marketCard .cardActions a {
+  color: var(--fg-2);
+  border-color: var(--bg-4);
+  background: var(--bg-3);
+}
+
+.cardActions button:disabled { cursor: wait; opacity: .65; }
+.cardActions span { font-size: 14px; }
+
+@media (max-width: 520px) {
+  .compactCard { min-height: 280px; padding: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compactCard { transition: none; }
+}

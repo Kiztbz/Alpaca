@@ -27,7 +27,6 @@ function Icon({ name }) {
 export function CourseDash({ course, isLogged }) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
-  const courses = useStore((state) => state.courses);
   const user = useStore((state) => state.user);
 
   useEffect(() => {
@@ -35,7 +34,7 @@ export function CourseDash({ course, isLogged }) {
     setCurrentTab(Number.isInteger(savedTab) && savedTab >= 0 && savedTab < 3 ? savedTab : 0);
   }, [course.id]);
 
-  const isEnrolled = courses.some((item) => String(item.id) === String(course.id));
+  const isEnrolled = Boolean(course.isEnrolled);
   const tabs = [
     {
       name: "Learn",

@@ -1,0 +1,60 @@
+.shelves {
+  display: grid;
+  gap: 38px;
+  margin-top: 28px;
+}
+
+.shelf {
+  min-width: 0;
+}
+
+.shelf > header {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.shelf > header span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.shelf > header h3 {
+  color: var(--fg-1);
+  font-size: clamp(20px, 2.6vw, 28px);
+  line-height: 1.08;
+  letter-spacing: -.025em;
+}
+
+.shelf > header p {
+  max-width: 390px;
+  color: var(--fg-4);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.emptyShelf {
+  display: grid;
+  gap: 5px;
+  margin-top: 16px;
+  padding: 22px;
+  border: 1px dashed var(--bg-4);
+  border-radius: 14px;
+  background: var(--bg-1);
+}
+
+.emptyShelf strong { color: var(--fg-2); font-size: 13px; }
+.emptyShelf span { color: var(--fg-4); font-size: 11px; }
+
+@media (max-width: 680px) {
+  .shelves { gap: 32px; margin-top: 22px; }
+  .shelf > header { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .shelf > header p { text-align: left; }
+}

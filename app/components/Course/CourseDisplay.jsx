@@ -1,9 +1,11 @@
 "use client";
 
 import styles from "@/app/components/Card/Card.module.css";
+import courseStyles from "./CourseDisplay.module.css";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/store/store";
 import { useState } from "react";
+import Link from "next/link";
 import {
   DialogDescription,
   CardDescription,
@@ -22,9 +24,11 @@ import {
   Card,
 } from "@client";
 
-export function CourseDisplay({ lighter = false, darker = false, course }) {
+export function CourseDisplay({ lighter = false, darker = false, course, compact = false }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [joined, setJoined] = useState(false);
 
   if (!course) return null;
 
@@ -38,6 +42,65 @@ export function CourseDisplay({ lighter = false, darker = false, course }) {
       course.permissions?.allWrite);
 
   const canDelete = course.creator?.id === user?.id;
+  const isEnrolled = Boolean(course.isEnrolled || joined);
+  const isOwned = Boolean(course.isOwned || canDelete);
+  const notesTotal = Number(course.notesTotal ?? course.notes?.length ?? 0);
+  const quizzesTotal = Number(course.quizzesTotal ?? course.quizzes?.length ?? 0);
+  const completed = Number(course.notesCompleted || 0) + Number(course.quizzesCompleted || 0);
+  const total = notesTotal + quizzesTotal;
+  const progress = total ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+
+  async function enroll() {
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(`/courses/${course.name}`)}`);
+      return;
+    }
+    setJoining(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${course.id}/enroll`, { method: "POST" });
+      if (!response.ok) throw new Error("Could not enroll");
+      setJoined(true);
+      router.refresh();
+    } finally {
+      setJoining(false);
+    }
+  }
+
+  if (compact) {
+    return (
+      <article className={`${courseStyles.compactCard} ${isEnrolled || isOwned ? courseStyles.learningCard : courseStyles.marketCard}`}>
+        <div className={courseStyles.cardTopline}>
+          <span>{isOwned ? "Your course" : isEnrolled ? progress === 100 ? "Completed" : "In progress" : "Marketplace"}</span>
+          <span>Level {course.level || 0}</span>
+        </div>
+        <Link href={`/courses/${encodeURIComponent(course.name)}`} className={courseStyles.cardBody}>
+          <h3>{course.name}</h3>
+          <p>{course.description || "A focused learning path with lessons, practice, and trusted sources."}</p>
+        </Link>
+        <div className={courseStyles.courseMeta}>
+          <span>{notesTotal} lessons</span>
+          <span>{quizzesTotal} quizzes</span>
+          {!isEnrolled && !isOwned && <span>{course.enrollment === "paid" ? "$49 demo" : "Free"}</span>}
+        </div>
+        {(isEnrolled || isOwned) && (
+          <div className={courseStyles.progressBlock}>
+            <div><span>{isOwned && !isEnrolled ? "Course content" : "Course progress"}</span><strong>{isOwned && !isEnrolled ? `${total} activities` : `${progress}%`}</strong></div>
+            <div className={courseStyles.progressTrack}><i style={{ width: `${isOwned && !isEnrolled ? 100 : progress}%` }} /></div>
+            {!isOwned || isEnrolled ? <small>{completed} of {total} activities complete</small> : null}
+          </div>
+        )}
+        <div className={courseStyles.cardActions}>
+          {isEnrolled || isOwned ? (
+            <Link href={`/courses/${encodeURIComponent(course.name)}`}>{progress === 100 && !isOwned ? "Review course" : isOwned ? "Manage course" : "Continue course"}<span>→</span></Link>
+          ) : course.enrollment === "open" ? (
+            <button type="button" onClick={enroll} disabled={joining}>{joining ? "Enrolling…" : "Enroll free"}<span>→</span></button>
+          ) : (
+            <Link href={`/courses/${encodeURIComponent(course.name)}`}>{course.enrollment === "paid" ? "View & enroll" : "View course"}<span>→</span></Link>
+          )}
+        </div>
+      </article>
+    );
+  }
 
   return (
     <Card
@@ -54,7 +117,7 @@ export function CourseDisplay({ lighter = false, darker = false, course }) {
       <CardDescription>
         {course.description?.length > 220
           ? `${course.description.slice(0, 220)}…`
-          : course.description}
+          : course.description || "A focused learning path with lessons, practice, and trusted sources."}
       </CardDescription>
 
       {course.parents?.length > 0 && (

@@ -9,17 +9,105 @@
 .sessionPanel span { color: var(--accent); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em; }
 .sessionPanel h2 { margin-top: 8px; color: var(--fg-1); font-size: clamp(25px, 4vw, 38px); letter-spacing: -.035em; }
 .sessionPanel p { max-width: 650px; margin-top: 10px; color: var(--fg-4); font-size: 14px; line-height: 1.6; }
-.studyGrid { gap: 14px; display: grid; margin-top: 28px; }
-.studySection { padding: 22px; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--bg-4); }
-.studySection > header { display: flex; align-items: center; justify-content: space-between; }
-.studySection h2 { color: var(--fg-1); font-size: 22px; }
-.studySection header span { margin-left: 8px; color: var(--fg-4); font-size: 11px; font-weight: 700; }
-.studySection > div { margin-top: 18px; }
-.empty { margin-top: 16px; color: var(--fg-4); font-size: 13px; }
+.studyGrid { gap: 24px; display: grid; margin-top: 32px; }
+.studySection {
+  --section-accent: var(--accent);
+  min-width: 0;
+  overflow: hidden;
+  padding: 26px 0 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--section-accent) 7%, var(--bg-2)), var(--bg-2) 42%);
+  border: 1px solid var(--bg-4);
+  box-shadow: 0 10px 32px rgba(0, 5, 17, .22);
+}
+.studySection_quiz { --section-accent: var(--warning); }
+.studySection_source { --section-accent: var(--success); }
+.studySectionHeader { gap: 20px; display: flex; padding: 0 26px 20px; align-items: flex-end; justify-content: space-between; }
+.studySectionHeader > div:first-child { min-width: 0; }
+.studySectionHeader h2 { margin-top: 5px; color: var(--fg-1); font-size: clamp(22px, 3vw, 28px); letter-spacing: -.025em; }
+.studySectionHeader p { margin-top: 5px; color: var(--fg-4); font-size: 12px; font-weight: 650; }
+.studyEyebrow { color: var(--section-accent); font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.sliderControls { gap: 8px; display: flex; flex: none; }
+.sliderControls button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  cursor: pointer;
+  color: var(--fg-2);
+  place-items: center;
+  border-radius: 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--bg-4);
+  transition: border-color .16s ease, color .16s ease, transform .16s ease, background-color .16s ease;
+}
+.sliderControls button:hover { color: var(--section-accent); border-color: color-mix(in srgb, var(--section-accent) 48%, var(--bg-4)); background: color-mix(in srgb, var(--section-accent) 8%, var(--bg-3)); transform: translateY(-1px); }
+.sliderControls svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.studyRail {
+  gap: 18px;
+  display: grid;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 26px 18px;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(230px, 28vw, 300px);
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 26px;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: var(--section-accent) transparent;
+  scrollbar-width: thin;
+}
+.studyRail::-webkit-scrollbar { height: 8px; }
+.studyRail::-webkit-scrollbar-track { margin-inline: 26px; background: transparent; }
+.studyRail::-webkit-scrollbar-thumb { border-radius: 20px; background: color-mix(in srgb, var(--section-accent) 75%, var(--bg-4)); }
+.studyCard { min-width: 0; height: 260px; scroll-snap-align: start; }
+.studyCard > * { min-height: 100%; }
+.studyPreview {
+  height: 100%;
+  padding: 18px;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  border-radius: 13px;
+  flex-direction: column;
+  background: var(--bg-1);
+  border: 1px solid var(--bg-4);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--section-accent) 22%, var(--bg-3));
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.studyPreview::before { top: 0; left: 0; right: 0; height: 2px; content: ""; position: absolute; background: var(--section-accent); }
+a.studyPreview:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--section-accent) 50%, var(--bg-4)); box-shadow: 0 5px 0 color-mix(in srgb, var(--section-accent) 28%, var(--bg-3)); }
+.previewHeader { gap: 8px; display: flex; min-height: 22px; align-items: center; justify-content: space-between; }
+.previewHeader > span { color: var(--section-accent); font-size: 9px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.previewHeader small { max-width: 55%; overflow: hidden; padding: 3px 7px; color: var(--fg-4); font-size: 9px; font-weight: 800; white-space: nowrap; text-overflow: ellipsis; border-radius: 999px; background: var(--bg-3); border: 1px solid var(--bg-4); }
+.studyPreview h3 { display: -webkit-box; overflow: hidden; margin-top: 12px; color: var(--fg-1); font-size: 16px; line-height: 1.3; letter-spacing: -.012em; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.previewDescription { display: -webkit-box; overflow: hidden; margin-top: 12px; color: var(--fg-3); font-size: 12px; line-height: 1.55; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
+.previewTags { gap: 6px; display: flex; overflow: hidden; margin-top: auto; padding-top: 14px; }
+.previewTags li { overflow: hidden; padding: 4px 7px; color: var(--fg-4); font-size: 9px; font-weight: 750; white-space: nowrap; text-overflow: ellipsis; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--bg-4); }
+.studyPreview footer { gap: 10px; display: flex; margin-top: 14px; padding-top: 11px; color: var(--fg-4); font-size: 10px; align-items: center; justify-content: space-between; border-top: 1px solid var(--bg-4); }
+.studyPreview footer span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.studyPreview footer strong { flex: none; color: var(--section-accent); font-size: 10px; }
+.empty { min-height: 160px; margin: 0 26px 8px; display: grid; color: var(--fg-4); place-items: center; align-content: center; gap: 8px; border-radius: 12px; border: 1px dashed var(--bg-4); background: color-mix(in srgb, var(--bg-3) 55%, transparent); font-size: 13px; }
+.empty span { color: var(--section-accent); font-size: 28px; line-height: 1; }
 
 @media (max-width: 720px) {
   .screen { padding: 30px 16px 68px; }
   .screenHeader { align-items: flex-start; flex-direction: column; }
   .headerControls { width: 100%; }
   .sessionPanel { grid-template-columns: 1fr; }
+  .studyGrid { gap: 18px; margin-top: 24px; }
+  .studySection { padding-top: 22px; border-radius: 15px; }
+  .studySectionHeader { padding: 0 18px 18px; }
+  .studyRail { padding-inline: 18px; grid-auto-columns: min(74vw, 285px); scroll-padding-inline: 18px; }
+  .studyRail::-webkit-scrollbar-track { margin-inline: 18px; }
+  .empty { margin-inline: 18px; }
+}
+
+@media (max-width: 430px) {
+  .studySectionHeader { align-items: center; }
+  .sliderControls button { width: 36px; height: 36px; }
+  .studyRail { grid-auto-columns: min(76vw, 270px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sliderControls button { transition: none; }
 }

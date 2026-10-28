@@ -1,232 +1,122 @@
-.reader { min-height: calc(100vh - 76px); background: var(--bg-0); }
-.topbar { display: grid; height: 76px; padding: 0 32px; position: sticky; top: 0; z-index: 20; align-items: center; background: color-mix(in srgb, var(--bg-0) 88%, transparent); border-bottom: 1px solid var(--bg-4); backdrop-filter: blur(18px); grid-template-columns: 42px minmax(0, 1fr) 190px; }
-.back { display: grid; width: 36px; height: 36px; color: var(--fg-2); font-size: 20px; place-items: center; border-radius: 50%; background: var(--bg-2); border: 1px solid var(--bg-4); }
+.reader { position: relative; height: calc(100dvh - 69px); overflow: hidden; background: var(--bg-0); }
+.topbar { display: grid; height: 64px; padding: 0 26px; align-items: center; border-bottom: 1px solid var(--bg-4); background: color-mix(in srgb, var(--bg-0) 92%, transparent); grid-template-columns: 190px minmax(0, 1fr) 220px; }
+.back { gap: 8px; display: inline-flex; width: fit-content; height: 36px; padding: 0 12px; color: var(--fg-3); align-items: center; border: 1px solid var(--bg-4); border-radius: var(--radius-full); background: var(--bg-2); }
 .back:hover { color: var(--accent); border-color: var(--accent-50); }
-.titleBlock { min-width: 0; padding: 0 20px; }
-.titleBlock span { display: block; color: var(--accent); font-size: 10px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
-.titleBlock strong { display: block; overflow: hidden; margin-top: 3px; color: var(--fg-2); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.back span { font-size: 16px; }
+.back strong { font-size: 11px; }
+.titleBlock { min-width: 0; padding: 0 20px; text-align: center; }
+.titleBlock span { display: block; overflow: hidden; color: var(--accent); font-size: 9px; font-weight: 850; letter-spacing: .08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.titleBlock strong { display: block; overflow: hidden; margin-top: 3px; color: var(--fg-2); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.headerStatus { min-width: 0; }
+.headerStatus > span { display: block; margin-bottom: 6px; color: var(--fg-4); font-size: 9px; font-weight: 800; text-align: right; text-transform: uppercase; }
 .headerProgress { gap: 8px; display: flex; align-items: center; }
-.headerProgress > span { width: 48px; color: var(--fg-3); font-size: 11px; font-weight: 800; text-align: right; }
-.headerProgress > div { flex: 1; height: 7px; overflow: hidden; border-radius: var(--radius-full); background: var(--bg-3); }
-.headerProgress i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .3s ease; box-shadow: 0 0 16px var(--accent-50); }
+.headerProgress > span { width: 44px; color: var(--fg-3); font-size: 10px; font-weight: 800; text-align: right; }
+.headerProgress > div { flex: 1; height: 5px; overflow: hidden; border-radius: var(--radius-full); background: var(--bg-3); }
+.headerProgress i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .25s ease; }
 
-.workspace { display: grid; width: min(1320px, 100%); min-height: calc(100vh - 152px); margin: 0 auto; padding: 30px 34px; align-items: center; grid-template-columns: 230px minmax(0, 720px) 88px; justify-content: center; gap: clamp(24px, 4vw, 56px); }
-.lessonRail { align-self: stretch; padding: 22px 0; }
-.lessonBadge { display: inline-flex; padding: 6px 10px; color: var(--accent); font-size: 10px; font-weight: 850; border-radius: var(--radius-full); letter-spacing: .08em; text-transform: uppercase; background: var(--accent-08); border: 1px solid var(--accent-20); }
-.lessonRail h1 { margin-top: 18px; color: var(--fg-1); font-size: clamp(24px, 3vw, 34px); line-height: 1.04; letter-spacing: -.035em; }
-.lessonRail > p { margin-top: 12px; color: var(--fg-4); font-size: 13px; line-height: 1.55; }
-.cardMap { gap: 5px; display: grid; max-height: 45vh; overflow-y: auto; margin-top: 30px; padding-right: 6px; }
-.cardMap button { gap: 10px; display: flex; width: 100%; padding: 7px; cursor: pointer; text-align: left; align-items: center; border-radius: var(--radius-large); }
+.workspace { display: grid; width: min(1320px, 100%); height: calc(100% - 64px); margin: 0 auto; padding: 20px 28px; align-items: stretch; grid-template-columns: 210px minmax(0, 720px) 76px; justify-content: center; gap: clamp(20px, 3vw, 42px); }
+.lessonRail { min-height: 0; padding: 10px 0; overflow: hidden; }
+.lessonBadge { display: inline-flex; padding: 5px 9px; color: var(--accent); font-size: 9px; font-weight: 850; border: 1px solid var(--accent-20); border-radius: var(--radius-full); letter-spacing: .08em; text-transform: uppercase; background: var(--accent-08); }
+.lessonRail h1 { display: -webkit-box; overflow: hidden; margin-top: 14px; color: var(--fg-1); font-size: clamp(20px, 2.3vw, 29px); line-height: 1.08; letter-spacing: -.03em; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.lessonRail > p { margin-top: 10px; color: var(--fg-4); font-size: 11px; line-height: 1.45; }
+.cardMap { gap: 4px; display: grid; margin-top: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cardMap button { gap: 8px; display: flex; width: 100%; min-height: 34px; padding: 5px 7px; cursor: pointer; text-align: left; align-items: center; border-radius: 10px; }
 .cardMap button:hover { background: var(--bg-2); }
-.cardMap button > span { display: grid; flex: none; width: 27px; height: 27px; color: var(--fg-4); font-size: 10px; font-weight: 850; place-items: center; border-radius: 50%; background: var(--bg-2); border: 1px solid var(--bg-4); }
-.cardMap button small { overflow: hidden; color: var(--fg-4); font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.cardMap button > span { display: grid; flex: none; width: 24px; height: 24px; color: var(--fg-4); font-size: 9px; font-weight: 850; place-items: center; border: 1px solid var(--bg-4); border-radius: 50%; background: var(--bg-2); }
+.cardMap button small { overflow: hidden; color: var(--fg-4); font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .cardMap .activeStep { background: var(--accent-08); }
-.cardMap .activeStep > span { color: var(--accent-fg); background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-20); }
+.cardMap .activeStep > span { color: var(--accent-fg); border-color: var(--accent); background: var(--accent); }
 .cardMap .activeStep small { color: var(--fg-2); }
 .cardMap .doneStep > span { color: var(--accent); border-color: var(--accent-20); background: var(--accent-08); }
-.railTags { gap: 6px; display: flex; flex-wrap: wrap; margin-top: 24px; }
-.railTags span { padding: 5px 8px; color: var(--fg-4); font-size: 10px; font-weight: 700; border-radius: var(--radius-full); background: var(--bg-2); }
+.keyHint { display: flex; gap: 5px; align-items: center; margin-top: 16px !important; font-size: 9px !important; }
+.reader kbd { min-width: 20px; padding: 3px 5px; color: var(--fg-3); font: inherit; text-align: center; border: 1px solid var(--bg-4); border-radius: 5px; background: var(--bg-2); }
 
-.stage { min-width: 0; }
-.flashcard, .completionCard { min-height: min(620px, calc(100vh - 190px)); padding: clamp(28px, 5vw, 58px); position: relative; overflow: hidden; border-radius: 18px; background: var(--bg-2); border: 1px solid var(--bg-4); box-shadow: 0 24px 60px rgba(0, 5, 17, .32); touch-action: pan-x; }
-.flashcard::before { display: none; }
-.fromBottom { animation: fromBottom .32s cubic-bezier(.2,.75,.25,1); }
-.fromTop { animation: fromTop .32s cubic-bezier(.2,.75,.25,1); }
-@keyframes fromBottom { from { opacity: 0; transform: translateY(45px) scale(.98); } }
-@keyframes fromTop { from { opacity: 0; transform: translateY(-45px) scale(.98); } }
-.cardTopline { display: flex; position: relative; color: var(--fg-4); font-size: 10px; font-weight: 850; align-items: center; justify-content: space-between; letter-spacing: .08em; text-transform: uppercase; }
+.stage { display: grid; min-width: 0; min-height: 0; grid-template-rows: minmax(0, 1fr) 48px; }
+.flashcard, .completionCard { height: 100%; min-height: 0; padding: clamp(24px, 4vh, 42px) clamp(28px, 4vw, 50px); position: relative; overflow: hidden; border: 1px solid var(--bg-4); border-radius: 18px; background: var(--bg-2); box-shadow: 0 18px 48px rgba(0, 5, 17, .28); touch-action: none; }
+.fromBottom { animation: fromBottom .25s cubic-bezier(.2,.75,.25,1); }
+.fromTop { animation: fromTop .25s cubic-bezier(.2,.75,.25,1); }
+@keyframes fromBottom { from { opacity: 0; transform: translateY(28px) scale(.99); } }
+@keyframes fromTop { from { opacity: 0; transform: translateY(-28px) scale(.99); } }
+.cardTopline { display: flex; color: var(--fg-4); font-size: 9px; font-weight: 850; align-items: center; justify-content: space-between; letter-spacing: .08em; text-transform: uppercase; }
 .cardTopline span:first-child { color: var(--accent); }
-.cardContent { display: grid; min-height: 390px; padding: 44px 0 62px; position: relative; color: var(--fg-1); align-content: center; }
-.cardContent h1, .cardContent h2, .cardContent h3, .cardContent h4 { max-width: 18ch; margin-bottom: 22px; font-size: clamp(28px, 5vw, 48px); line-height: 1.04; letter-spacing: -.04em; }
-.cardContent p, .cardContent li, .cardContent blockquote { color: var(--fg-2); font-size: clamp(18px, 2.3vw, 24px); line-height: 1.55; }
-.cardContent p + p { margin-top: 20px; }
-.cardContent ul, .cardContent ol { gap: 14px; display: grid; padding-left: 24px; }
-.cardContent blockquote { padding-left: 22px; border-left: 3px solid var(--accent); }
+.cardContent { display: grid; height: calc(100% - 34px); padding: 24px 0 42px; color: var(--fg-1); align-content: center; }
+.cardContent h1, .cardContent h2, .cardContent h3, .cardContent h4 { max-width: 20ch; margin-bottom: 16px; font-size: clamp(24px, 4.2vh, 42px); line-height: 1.05; letter-spacing: -.035em; }
+.cardContent p, .cardContent li, .cardContent blockquote { color: var(--fg-2); font-size: clamp(16px, 2.5vh, 22px); line-height: 1.48; }
+.cardContent p + p { margin-top: 14px; }
+.cardContent ul, .cardContent ol { gap: 10px; display: grid; padding-left: 22px; }
+.cardContent blockquote { padding-left: 18px; border-left: 3px solid var(--accent); }
 .cardContent strong { color: var(--fg-1); }
-.cardContent pre { overflow-x: auto; padding: 18px; font-size: 14px; border-radius: var(--radius-large); background: var(--bg-0); }
-.swipeHint { gap: 9px; display: flex; left: 0; right: 0; bottom: 26px; position: absolute; color: var(--fg-4); font-size: 11px; font-weight: 700; align-items: center; justify-content: center; }
-.swipeHint span { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; border: 1px solid var(--bg-4); }
+.cardContent pre { overflow: hidden; padding: 14px; font-size: 12px; border-radius: 10px; background: var(--bg-0); }
+.swipeHint { gap: 6px; display: flex; left: 0; right: 0; bottom: 16px; position: absolute; color: var(--fg-4); font-size: 9px; font-weight: 700; align-items: center; justify-content: center; }
+.cardControls { display: grid; gap: 10px; height: 48px; padding-top: 10px; align-items: stretch; grid-template-columns: 1fr auto 1fr; }
+.cardControls button { padding: 0 14px; cursor: pointer; color: var(--fg-2); font-size: 10px; font-weight: 800; border: 1px solid var(--bg-4); border-radius: 11px; background: var(--bg-2); }
+.cardControls button:last-child { color: var(--accent-fg); border-color: var(--accent); background: var(--accent); }
+.cardControls button:disabled { cursor: default; opacity: .35; }
+.cardControls > span { display: grid; min-width: 58px; color: var(--fg-4); font-size: 9px; font-weight: 800; place-items: center; }
 
-.actionRail { gap: 12px; display: grid; }
-.actionRail button { gap: 4px; display: grid; width: 70px; height: 70px; cursor: pointer; place-items: center; align-content: center; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--bg-4); transition: transform .15s ease, border-color .15s ease, background-color .15s ease; }
-.actionRail button:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--accent-50); }
-.actionRail button:disabled { cursor: not-allowed; opacity: .35; }
-.actionRail button span { color: var(--fg-2); font-size: 21px; }
-.actionRail button small { color: var(--fg-4); font-size: 10px; font-weight: 750; }
-.actionRail .activeAction { background: var(--accent-08); border-color: var(--accent-20); }
+.actionRail { gap: 8px; display: grid; align-content: center; }
+.actionRail button, .actionRail > a, .disabledAction { gap: 3px; display: grid; width: 66px; height: 62px; cursor: pointer; place-items: center; align-content: center; text-align: center; border: 1px solid var(--bg-4); border-radius: 13px; background: var(--bg-2); transition: transform .15s ease, border-color .15s ease; }
+.actionRail button:hover, .actionRail > a:hover { transform: translateY(-2px); border-color: var(--accent-50); }
+.actionRail span { color: var(--fg-2); font-size: 18px; }
+.actionRail small { color: var(--fg-4); font-size: 8px; font-weight: 750; line-height: 1.2; }
+.actionRail .activeAction { border-color: var(--accent-20); background: var(--accent-08); }
 .actionRail .activeAction span, .actionRail .activeAction small { color: var(--accent); }
-.mobileControls { display: none; }
+.disabledAction { cursor: default; opacity: .3; }
 
-.completionCard { display: grid; text-align: center; place-items: center; align-content: center; background: radial-gradient(circle at 50% 28%, var(--accent-20), transparent 35%), var(--bg-1); }
-.completionMark { display: grid; width: 78px; height: 78px; color: var(--accent-fg); font-size: 34px; font-weight: 900; place-items: center; border-radius: 26px; background: var(--accent); box-shadow: 0 14px 35px var(--accent-20); transform: rotate(-3deg); }
-.completionCard > span { margin-top: 26px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-.completionCard h2 { max-width: 16ch; margin-top: 12px; color: var(--fg-1); font-size: clamp(30px, 5vw, 48px); line-height: 1.04; letter-spacing: -.04em; }
-.completionCard > p { max-width: 54ch; margin-top: 15px; color: var(--fg-4); line-height: 1.6; }
-.reward { gap: 2px; display: grid; margin-top: 26px; }
-.reward strong { color: var(--accent); font-size: 32px; }
-.reward span { color: var(--fg-4); font-size: 10px; font-weight: 800; text-transform: uppercase; }
-.completionActions { gap: 10px; display: flex; margin-top: 26px; flex-wrap: wrap; justify-content: center; }
+.completionCard { display: grid; text-align: center; place-items: center; align-content: center; background: radial-gradient(circle at 50% 35%, var(--accent-20), transparent 35%), var(--bg-1); }
+.completionMark { display: grid; width: 62px; height: 62px; color: var(--accent-fg); font-size: 28px; font-weight: 900; place-items: center; border-radius: 20px; background: var(--accent); }
+.completionCard > span { margin-top: 20px; color: var(--accent); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.completionCard h2 { max-width: 18ch; margin-top: 10px; color: var(--fg-1); font-size: clamp(26px, 4vh, 40px); line-height: 1.05; }
+.completionCard > p { margin-top: 12px; color: var(--fg-4); font-size: 13px; }
 
-.contextBar { display: grid; min-height: 76px; padding: 16px 34px; align-items: center; background: var(--bg-1); border-top: 1px solid var(--bg-4); grid-template-columns: 1fr auto 1fr; }
-.contextBar > div { min-width: 0; }
-.contextBar > div:last-child { text-align: right; }
-.contextBar a { display: block; overflow: hidden; color: var(--fg-3); font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.contextBar a:hover { color: var(--accent); }
-.contextBar > span, .contextBar div > span { color: var(--fg-4); font-size: 10px; font-weight: 800; text-transform: uppercase; }
-.contextBar > span { padding: 0 22px; }
-.extras { gap: 20px; display: grid; width: min(1100px, calc(100% - 48px)); margin: 30px auto 70px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.extras > div { gap: 8px; display: flex; padding: 18px; flex-wrap: wrap; border-radius: var(--radius-xlarge); background: var(--bg-2); border: 1px solid var(--bg-4); }
-.extras span { width: 100%; color: var(--fg-4); font-size: 10px; font-weight: 850; text-transform: uppercase; }
-.extras a { padding: 7px 10px; color: var(--fg-3); font-size: 12px; border-radius: var(--radius-full); background: var(--bg-3); }
+.infoButton { display: grid; width: 44px; height: 44px; right: 22px; bottom: 22px; z-index: 30; cursor: pointer; position: absolute; color: var(--accent-fg); font-family: Georgia, serif; font-size: 20px; font-weight: 900; place-items: center; border: 1px solid var(--accent); border-radius: 50%; background: var(--accent); box-shadow: 0 10px 28px var(--accent-20); }
+.infoButton:hover { transform: translateY(-2px); }
+.infoSummary { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+.infoSummary > div { padding: 12px; border: 1px solid var(--bg-4); border-radius: 10px; background: var(--bg-3); }
+.infoSummary span { display: block; color: var(--fg-4); font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.infoSummary strong { display: block; margin-top: 5px; color: var(--fg-2); font-size: 12px; }
+.infoSection { margin-top: 20px; }
+.infoSection h3 { margin-bottom: 9px; color: var(--fg-3); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.infoSection p { color: var(--fg-4); font-size: 12px; }
+.infoChips { display: flex; flex-wrap: wrap; gap: 6px; }
+.infoChips span { padding: 5px 8px; color: var(--fg-3); font-size: 10px; border-radius: var(--radius-full); background: var(--bg-3); }
+.infoLinks { gap: 7px; display: grid; }
+.infoLinks a { display: grid; padding: 10px 12px; border: 1px solid var(--bg-4); border-radius: 10px; background: var(--bg-3); }
+.infoLinks a:hover { border-color: var(--accent-50); }
+.infoLinks span { color: var(--accent); font-size: 8px; font-weight: 850; text-transform: uppercase; }
+.infoLinks strong { margin-top: 3px; color: var(--fg-2); font-size: 11px; }
 
 @media (max-width: 980px) {
-  .workspace { grid-template-columns: minmax(0, 680px) 80px; }
+  .workspace { grid-template-columns: minmax(0, 680px) 70px; }
   .lessonRail { display: none; }
 }
-
 @media (max-width: 720px) {
-  .reader { min-height: 100vh; }
-  .topbar { height: 66px; padding: 0 14px; grid-template-columns: 40px minmax(0, 1fr) 74px; }
-  .titleBlock { padding: 0 10px; }
-  .titleBlock span { display: none; }
-  .headerProgress { display: block; }
-  .headerProgress > span { display: block; width: auto; margin-bottom: 5px; }
-  .workspace { min-height: auto; padding: 14px 12px 24px; display: block; }
+  .reader { height: calc(100dvh - 61px); }
+  .topbar { height: 58px; padding: 0 12px; grid-template-columns: 42px minmax(0, 1fr) 80px; }
+  .back { width: 36px; padding: 0; justify-content: center; }
+  .back strong, .titleBlock span, .headerStatus > span { display: none; }
+  .titleBlock { padding: 0 8px; text-align: left; }
+  .headerProgress > div { display: none; }
+  .headerProgress > span { width: 100%; text-align: right; }
+  .workspace { height: calc(100% - 58px); padding: 10px 10px 12px; display: block; }
+  .stage { height: 100%; grid-template-rows: minmax(0, 1fr) 50px; }
   .actionRail { display: none; }
-  .flashcard, .completionCard { min-height: calc(100svh - 166px); padding: 26px 24px; border-radius: 24px; }
-  .cardContent { min-height: calc(100svh - 300px); padding: 30px 0 58px; }
-  .cardContent h1, .cardContent h2, .cardContent h3, .cardContent h4 { font-size: 30px; }
-  .cardContent p, .cardContent li, .cardContent blockquote { font-size: 19px; }
-  .swipeHint { bottom: 18px; }
-  .mobileControls { gap: 10px; display: grid; margin-top: 12px; grid-template-columns: 1fr 1fr; }
-  .mobileControls button { min-height: 48px; padding: 0 14px; cursor: pointer; color: var(--fg-2); font-size: 12px; font-weight: 800; border-radius: 16px; background: var(--bg-2); border: 1px solid var(--bg-4); }
-  .mobileControls button:last-child { color: var(--accent-fg); background: var(--accent); border-color: var(--accent); }
-  .mobileControls button:disabled { opacity: .4; }
-  .contextBar { padding: 14px; grid-template-columns: 1fr 1fr; }
-  .contextBar > span { display: none; }
-  .contextBar a { max-width: 42vw; }
-  .extras { width: calc(100% - 24px); margin-top: 12px; grid-template-columns: 1fr; }
+  .flashcard, .completionCard { padding: 22px 20px; border-radius: 17px; }
+  .cardContent { padding: 18px 0 38px; }
+  .cardContent h1, .cardContent h2, .cardContent h3, .cardContent h4 { font-size: clamp(22px, 4vh, 30px); }
+  .cardContent p, .cardContent li, .cardContent blockquote { font-size: clamp(15px, 2.6vh, 19px); }
+  .cardControls { height: 50px; }
+  .cardControls button { padding: 0 10px; font-size: 9px; }
+  .infoButton { width: 40px; height: 40px; right: 14px; bottom: 70px; }
 }
-
-.railSources {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+@media (max-height: 620px) and (min-width: 721px) {
+  .workspace { padding-top: 12px; padding-bottom: 12px; }
+  .lessonRail h1 { font-size: 21px; }
+  .cardMap { margin-top: 12px; }
+  .cardContent p, .cardContent li, .cardContent blockquote { font-size: 16px; }
+  .actionRail button, .actionRail > a, .disabledAction { height: 52px; }
 }
-
-.railSourcesLabel {
-  font-size: 10px;
-  font-weight: 850;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.railSourceLink {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: var(--radius-medium);
-  background: var(--bg-2);
-  border: 1px solid var(--border-color);
-  color: var(--fg-2);
-  transition: all 0.15s ease;
-}
-
-.railSourceLink:hover {
-  background: var(--bg-3);
-  border-color: var(--accent-50);
-  color: var(--fg-1);
-}
-
-.railSourceLink small {
-  font-size: 11px;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sourcesSection {
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border-color);
-  grid-column: 1 / -1;
-}
-
-.sourcesSectionTitle {
-  display: block;
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 10px;
-}
-
-.sourceCardsList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sourceCardItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: var(--radius-medium);
-  background: var(--bg-2);
-  border: 1px solid var(--border-color);
-}
-
-.sourceCardMain {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.sourceMediumBadge {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--bg-3);
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.sourceTitleLink {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--fg-1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sourceTitleLink:hover {
-  color: var(--accent);
-  text-decoration: underline;
-}
-
-.sourceExternalLink {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.sourceExternalLink:hover {
-  text-decoration: underline;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .fromBottom, .fromTop { animation: none; }
+  .headerProgress i, .actionRail button, .actionRail > a { transition: none; }
 }

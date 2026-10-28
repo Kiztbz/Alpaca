@@ -1,5 +1,6 @@
 import { getPermittedResources, getRelationships } from "@/lib/db/helpers";
 import { SearchOptions } from "./SearchOptions";
+import coursePageStyles from "./CoursesPage.module.css";
 import styles from "@main/page.module.css";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -15,6 +16,7 @@ import {
   TooltipTrigger,
   SourceDisplay,
   CourseDisplay,
+  CourseRail,
   MasoneryList,
   NoteDisplay,
   QuizDisplay,
@@ -257,29 +259,58 @@ export default async function ResourcePage(props) {
               </div>
             )}
 
-            <MasoneryList>
-              {resources
-                .sort((a, b) => {
-                  if (a.createdAt < b.createdAt) return 1;
-                  if (a.createdAt > b.createdAt) return -1;
-                  return 0;
-                })
-                .slice(0, amount)
-                .map((res) => (
-                  <li key={res.id} style={{ width: "100%" }}>
-                    {current.name === "sources" && (
-                      <SourceDisplay source={res} />
-                    )}
-                    {current.name === "notes" && <NoteDisplay note={res} />}
-                    {current.name === "quizzes" && (
-                      <QuizDisplay quiz={res} canEditDelete={true} />
-                    )}
-                    {current.name === "courses" && (
-                      <CourseDisplay course={res} />
-                    )}
-                  </li>
-                ))}
-            </MasoneryList>
+            {current.name === "courses" ? (
+              <div className={coursePageStyles.shelves}>
+                {user && (
+                  <section className={coursePageStyles.shelf}>
+                    <header>
+                      <div><span>My learning</span><h3>Continue where you left off</h3></div>
+                      <p>Your enrolled courses and progress, all in one place.</p>
+                    </header>
+                    {resources.some((course) => course.isEnrolled || course.isOwned) ? (
+                      <CourseRail label="My courses">
+                        {resources
+                          .filter((course) => course.isEnrolled || course.isOwned)
+                          .sort((a, b) => Number(b.isEnrolled) - Number(a.isEnrolled) || new Date(b.createdAt) - new Date(a.createdAt))
+                          .map((course) => <li key={course.id}><CourseDisplay course={course} compact /></li>)}
+                      </CourseRail>
+                    ) : <div className={coursePageStyles.emptyShelf}><strong>No courses yet</strong><span>Choose a course from the marketplace to start learning.</span></div>}
+                  </section>
+                )}
+
+                <section className={coursePageStyles.shelf}>
+                  <header>
+                    <div><span>Marketplace</span><h3>Discover your next course</h3></div>
+                    <p>Explore available courses and enroll when you find the right fit.</p>
+                  </header>
+                  {resources.some((course) => !course.isEnrolled && !course.isOwned) ? (
+                    <CourseRail label="Course marketplace">
+                      {resources
+                        .filter((course) => !course.isEnrolled && !course.isOwned)
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                        .map((course) => <li key={course.id}><CourseDisplay course={course} compact /></li>)}
+                    </CourseRail>
+                  ) : <div className={coursePageStyles.emptyShelf}><strong>You’re all caught up</strong><span>New marketplace courses will appear here.</span></div>}
+                </section>
+              </div>
+            ) : (
+              <MasoneryList>
+                {resources
+                  .sort((a, b) => {
+                    if (a.createdAt < b.createdAt) return 1;
+                    if (a.createdAt > b.createdAt) return -1;
+                    return 0;
+                  })
+                  .slice(0, amount)
+                  .map((res) => (
+                    <li key={res.id} style={{ width: "100%" }}>
+                      {current.name === "sources" && <SourceDisplay source={res} />}
+                      {current.name === "notes" && <NoteDisplay note={res} />}
+                      {current.name === "quizzes" && <QuizDisplay quiz={res} canEditDelete={true} />}
+                    </li>
+                  ))}
+              </MasoneryList>
+            )}
 
             <div className={styles.paginationButtons}>
               {page < 2 ? (

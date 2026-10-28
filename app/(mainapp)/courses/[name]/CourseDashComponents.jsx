@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@client";
+import { Dialog, DialogContent, DialogDescription, DialogHeading, Spinner } from "@client";
 import { noteCardCount } from "@/lib/noteCards";
 import { useAlerts, useStore } from "@/store/store";
 import Link from "next/link";
@@ -39,7 +39,17 @@ function quizLabel(quiz) {
 export function CourseActions({ course, user, isLogged, isEnrolled, isLoading, setIsLoading }) {
   const addAlert = useAlerts((state) => state.addAlert);
   const [courseState, setCourseState] = useState({ ...course });
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [certificateStatus, setCertificateStatus] = useState(null);
   const isOwner = Boolean(user && String(user.id) === String(course.creator?.id));
+
+  useEffect(() => {
+    if (!isLogged || !isEnrolled || isOwner) return;
+    fetch(`${basePath}/api/course/${course.id}/certificate`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => setCertificateStatus(payload?.content || null))
+      .catch(() => null);
+  }, [course.id, isEnrolled, isLogged, isOwner]);
 
   async function request(url, options, successMessage, reload = false) {
     setIsLoading(true);
@@ -62,6 +72,28 @@ export function CourseActions({ course, user, isLogged, isEnrolled, isLoading, s
     await request(`${basePath}/api/course/${course.id}/${isEnrolled ? "unenroll" : "enroll"}`, { method: "POST" }, isEnrolled ? "Left course" : "Course added", true);
   }
 
+  async function completeDemoCheckout() {
+    const paid = await request(`${basePath}/api/course/${course.id}/checkout`, { method: "POST" }, "Demo payment complete");
+    if (paid) {
+      setCheckoutOpen(false);
+      window.location.reload();
+    }
+  }
+
+  async function claimCertificate() {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${basePath}/api/course/${course.id}/certificate`, { method: "POST" });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Certificate is not ready yet");
+      window.location.assign(`${basePath}/certificates/${payload.content.publicId}`);
+    } catch (error) {
+      addAlert({ success: false, message: error.message });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function updateCourse(patch, message) {
     const updated = await request(`${basePath}/api/course/${course.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) }, message);
     if (updated) setCourseState((current) => ({ ...current, ...patch }));
@@ -69,13 +101,38 @@ export function CourseActions({ course, user, isLogged, isEnrolled, isLoading, s
 
   if (!isLogged && !isOwner) return null;
 
-  return <div className={styles.courseActions}>
-    {isLogged && <button type="button" className={isEnrolled ? styles.secondaryAction : styles.primaryAction} onClick={toggleEnrollment} disabled={isLoading}>{isEnrolled ? "Leave course" : "Start course"}{isLoading && <Spinner />}</button>}
-    {isOwner && <div className={styles.ownerActions}>
-      <button type="button" onClick={() => updateCourse({ enrollment: courseState.enrollment === "open" ? "private" : "open" }, "Enrollment updated")} disabled={isLoading}>{courseState.enrollment === "open" ? "Close enrollment" : "Open enrollment"}</button>
-      <button type="button" onClick={() => updateCourse({ permissions: { allRead: !courseState.permissions?.allRead } }, "Visibility updated")} disabled={isLoading}>{courseState.permissions?.allRead ? "Make private" : "Make public"}</button>
-    </div>}
-  </div>;
+  const completeItems = (certificateStatus?.notes.completed || 0) + (certificateStatus?.quizzes.completed || 0);
+  const totalItems = (certificateStatus?.notes.total || 0) + (certificateStatus?.quizzes.total || 0);
+
+  return <>
+    <div className={styles.courseActions}>
+      {isLogged && !isEnrolled && course.enrollment === "paid" && <button type="button" className={styles.primaryAction} onClick={() => setCheckoutOpen(true)} disabled={isLoading}>Demo checkout · $49</button>}
+      {isLogged && (isEnrolled || course.enrollment !== "paid") && <button type="button" className={isEnrolled ? styles.secondaryAction : styles.primaryAction} onClick={toggleEnrollment} disabled={isLoading}>{isEnrolled ? "Leave course" : "Start course"}{isLoading && <Spinner />}</button>}
+      {certificateStatus && <div className={styles.certificateStatus}>
+        <span>{certificateStatus.certificate ? "Certificate earned" : "Certificate progress"}</span>
+        <strong>{certificateStatus.certificate ? "Complete" : `${completeItems} / ${totalItems}`}</strong>
+        {certificateStatus.certificate && <Link href={`/certificates/${certificateStatus.certificate.publicId}`}>View certificate →</Link>}
+        {!certificateStatus.certificate && certificateStatus.eligible && <button type="button" onClick={claimCertificate} disabled={isLoading}>Claim certificate</button>}
+      </div>}
+      {isOwner && <div className={styles.ownerActions}>
+        <button type="button" onClick={() => updateCourse({ enrollment: courseState.enrollment === "open" ? "private" : "open" }, "Enrollment updated")} disabled={isLoading}>{courseState.enrollment === "open" ? "Close enrollment" : "Open enrollment"}</button>
+        <button type="button" onClick={() => updateCourse({ permissions: { allRead: !courseState.permissions?.allRead } }, "Visibility updated")} disabled={isLoading}>{courseState.permissions?.allRead ? "Make private" : "Make public"}</button>
+      </div>}
+    </div>
+
+    <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+      <DialogContent>
+        <DialogHeading>Demo checkout</DialogHeading>
+        <DialogDescription>No real card or charge is involved. Completing this demo payment immediately unlocks the course.</DialogDescription>
+        <div className={styles.checkoutSummary}>
+          <span>Course</span><strong>{course.name}</strong>
+          <span>Demo price</span><strong>$49.00 USD</strong>
+          <span>Payment method</span><strong>Alpaca demo card</strong>
+        </div>
+        <button type="button" className="button primary" onClick={completeDemoCheckout} disabled={isLoading}>{isLoading ? <Spinner /> : "Complete demo payment"}</button>
+      </DialogContent>
+    </Dialog>
+  </>;
 }
 
 export function NotesTabInfo({ course }) {
