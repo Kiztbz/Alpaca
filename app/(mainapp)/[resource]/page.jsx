@@ -12,15 +12,12 @@ import { sql } from "kysely";
 import { NotesHub } from "@/app/components/Note/NotesHub";
 import { expandCourseRelationships } from "@/lib/resourceRelations";
 import {
-  TooltipContent,
-  TooltipTrigger,
   SourceDisplay,
   CourseDisplay,
   CourseRail,
   MasoneryList,
   NoteDisplay,
   QuizDisplay,
-  Tooltip,
 } from "@client";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -190,9 +187,12 @@ export default async function ResourcePage(props) {
             <header>
               <h2>
                 {current.title}
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div tabIndex={0} className={styles.tooltipIcon}>
+                    <button
+                      type="button"
+                      className={styles.tooltipIcon}
+                      aria-label={`About ${current.title}`}
+                      title={`${current.description}${user ? ` These are the ${current.name} that are publicly viewable, as well as the ones you made.` : ` You are only viewing the publicly available ${current.name}. Log in to see ${current.name} available to you.`}`}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         strokeLinejoin="round"
@@ -207,17 +207,7 @@ export default async function ResourcePage(props) {
                         <path d="M8 8a3.5 3 0 0 1 3.5 -3h1a3.5 3 0 0 1 3.5 3a3 3 0 0 1 -2 3a3 4 0 0 0 -2 4" />
                         <path d="M12 19l0 .01" />
                       </svg>
-                    </div>
-                  </TooltipTrigger>
-
-                  <TooltipContent big maxWidth={350}>
-                    {current.description}
-                    {user
-                      ? ` These are the ${current.name} that are publicly viewable, as well as the ones you made.`
-                      : ` You are only viewing the publicly available ${current.name}.
-                                                Log in to see ${current.name} available to you.`}
-                  </TooltipContent>
-                </Tooltip>
+                    </button>
               </h2>
 
               <SearchOptions

@@ -1,0 +1,50 @@
+.shell {
+    width: min(100% - 48px, 1480px);
+    margin: 0 auto;
+    padding: 40px 0 64px;
+}
+
+.heading,
+.line,
+.card {
+    background: color-mix(in srgb, var(--foreground, #8aa0bd) 12%, transparent);
+    border-radius: 12px;
+    animation: pulse 1.15s ease-in-out infinite alternate;
+}
+
+.heading {
+    width: min(360px, 62vw);
+    height: 38px;
+}
+
+.line {
+    width: min(540px, 80vw);
+    height: 16px;
+    margin-top: 18px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 42px;
+}
+
+.card {
+    height: 220px;
+}
+
+@keyframes pulse {
+    to { opacity: 0.48; }
+}
+
+@media (max-width: 900px) {
+    .cards { grid-template-columns: 1fr; }
+    .card:nth-child(n + 2) { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .heading,
+    .line,
+    .card { animation: none; }
+}

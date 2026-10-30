@@ -1,27 +1,8 @@
-import { Inter, Sofia_Sans, Roboto_Mono } from "next/font/google";
 import { FillStore, Timer, Alerts, ThemeSetter } from "@client";
 import { metadatas } from "@/lib/metadatas";
 import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/auth";
 import "./globals.css";
-
-const inter = Inter({
-    subsets: ["latin"],
-    variable: "--font-body",
-    display: "swap",
-});
-
-const sofia = Sofia_Sans({
-    subsets: ["latin"],
-    variable: "--font-heading",
-    display: "swap",
-});
-
-const roboto = Roboto_Mono({
-    subsets: ["latin"],
-    variable: "--font-mono",
-    display: "swap",
-});
 
 export const metadata = {
     metadataBase: new URL(metadatas.layout.url),
@@ -43,10 +24,7 @@ export default async function RootLayout({ children }) {
     const user = await getSessionUser((await cookies()).get("token")?.value);
 
     return (
-        <html
-            lang="en"
-            className={`${inter.variable} ${sofia.variable} ${roboto.variable}`}
-        >
+        <html lang="en" suppressHydrationWarning>
             {user && (
                 <FillStore
                     user={user}

@@ -1,0 +1,30 @@
+.grid {
+    column-count: 2;
+    column-gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.grid > * {
+    break-inside: avoid;
+    display: inline-block;
+    margin: 0 0 24px;
+    width: 100%;
+}
+
+.dash {
+    column-width: 476px;
+    column-count: auto;
+}
+
+.dash2 {
+    column-width: 426px;
+    column-count: auto;
+}
+
+@media (max-width: 1023px) {
+    .grid {
+        column-count: 1;
+    }
+}

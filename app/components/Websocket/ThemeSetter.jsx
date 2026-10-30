@@ -1,12 +1,12 @@
 "use client";
 
 import { getAccentVariables, getThemeVariables, themes } from "@/lib/themes";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 export function ThemeSetter({ settings }) {
-    useEffect(() => {
+    useLayoutEffect(() => {
         handleTheme(settings);
-    }, []);
+    }, [settings]);
 
     function handleTheme(settings) {
         const themeName = settings?.theme || localStorage.getItem("theme");

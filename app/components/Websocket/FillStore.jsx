@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@/store/store";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 export function FillStore({
     user,
@@ -19,24 +19,7 @@ export function FillStore({
     const fillInitialData = useStore((state) => state.fillInitialData);
     const setUser = useStore((state) => state.setUser);
 
-    useEffect(() => {
-        const ws = webSocketURL ? new WebSocket(webSocketURL) : { close: () => {} };
-
-        ws.onopen = () => {
-            console.log(`Web socket connection opened to ${webSocketURL}`);
-        };
-
-        ws.onmessage = (message) => {
-            const record = JSON.parse(message.data);
-            console.log(`Web socket message received: ${record}`);
-
-            if (!record.ns) return;
-
-            const operation = record.operationType;
-            const collection = record.ns.coll;
-            const resource = record.fullDocument;
-        };
-
+    useLayoutEffect(() => {
         setUser(user);
 
         const data = {
@@ -56,11 +39,27 @@ export function FillStore({
             Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined))
         );
 
-        return () => {
-            ws.close();
-            console.log(`Web socket connection closed to ${webSocketURL}`);
+        if (!webSocketURL) return undefined;
+        const ws = new WebSocket(webSocketURL);
+        ws.onmessage = (message) => {
+            const record = JSON.parse(message.data);
+            if (!record.ns) return;
         };
-    }, [user, sources, notes, quizzes, courses, relationships, groups, associates, notifications]);
+        return () => ws.close();
+    }, [
+        user,
+        sources,
+        notes,
+        quizzes,
+        courses,
+        relationships,
+        groups,
+        associates,
+        notifications,
+        webSocketURL,
+        fillInitialData,
+        setUser,
+    ]);
 
     return null;
 }
