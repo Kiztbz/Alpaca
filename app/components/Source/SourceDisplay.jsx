@@ -37,14 +37,14 @@ export function SourceDisplay({ source, contextCourse }) {
         .filter((x) => !!x)
     : [];
 
-  const canEdit =
+  const canEdit = source.canManage || user?.role === "superadmin" ||
     !!user &&
     source.creator &&
     (source.creator.id === user?.id ||
       source.permissions?.write?.includes(user?.id) ||
       source.permissions?.allWrite);
 
-  const canDelete = source.creator && source.creator.id === user?.id;
+  const canDelete = user?.role === "superadmin" || (source.creator && source.creator.id === user?.id);
 
   return (
     <Card

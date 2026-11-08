@@ -61,14 +61,14 @@ export function NoteDisplay({ note, contextCourse }) {
     .map((x) => (typeof x === "object" && x !== null) ? x : sourcesStore.find((src) => String(src.id) === String(x)))
     .filter((x) => !!x) : [];
 
-  const canEdit =
+  const canEdit = note.canManage || user?.role === "superadmin" ||
     !!user &&
     !!note.creator &&
     (note.creator.id === user?.id ||
       note.permissions?.write?.includes(user?.id) ||
       note.permissions?.allWrite);
 
-  const canDelete = !!note.creator && note.creator.id === user?.id;
+  const canDelete = user?.role === "superadmin" || (!!note.creator && note.creator.id === user?.id);
 
   return (
     <Card

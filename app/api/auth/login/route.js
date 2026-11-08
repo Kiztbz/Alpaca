@@ -1,186 +1,72 @@
 import { getToken, catchRouteError } from "@/lib/db/helpers";
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { logToFile } from "@/lib/log";
 import { db } from "@/lib/db/db";
 import { nanoid } from "nanoid";
 import bcrypt from "bcrypt";
+import { authCookie, getClientIp, isRateLimited, readJson, recordAnalyticsEvent, recordAuthAttempt, requestErrorResponse } from "@/lib/security";
 
-async function getIp() {
-    const requestHeaders = await headers();
-    const forwardedFor = requestHeaders.get("x-forwarded-for");
-    const realIp = requestHeaders.get("x-real-ip");
-
-    if (forwardedFor) {
-        return forwardedFor.split(",")[0].trim();
-    }
-
-    if (realIp) return realIp.trim();
-
-    return "0.0.0.0";
-}
-
-function isCorrectIP(ip) {
-    return /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip);
-}
+const DUMMY_HASH = "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxM5v7S2gN0R0mNn1wzJ7MZV5fK";
+const invalidCredentials = () => NextResponse.json({ errors: {
+  username: "Incorrect credentials provided", password: "Incorrect credentials provided",
+} }, { status: 401 });
 
 export async function POST(req) {
-    const { username, password } = await req.json();
+  const ip = getClientIp(req);
+  try {
+    const body = await readJson(req);
+    const username = typeof body.username === "string" ? body.username.trim() : "";
+    const password = typeof body.password === "string" ? body.password : "";
+    if (!username || !password || password.length > 72 || username.length > 256) return invalidCredentials();
 
-    try {
-        const select = ["id", "username", "password", "tokens", "twoFactorEnabled"];
-
-        let user = await db
-            .selectFrom("users")
-            .select([...select, "emailVerified"])
-            .where("email", "=", username)
-            .executeTakeFirst();
-
-        if (!user) {
-            user = await db
-                .selectFrom("users")
-                .select(select)
-                .where("username", "=", username)
-                .executeTakeFirst();
-        } else if (!user.emailVerified) {
-            return NextResponse.json(
-                {
-                    errors: {
-                        username: "Please verify your email address before logging in using it",
-                        password: "Please verify your email address before logging in using it",
-                    },
-                },
-                { status: 401 }
-            );
-        }
-
-        if (!user) {
-            return NextResponse.json(
-                {
-                    errors: {
-                        username: "Incorrect credentials provided",
-                        password: "Incorrect credentials provided",
-                    },
-                },
-                { status: 401 }
-            );
-        }
-
-        if (await bcrypt.compare(password, user.password)) {
-            if (user.twoFactorEnabled) {
-                const token = nanoid(32);
-
-                await db
-                    .updateTable("users")
-                    .set({
-                        twoFactorTemp: token,
-                    })
-                    .where("id", "=", user.id)
-                    .execute();
-
-                return NextResponse.json(
-                    {
-                        message: "Two factor authentication is enabled",
-                        code: token,
-                    },
-                    { status: 200 }
-                );
-            }
-
-            const refreshToken = await getToken(user.username, true);
-            const accessToken = await getToken(user.username, false);
-
-            const userAgent = (await headers()).get("user-agent") || "Unknown";
-            const ip = await getIp();
-            logToFile(`User ${user.username} logged in from ${ip} with user agent ${userAgent}`);
-            let location = {
-                city: "Unknown",
-                region: "Unknown",
-                country: "Unknown",
-            };
-
-            if (isCorrectIP(ip)) {
-                try {
-                    const {
-                        city,
-                        region,
-                        country_name: country,
-                    } = await fetch(`https://ipapi.co/${ip}/json/`).then((res) => res.json());
-
-                    location = {
-                        city,
-                        region,
-                        country,
-                    };
-                } catch (error) {
-                    console.error("Error getting location from IP", error);
-                }
-            }
-
-            const tokenObject = {
-                token: refreshToken,
-                login: Date.now(),
-                expires: Date.now() + 2592000000,
-                userAgent,
-                location,
-                device: getDeviceFromUserAgent(userAgent),
-                ip,
-            };
-
-            // To prevent someone loggin in a lot of times and filling up the tokens array
-            // we also want to filter out tokens where the user agent or ip is the same
-            // Refrain from using ip though, as someone could be using more than one browser on the same device
-            const newTokens = [
-                ...user.tokens.filter((token) => {
-                    return (
-                        token.expires > Date.now() &&
-                        (token.ip === ip ? token.userAgent !== userAgent : true)
-                    );
-                }),
-                tokenObject,
-            ];
-
-            await db
-                .updateTable("users")
-                .set({
-                    tokens: JSON.stringify(newTokens),
-                })
-                .where("id", "=", user.id)
-                .execute();
-
-            return NextResponse.json(
-                {
-                    token: accessToken,
-                    message: "Successfully logged in",
-                },
-                {
-                    status: 200,
-                    headers: {
-                        "Set-Cookie": `token=${refreshToken}; path=/; HttpOnly; SameSite=Lax; Max-Age=2592000; Secure`,
-                    },
-                }
-            );
-        } else {
-            return NextResponse.json(
-                {
-                    errors: {
-                        username: "Incorrect credentials provided",
-                        password: "Incorrect credentials provided",
-                    },
-                },
-                { status: 401 }
-            );
-        }
-    } catch (error) {
-        return catchRouteError({ error, route: req.nextUrl.pathname });
+    if (await isRateLimited({ action: "login", identifier: username, ip, limit: 10, minutes: 15 })) {
+      return NextResponse.json({ errors: { server: "Too many login attempts. Try again in 15 minutes." } }, { status: 429 });
     }
+
+    const user = await db.selectFrom("users")
+      .select(["id", "username", "password", "tokens", "twoFactorEnabled"])
+      .where(({ or, eb }) => or([eb("username", "ilike", username), eb("email", "ilike", username)]))
+      .executeTakeFirst();
+    const valid = await bcrypt.compare(password, user?.password || DUMMY_HASH);
+    if (!user || !valid) {
+      await recordAuthAttempt({ action: "login", identifier: username, ip, succeeded: false });
+      return invalidCredentials();
+    }
+
+    if (user.twoFactorEnabled) {
+      const token = nanoid(32);
+      await db.updateTable("users").set({ twoFactorTemp: token, twoFactorTempExpires: new Date(Date.now() + 10 * 60_000) }).where("id", "=", user.id).execute();
+      return NextResponse.json({ message: "Two factor authentication is enabled", code: token });
+    }
+
+    const refreshToken = await getToken(user.username, true);
+    const accessToken = await getToken(user.username, false);
+    const userAgent = req.headers.get("user-agent") || "Unknown";
+    const tokenObject = {
+      token: refreshToken, login: Date.now(), expires: Date.now() + 2_592_000_000,
+      userAgent: userAgent.slice(0, 512), location: {}, device: getDeviceFromUserAgent(userAgent), ip,
+    };
+    const tokens = Array.isArray(user.tokens) ? user.tokens : [];
+    const newTokens = [...tokens.filter((item) => item.expires > Date.now() && !(item.ip === ip && item.userAgent === userAgent)), tokenObject].slice(-20);
+    await db.updateTable("users").set({ tokens: JSON.stringify(newTokens), twoFactorTemp: null }).where("id", "=", user.id).execute();
+    await Promise.all([
+      recordAuthAttempt({ action: "login", identifier: username, ip, succeeded: true }),
+      recordAnalyticsEvent({ eventType: "login", userId: user.id, visitor: ip, userAgent }),
+    ]);
+
+    return NextResponse.json({ token: accessToken, message: "Successfully logged in" }, {
+      status: 200, headers: { "Set-Cookie": authCookie(refreshToken), "Cache-Control": "no-store" },
+    });
+  } catch (error) {
+    const response = requestErrorResponse(error);
+    return response || catchRouteError({ error, route: req.nextUrl.pathname });
+  }
 }
 
 function getDeviceFromUserAgent(userAgent) {
-    if (userAgent.includes("Mobile")) return "Mobile";
-    if (userAgent.includes("Tablet")) return "Tablet";
-    if (userAgent.includes("Windows")) return "Windows";
-    if (userAgent.includes("Macintosh")) return "Macintosh";
-    if (userAgent.includes("Linux")) return "Linux";
-    return "Unknown";
+  if (/Mobile/i.test(userAgent)) return "Mobile";
+  if (/Tablet/i.test(userAgent)) return "Tablet";
+  if (/Windows/i.test(userAgent)) return "Windows";
+  if (/Macintosh/i.test(userAgent)) return "Macintosh";
+  if (/Linux/i.test(userAgent)) return "Linux";
+  return "Unknown";
 }

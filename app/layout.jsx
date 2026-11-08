@@ -3,6 +3,7 @@ import { absoluteUrl, siteConfig } from "@/lib/metadatas";
 import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/auth";
 import "./globals.css";
+import { AnalyticsTracker } from "@/app/components/AnalyticsTracker";
 
 export const metadata = {
     metadataBase: new URL(siteConfig.origin),
@@ -61,6 +62,7 @@ export default async function RootLayout({ children }) {
 
                 {children}
 
+                <AnalyticsTracker />
                 <Timer />
                 <Alerts />
             </body>

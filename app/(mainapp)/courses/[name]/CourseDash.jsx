@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   CourseActions,
+  ManageWorkspace,
   NotesTabInfo,
   NotesTabMain,
   QuizzesTabInfo,
@@ -29,6 +30,12 @@ export function CourseDash({ course, isLogged, canAccessContent = true }) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
   const user = useStore((state) => state.user);
+  const isManager = Boolean(course.isAdmin || user?.role === "superadmin");
+  const [mode, setMode] = useState(isManager ? "manage" : "preview");
+
+  useEffect(() => {
+    if (isManager) setMode("manage");
+  }, [isManager, course.id]);
 
   useEffect(() => {
     const savedTab = Number.parseInt(localStorage.getItem(`course-tab:${course.id}`) || "0", 10);
@@ -77,7 +84,11 @@ export function CourseDash({ course, isLogged, canAccessContent = true }) {
           <h2>{course.name}</h2>
           <p>{resourceCount} learning items</p>
         </div>
-        {canAccessContent && <nav className={styles.sideNav} aria-label="Course navigation">
+        {isManager && <nav className={styles.modeNav} aria-label="Administration view">
+          <button type="button" className={mode === "manage" ? styles.active : ""} onClick={() => setMode("manage")}>Manage</button>
+          <button type="button" className={mode === "preview" ? styles.active : ""} onClick={() => setMode("preview")}>Preview</button>
+        </nav>}
+        {canAccessContent && mode === "preview" && <nav className={styles.sideNav} aria-label="Course navigation">
           {tabs.map((tab, index) => <button type="button" key={tab.name} className={currentTab === index ? styles.active : ""} onClick={() => selectTab(index)} aria-current={currentTab === index ? "page" : undefined}><span><Icon name={tab.icon} /></span><div><strong>{tab.name}</strong><small>{tab.eyebrow}</small></div></button>)}
         </nav>}
         <div className={styles.sideFooter}>
@@ -100,10 +111,10 @@ export function CourseDash({ course, isLogged, canAccessContent = true }) {
               {canAccessContent && <span><strong>{course.sources?.length || 0}</strong> sources</span>}
             </div>
           </div>
-          <CourseActions course={course} user={user} isLogged={isLogged} isEnrolled={isEnrolled} isLoading={isLoading} setIsLoading={setIsLoading} />
+          <CourseActions course={course} user={user} isLogged={isLogged} isEnrolled={isEnrolled} isManager={isManager} isLoading={isLoading} setIsLoading={setIsLoading} />
         </header>
 
-        {canAccessContent ? <section className={styles.workspace}>
+        {isManager && mode === "manage" ? <ManageWorkspace course={course} /> : canAccessContent ? <section className={styles.workspace}>
           <header className={styles.sectionHeader}>
             <span className={styles.sectionIcon}><Icon name={activeTab.icon} /></span>
             <div><small>{activeTab.eyebrow}</small><h2>{activeTab.name}</h2></div>
@@ -118,7 +129,7 @@ export function CourseDash({ course, isLogged, canAccessContent = true }) {
         </section>}
       </section>
 
-      {canAccessContent && <nav className={styles.mobileNav} aria-label="Course navigation">
+      {canAccessContent && mode === "preview" && <nav className={styles.mobileNav} aria-label="Course navigation">
         {tabs.map((tab, index) => <button type="button" key={tab.name} className={currentTab === index ? styles.active : ""} onClick={() => selectTab(index)} aria-current={currentTab === index ? "page" : undefined}><Icon name={tab.icon} /><span>{tab.name}</span></button>)}
       </nav>}
     </main>

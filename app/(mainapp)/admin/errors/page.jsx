@@ -9,7 +9,7 @@ import { db } from "@/lib/db/db";
 
 export default async function ErrorsBugsPage() {
     const user = await useUser({ token: (await cookies()).get("token")?.value, select: ["id", "role"] });
-    if (user?.role !== "admin") redirect("/me/dashboard");
+    if (!["admin", "superadmin"].includes(user?.role)) redirect("/me/dashboard");
 
     const errors = await db
         .selectFrom("error_logs")

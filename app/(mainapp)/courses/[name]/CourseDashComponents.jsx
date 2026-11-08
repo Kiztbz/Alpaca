@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogHeading, Spinner } from "@client";
+import { CourseInput, Dialog, DialogContent, DialogDescription, DialogHeading, NoteInput, QuizInput, SourceInput, Spinner } from "@client";
 import { noteCardCount } from "@/lib/noteCards";
 import { useAlerts, useStore } from "@/store/store";
 import Link from "next/link";
@@ -36,20 +36,21 @@ function quizLabel(quiz) {
   return "Practice question";
 }
 
-export function CourseActions({ course, user, isLogged, isEnrolled, isLoading, setIsLoading }) {
+export function CourseActions({ course, user, isLogged, isEnrolled, isManager, isLoading, setIsLoading }) {
   const addAlert = useAlerts((state) => state.addAlert);
   const [courseState, setCourseState] = useState({ ...course });
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [certificateStatus, setCertificateStatus] = useState(null);
   const isOwner = Boolean(user && String(user.id) === String(course.creator?.id));
 
   useEffect(() => {
-    if (!isLogged || !isEnrolled || isOwner) return;
+    if (!isLogged || !isEnrolled || isManager) return;
     fetch(`${basePath}/api/course/${course.id}/certificate`)
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => setCertificateStatus(payload?.content || null))
       .catch(() => null);
-  }, [course.id, isEnrolled, isLogged, isOwner]);
+  }, [course.id, isEnrolled, isLogged, isManager]);
 
   async function request(url, options, successMessage, reload = false) {
     setIsLoading(true);
@@ -110,19 +111,24 @@ export function CourseActions({ course, user, isLogged, isEnrolled, isLoading, s
 
   return <>
     <div className={styles.courseActions}>
-      {isLogged && !isEnrolled && course.enrollment === "paid" && <button type="button" className={styles.primaryAction} onClick={() => setCheckoutOpen(true)} disabled={isLoading}>Demo checkout · $49</button>}
-      {isLogged && (isEnrolled || course.enrollment !== "paid") && <button type="button" className={isEnrolled ? styles.secondaryAction : styles.primaryAction} onClick={toggleEnrollment} disabled={isLoading}>{isEnrolled ? "Leave course" : "Start course"}{isLoading && <Spinner />}</button>}
+      {isManager && <button type="button" className={styles.primaryAction} onClick={() => setEditOpen(true)}>Edit course</button>}
+      {!isManager && isLogged && !isEnrolled && course.enrollment === "paid" && <button type="button" className={styles.primaryAction} onClick={() => setCheckoutOpen(true)} disabled={isLoading}>Demo checkout · $49</button>}
+      {!isManager && isLogged && (isEnrolled || course.enrollment !== "paid") && <button type="button" className={isEnrolled ? styles.secondaryAction : styles.primaryAction} onClick={toggleEnrollment} disabled={isLoading}>{isEnrolled ? "Leave course" : "Start course"}{isLoading && <Spinner />}</button>}
       {certificateStatus && <div className={styles.certificateStatus}>
         <span>{certificateStatus.certificate ? "Certificate earned" : "Certificate progress"}</span>
         <strong>{certificateStatus.certificate ? "Complete" : `${completeItems} / ${totalItems}`}</strong>
         {certificateStatus.certificate && <Link href={`/certificates/${certificateStatus.certificate.publicId}`}>View certificate →</Link>}
         {!certificateStatus.certificate && certificateStatus.eligible && <button type="button" onClick={claimCertificate} disabled={isLoading}>Claim certificate</button>}
       </div>}
-      {isOwner && <div className={styles.ownerActions}>
+      {isManager && <div className={styles.ownerActions}>
         <button type="button" onClick={() => updateCourse({ enrollment: courseState.enrollment === "open" ? "private" : "open" }, "Enrollment updated")} disabled={isLoading}>{courseState.enrollment === "open" ? "Close enrollment" : "Open enrollment"}</button>
         <button type="button" onClick={() => updateCourse({ permissions: { allRead: !courseState.permissions?.allRead } }, "Visibility updated")} disabled={isLoading}>{courseState.permissions?.allRead ? "Make private" : "Make public"}</button>
       </div>}
     </div>
+
+    <Dialog open={editOpen} onOpenChange={setEditOpen}>
+      <DialogContent><DialogHeading>Edit course</DialogHeading><CourseInput course={courseState} close={() => { setEditOpen(false); window.location.reload(); }} /></DialogContent>
+    </Dialog>
 
     <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
       <DialogContent>
@@ -137,6 +143,61 @@ export function CourseActions({ course, user, isLogged, isEnrolled, isLoading, s
       </DialogContent>
     </Dialog>
   </>;
+}
+
+export function ManageWorkspace({ course }) {
+  const notes = useStore((state) => state.notes);
+  const quizzes = useStore((state) => state.quizzes);
+  const sources = useStore((state) => state.sources);
+  const groups = [
+    { type: "note", label: "Lessons", create: "Note", items: relatedItems(course.notes, notes) },
+    { type: "quiz", label: "Practice", create: "Quiz", items: relatedItems(course.quizzes, quizzes) },
+    { type: "source", label: "Sources", create: "Source", items: relatedItems(course.sources, sources) },
+  ];
+  return <section className={styles.manageWorkspace}>
+    <header><div><span>Course administration</span><h2>Manage course resources</h2><p>Create, edit, remove, or preview only the resources attached to this course.</p></div></header>
+    {groups.map((group) => <section className={styles.manageGroup} key={group.type}>
+      <header><div><h3>{group.label}</h3><span>{group.items.length} items</span></div><Link className="button primary" href={`/create?type=${group.create}&course=${course.id}`}>Create {group.create.toLowerCase()}</Link></header>
+      <div className={styles.manageGrid}>{group.items.map((item) => <ManageResourceCard key={item.id} item={item} type={group.type} course={course} />)}
+        {!group.items.length && <p className={styles.manageEmpty}>No {group.label.toLowerCase()} attached yet.</p>}
+      </div>
+    </section>)}
+  </section>;
+}
+
+function ManageResourceCard({ item, type, course }) {
+  const [editing, setEditing] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const addAlert = useAlerts((state) => state.addAlert);
+  const title = type === "quiz" ? quizLabel(item) : item.title;
+  const plural = `${type}s`;
+  const Editor = type === "note" ? NoteInput : type === "quiz" ? QuizInput : SourceInput;
+  const editorProp = { [type]: item };
+
+  async function remove() {
+    setRemoving(true);
+    try {
+      const response = await fetch(`${basePath}/api/course/${course.id}/resources`, {
+        method: "DELETE", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resourceId: item.id, resourceType: type }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Unable to remove resource");
+      addAlert({ success: true, message: payload.message });
+      window.location.reload();
+    } catch (error) {
+      addAlert({ success: false, message: error.message });
+      setRemoving(false);
+    }
+  }
+
+  return <article className={styles.manageCard}><div><span>{type}</span><h4>{title || `${type} ${item.id}`}</h4></div><nav>
+    <button type="button" onClick={() => setEditing(true)}>Edit</button>
+    <Link href={`/${plural}/${item.publicId}?course=${encodeURIComponent(course.publicId)}`}>Preview</Link>
+    <button type="button" className={styles.removeResource} onClick={remove} disabled={removing}>{removing ? "Deleting…" : "Delete from course"}</button>
+  </nav>
+  <Dialog open={editing} onOpenChange={setEditing}><DialogContent><DialogHeading>Edit {type}</DialogHeading><Editor {...editorProp} close={() => { setEditing(false); window.location.reload(); }} /></DialogContent></Dialog>
+  </article>;
 }
 
 export function NotesTabInfo({ course }) {

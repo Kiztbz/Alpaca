@@ -118,14 +118,14 @@ export function QuizDisplay({
   const router = useRouter();
   const showTools = user?.settings?.showTools ?? true;
 
-  const canEdit =
+  const canEdit = quiz.canManage || user?.role === "superadmin" ||
     !!user &&
     quiz.creator &&
     (quiz.creator?.id === user?.id ||
       quiz.permissions?.write?.includes(user?.id) ||
       quiz.permissions?.allWrite);
 
-  const canDelete = quiz.creator && quiz.creator.id === user?.id;
+  const canDelete = user?.role === "superadmin" || (quiz.creator && quiz.creator.id === user?.id);
 
   const whenLevelUp = quiz.hiddenUntil
     ? new Date(toUTCdatestring(quiz.hiddenUntil))

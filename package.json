@@ -10,7 +10,8 @@
         "test": "jest",
         "db:init": "node --env-file=.env db-init.js",
         "db:seed": "node --env-file=.env scripts/seed-test-data.mjs && node --env-file=.env scripts/seed-conflict-resolution.mjs",
-        "db:seed:conflict": "node --env-file=.env scripts/seed-conflict-resolution.mjs"
+        "db:seed:conflict": "node --env-file=.env scripts/seed-conflict-resolution.mjs",
+        "db:create-superadmin": "node --env-file=.env scripts/create-superadmin.mjs"
     },
     "dependencies": {
         "@floating-ui/react": "^0.27.8",

@@ -254,7 +254,7 @@ export function Profile({ user, size = 44 }) {
         },
     ];
 
-    if (user.role === "admin") {
+    if (["admin", "superadmin"].includes(user.role)) {
         const adminItems = [
             {
                 name: "hr",
@@ -292,6 +292,15 @@ export function Profile({ user, size = 44 }) {
         ];
 
         // add all these items right after the "report a bug" item
+        if (user.role === "superadmin") {
+            adminItems.splice(1, 0, {
+                name: "Superadmin panel",
+                onClick: () => router.push("/admin"),
+                icon: (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1 3 5v6c0 5.6 3.8 10.7 9 12 5.2-1.3 9-6.4 9-12V5l-9-4Zm0 6a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm5 10.3A8.8 8.8 0 0 1 12 21a8.8 8.8 0 0 1-5-3.7V16c0-1.7 3.3-2.5 5-2.5s5 .8 5 2.5v1.3Z"/></svg>
+                ),
+            });
+        }
         menuItems.splice(6, 0, ...adminItems);
     }
 

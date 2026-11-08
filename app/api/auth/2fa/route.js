@@ -3,23 +3,25 @@ import { NextResponse } from "next/server";
 import { verifyToken } from "node-2fa";
 import { headers } from "next/headers";
 import { db } from "@/lib/db/db";
-
-function isCorrectIP(ip) {
-    return /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip);
-}
+import { authCookie, getClientIp, isRateLimited, readJson, recordAuthAttempt, requestErrorResponse } from "@/lib/security";
 
 export async function POST(req) {
-    const { token, code, recovery } = await req.json();
+    let token, code, recovery;
     let newCodes = null;
 
     try {
+        ({ token, code, recovery } = await readJson(req));
+        const ip = getClientIp(req);
+        if (await isRateLimited({ action: "two_factor", identifier: token, ip, limit: 8, minutes: 15 })) {
+            return NextResponse.json({ errors: { server: "Too many verification attempts. Log in again later." } }, { status: 429 });
+        }
         const user = await db
             .selectFrom("users")
-            .select(["id", "tokens", "twoFactorSecret", "twoFactorRecovery"])
+            .select(["id", "username", "tokens", "twoFactorSecret", "twoFactorRecovery", "twoFactorTempExpires"])
             .where("twoFactorTemp", "=", token)
             .executeTakeFirst();
 
-        if (!user) {
+        if (!user || !user.twoFactorTempExpires || new Date(user.twoFactorTempExpires).getTime() < Date.now()) {
             return NextResponse.json(
                 {
                     errors: {
@@ -45,6 +47,7 @@ export async function POST(req) {
             const isIncluded = user.twoFactorRecovery.find((r) => r.code === recovery && !r.used);
 
             if (!isIncluded) {
+                await recordAuthAttempt({ action: "two_factor", identifier: token, ip, succeeded: false });
                 return NextResponse.json(
                     {
                         errors: {
@@ -69,6 +72,7 @@ export async function POST(req) {
             const verified = verifyToken(user.twoFactorSecret, code);
 
             if (!verified) {
+                await recordAuthAttempt({ action: "two_factor", identifier: token, ip, succeeded: false });
                 return NextResponse.json(
                     {
                         errors: {
@@ -84,27 +88,7 @@ export async function POST(req) {
         const accessToken = await getToken(user.username, false);
 
         const userAgent = (await headers()).get("user-agent") || "Unknown";
-        // const ip = (req.headers.get("x-forwarded-for") ?? "127.0.0.1").split(",")[0];
-        const ip = "91.162.93.92";
-        let location = {};
-
-        if (isCorrectIP(ip)) {
-            try {
-                const {
-                    city,
-                    region,
-                    country_name: country,
-                } = await fetch(`https://ipapi.co/${ip}/json/`).then((res) => res.json());
-
-                location = {
-                    city,
-                    region,
-                    country,
-                };
-            } catch (error) {
-                console.error("Error getting location from IP", error);
-            }
-        }
+        const location = {};
 
         const tokenObject = {
             token: refreshToken,
@@ -134,10 +118,12 @@ export async function POST(req) {
             .set({
                 tokens: JSON.stringify(newTokens),
                 twoFactorTemp: null,
+                twoFactorTempExpires: null,
                 twoFactorRecovery: newCodes ? JSON.stringify(newCodes) : undefined,
             })
             .where("id", "=", user.id)
             .execute();
+        await recordAuthAttempt({ action: "two_factor", identifier: token, ip, succeeded: true });
 
         return NextResponse.json(
             {
@@ -147,12 +133,12 @@ export async function POST(req) {
             {
                 status: 200,
                 headers: {
-                    "Set-Cookie": `token=${refreshToken}; path=/; HttpOnly; SameSite=Lax; Max-Age=2592000; Secure`,
+                    "Set-Cookie": authCookie(refreshToken),
                 },
             }
         );
     } catch (error) {
-        return catchRouteError({ error, route: req.nextUrl.pathname });
+        return requestErrorResponse(error) || catchRouteError({ error, route: req.nextUrl.pathname });
     }
 }
 

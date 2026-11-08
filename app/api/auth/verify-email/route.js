@@ -4,17 +4,21 @@ import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
 import { db } from "@/lib/db/db";
 import { nanoid } from "nanoid";
+import { cookies } from "next/headers";
+import { useUser } from "@/lib/auth";
+import { readJson, requestErrorResponse } from "@/lib/security";
 
 // SEND EMAIL VERIFICATION CODE
 
 export async function POST(req) {
-    const { email } = await req.json();
-
     try {
+        const { email } = await readJson(req);
+        const sessionUser = await useUser({ token: (await cookies()).get("token")?.value, select: ["id", "email"] });
+        if (!sessionUser || typeof email !== "string" || sessionUser.email?.toLowerCase() !== email.trim().toLowerCase()) return unauthorized;
         const user = await db
             .selectFrom("users")
             .select(["id"])
-            .where("email", "=", email)
+            .where("id", "=", sessionUser.id)
             .executeTakeFirst();
 
         if (!user) return unauthorized;
@@ -45,6 +49,6 @@ export async function POST(req) {
             { status: 200 }
         );
     } catch (error) {
-        return catchRouteError({ error, route: req.nextUrl.pathname });
+        return requestErrorResponse(error) || catchRouteError({ error, route: req.nextUrl.pathname });
     }
 }

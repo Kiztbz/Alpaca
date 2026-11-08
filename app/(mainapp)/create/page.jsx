@@ -14,11 +14,14 @@ export default async function CreatePage(props) {
     getPermittedResources({ userId: user.id, takeAll: true }),
     getGroups(user.id),
   ]);
+  const requestedCourse = resources.courses.find((course) =>
+    String(course.id) === String(searchParams.course) && (course.isAdmin || user.role === "superadmin")
+  );
 
   return (
     <>
       <FillStore user={user} groups={groups} {...resources} />
-      <Create initialTab={["Note", "Quiz", "Source", "Course"].includes(searchParams.type) ? searchParams.type : undefined} />
+      <Create initialTab={["Note", "Quiz", "Source", "Course"].includes(searchParams.type) ? searchParams.type : undefined} course={requestedCourse} />
     </>
   );
 }

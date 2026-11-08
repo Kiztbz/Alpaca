@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { useUser } from "@/lib/auth";
 import { UserInput } from "@client";
 import Link from "next/link";
+import { safeNextPath } from "@/lib/security";
 
 export const metadata = {
     title: "Log in",
@@ -18,7 +19,7 @@ export default async function LoginPage(props) {
     if (user) {
         const { next } = searchParams;
 
-        if (next) return redirect(next);
+        if (next) return redirect(safeNextPath(next));
         else return redirect("/me/dashboard");
     }
 

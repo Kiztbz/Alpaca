@@ -10,7 +10,7 @@ const makeReceiptId = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 12)
 const DEMO_PRICE_CENTS = 4900;
 
 export async function POST(req, props) {
-  const user = await useUser({ token: (await cookies()).get("token")?.value });
+  const user = await useUser({ token: (await cookies()).get("token")?.value, select: ["id", "role"] });
   if (!user) return unauthorized;
 
   const { id } = await props.params;
@@ -26,6 +26,9 @@ export async function POST(req, props) {
     if (!course) return NextResponse.json({ message: "Course not found" }, { status: 404 });
     if (course.enrollment !== "paid") return NextResponse.json({ message: "This course does not require checkout" }, { status: 400 });
     if (String(course.createdBy) === String(user.id)) return NextResponse.json({ message: "Course owners do not need to purchase their course" }, { status: 400 });
+    const manager = user.role === "superadmin" || Boolean(await db.selectFrom("course_users").select("courseId")
+      .where("courseId", "=", id).where("userId", "=", user.id).where("role", "in", ["owner", "admin"]).executeTakeFirst());
+    if (manager) return NextResponse.json({ message: "Course administrators manage paid courses without checkout" }, { status: 400 });
 
     const result = await db.transaction().execute(async (trx) => {
       let payment = await trx

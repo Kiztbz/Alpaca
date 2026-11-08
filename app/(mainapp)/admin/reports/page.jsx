@@ -13,7 +13,7 @@ export default async function ReportsPage() {
         select: ["id", "role"],
     });
 
-    if (user?.role !== "admin") redirect("/me/dashboard");
+    if (!["admin", "superadmin"].includes(user?.role)) redirect("/me/dashboard");
 
     const reports = await db
         .selectFrom("user_reports as ur")

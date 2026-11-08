@@ -39,13 +39,14 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
 
   const canEdit =
     !!user &&
-    (course.creator?.id === user?.id ||
+    (user.role === "superadmin" || course.isAdmin ||
+      course.creator?.id === user?.id ||
       course.permissions?.write.includes(user?.id) ||
       course.permissions?.allWrite);
 
-  const canDelete = course.creator?.id === user?.id;
+  const canDelete = user?.role === "superadmin" || course.creator?.id === user?.id;
   const isEnrolled = Boolean(course.isEnrolled || joined);
-  const isOwned = Boolean(course.isOwned || canDelete);
+  const isOwned = Boolean(course.isOwned || course.isAdmin || canDelete);
   const notesTotal = Number(course.notesTotal ?? course.notes?.length ?? 0);
   const quizzesTotal = Number(course.quizzesTotal ?? course.quizzes?.length ?? 0);
   const completed = Number(course.notesCompleted || 0) + Number(course.quizzesCompleted || 0);

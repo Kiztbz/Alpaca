@@ -25,6 +25,9 @@
 .sideCourse h2 { margin: 8px 0 7px; font-size: 21px; line-height: 1.15; letter-spacing: -.025em; }
 .sideCourse p { margin: 0; color: var(--fg-4); font-size: 11px; font-weight: 700; }
 .sideNav { display: grid; gap: 7px; }
+.modeNav { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; padding: 0 7px; }
+.modeNav button { padding: 9px; border: 1px solid var(--bg-4); border-radius: 10px; color: var(--fg-4); background: var(--bg-1); cursor: pointer; font-size: 10px; font-weight: 900; }
+.modeNav button.active { color: var(--accent-fg); border-color: var(--accent); background: var(--accent); }
 .sideNav button { width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px; border: 0; border-radius: 12px; color: var(--fg-4); text-align: left; background: transparent; cursor: pointer; }
 .sideNav button:hover { color: var(--fg-1); background: var(--bg-3); }
 .sideNav button > span { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: var(--bg-3); }
@@ -105,6 +108,26 @@
 .emptyState h3 { margin: 16px 0 6px; font-size: 18px; }
 .emptyState p { max-width: 360px; margin: 0; color: var(--fg-4); font-size: 12px; line-height: 1.55; }
 .mobileNav { display: none; }
+.manageWorkspace { max-width: 1180px; display: grid; gap: 16px; margin: 0 auto; }
+.manageWorkspace > header { padding: 24px; border: 1px solid var(--bg-4); border-radius: 16px; background: var(--bg-2); }
+.manageWorkspace > header span { color: var(--accent); font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.manageWorkspace > header h2 { margin: 6px 0; font-size: 23px; }
+.manageWorkspace > header p { margin: 0; color: var(--fg-4); font-size: 12px; }
+.manageGroup { padding: 20px; border: 1px solid var(--bg-4); border-radius: 16px; background: var(--bg-2); }
+.manageGroup > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.manageGroup > header > div { display: flex; align-items: baseline; gap: 10px; }
+.manageGroup h3 { margin: 0; font-size: 18px; }
+.manageGroup > header span { color: var(--fg-4); font-size: 10px; font-weight: 800; }
+.manageGrid { display: grid; gap: 8px; }
+.manageCard { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 13px 14px; border: 1px solid var(--bg-3); border-radius: 12px; background: var(--bg-1); }
+.manageCard > div { min-width: 0; }
+.manageCard > div span { color: var(--accent); font-size: 8px; font-weight: 900; text-transform: uppercase; }
+.manageCard h4 { margin: 4px 0 0; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.manageCard nav { display: flex; flex: 0 0 auto; gap: 6px; }
+.manageCard nav > * { padding: 7px 10px; border: 1px solid var(--bg-4); border-radius: 8px; color: var(--fg-2); background: var(--bg-2); cursor: pointer; font-size: 9px; font-weight: 900; }
+.manageCard nav > *:hover { border-color: var(--accent-50); }
+.manageCard nav .removeResource { color: #ef4444; }
+.manageEmpty { margin: 0; padding: 22px; color: var(--fg-4); text-align: center; }
 
 @media (max-width: 1040px) {
   .shell { grid-template-columns: 220px minmax(0, 1fr); }
@@ -124,6 +147,9 @@
   .courseActions > button { width: 100%; }
   .certificateStatus { width: 100%; }
   .ownerActions button { flex: 1; }
+  .manageGroup > header, .manageCard { align-items: stretch; flex-direction: column; }
+  .manageCard nav { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .manageCard nav > * { text-align: center; }
   .mobileNav { position: fixed; z-index: 50; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); width: min(430px, calc(100% - 32px)); display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 7px; border: 1px solid var(--bg-4); border-radius: 18px; background: color-mix(in srgb, var(--bg-2) 92%, transparent); box-shadow: 0 12px 34px rgba(0, 0, 0, .3); backdrop-filter: blur(16px); transform: translateX(-50%); }
   .mobileNav button { min-width: 0; display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border: 0; border-radius: 12px; color: var(--fg-4); background: transparent; font-size: 9px; font-weight: 800; }
   .mobileNav button.active { color: var(--accent-fg); background: var(--accent); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .13); }

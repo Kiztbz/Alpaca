@@ -161,7 +161,6 @@ export function Dashboard() {
           <div className={styles.quests}>
             <Link href={continueNote ? `/notes/${continueNote.publicId}` : "/create?type=Note"}><span className={learnedToday ? styles.done : ""}>{learnedToday ? <Icon name="check" /> : <Icon name="book" />}</span><div><strong>Complete a lesson</strong><small>{learnedToday ? "Finished today" : "Keep your streak alive"}</small></div></Link>
             <Link href="/daily"><span><Icon name="bolt" /></span><div><strong>Quick review</strong><small>{dueQuizzes.length} questions available</small></div></Link>
-            <Link href="/study"><span><Icon name="cards" /></span><div><strong>Study your notes</strong><small>Choose your own session</small></div></Link>
           </div>
         </section>
 

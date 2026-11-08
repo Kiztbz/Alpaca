@@ -4,9 +4,11 @@ import { NoteInput, QuizInput, SourceInput, CourseInput } from "@client";
 import { useEffect, useState } from "react";
 import styles from "./Create.module.css";
 import InputDefaults from "./inputDefaults";
+import { useStore } from "@/store/store";
 
-export default function Create({ initialTab }) {
+export default function Create({ initialTab, course }) {
     const [tab, setTab] = useState(initialTab || "Note");
+    const setInputDefaults = useStore((state) => state.setInputDefaults);
 
     const tabs = {
         Note: <NoteInput />,
@@ -20,6 +22,10 @@ export default function Create({ initialTab }) {
             setTab(initialTab || localStorage.getItem("createTab") || "Note");
         }
     }, [initialTab]);
+
+    useEffect(() => {
+        if (course) setInputDefaults({ courses: [course] });
+    }, [course, setInputDefaults]);
 
     return (
         <main className={styles.main}>

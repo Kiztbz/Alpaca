@@ -44,6 +44,7 @@ export async function PATCH(req, props) {
   try {
     const user = await useUser({
       token: (await cookies()).get("token")?.value,
+      select: ["id", "role"],
     });
     if (!user) return unauthorized;
 
@@ -75,9 +76,15 @@ export async function PATCH(req, props) {
       );
     }
 
+    const delegatedAdmin = user.role === "superadmin" || Boolean(await db
+      .selectFrom("course_users").select("courseId")
+      .where("courseId", "=", id).where("userId", "=", user.id)
+      .where("role", "in", ["owner", "admin"]).executeTakeFirst());
+
     if (
       !areFieldsEqual(permissions, course.permissions) &&
-      course.createdBy !== user.id
+      course.createdBy !== user.id &&
+      !delegatedAdmin
     ) {
       return NextResponse.json(
         {
