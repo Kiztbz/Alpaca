@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/auth";
-import { Header } from "@server";
-import { FillStore } from "@client";
+import { AppShell, FillStore } from "@client";
 import { getGroups, getPermittedResources, getRelationships } from "@/lib/db/helpers";
 
 export const metadata = {
@@ -23,9 +22,8 @@ export default async function RootLayout({ children }) {
 
     return (
         <>
-            <Header user={user} />
             <FillStore user={user} groups={groups} relationships={relationships} {...resources} />
-            {children}
+            <AppShell user={user}>{children}</AppShell>
         </>
     );
 }

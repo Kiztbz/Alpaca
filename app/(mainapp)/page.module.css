@@ -429,6 +429,7 @@
 .hero::after {
     display: none;
 }
+.heroMascot{position:relative;z-index:1;display:grid;min-height:560px;place-items:center}.heroMascot img{z-index:1;width:auto;height:min(610px,72vh);object-fit:contain;filter:drop-shadow(0 34px 54px rgba(2,8,23,.55))}.logoWord{position:absolute;z-index:0;color:rgba(96,165,250,.08);font-size:clamp(74px,10vw,145px);font-weight:950;letter-spacing:.08em;transform:rotate(-90deg)}
 .method,
 .practice {
     border-top: 1px solid rgba(96, 165, 250, 0.1);
@@ -447,6 +448,14 @@
 }
 .finalCta p {
     color: var(--muted);
+}
+
+.mascotImage {
+    z-index: 1;
+    width: auto;
+    height: 440px;
+    object-fit: contain;
+    filter: drop-shadow(0 28px 42px rgba(2, 8, 23, .48));
 }
 
 /* Product screens use a compact application frame instead of landing-page spacing. */
@@ -511,4 +520,6 @@
 @media (max-width: 720px) {
     .main { padding: 30px 16px 68px; }
     .main > section > header { align-items: flex-start; }
+    .mascotImage { height: 355px; }
+    .heroMascot{min-height:430px}.heroMascot img{height:430px}.logoWord{font-size:80px}
 }

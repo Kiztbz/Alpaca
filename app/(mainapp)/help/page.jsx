@@ -1,0 +1,3 @@
+import styles from "../InfoPage.module.css";
+export const metadata={title:"Help"};
+export default function HelpPage(){return <main className={styles.page}><span>Support</span><h1>Help center</h1><p>Quick answers for learning, training, and account management.</p><div className={styles.sections}><section><h2>Learn</h2><p>Choose an enrolled course from the selector at the top of Learn. Lessons, practice, and sources update to match it.</p></section><section><h2>Daily Train</h2><p>Select an enrolled course and start a focused review queue generated from that course’s quizzes.</p></section><section><h2>Account help</h2><p>Use Settings to manage your profile, email, password, sessions, and two-factor authentication.</p></section></div></main>}

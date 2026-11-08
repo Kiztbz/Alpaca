@@ -20,7 +20,7 @@ export default async function LoginPage(props) {
         const { next } = searchParams;
 
         if (next) return redirect(safeNextPath(next));
-        else return redirect("/me/dashboard");
+        else return redirect("/learn");
     }
 
     return (

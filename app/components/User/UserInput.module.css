@@ -111,6 +111,7 @@ a.forgotPassword {
     width: fit-content;
     height: fit-content;
 }
+.courseChoice{display:grid;gap:7px}.courseChoice>span{font-size:13px;font-weight:800;color:var(--fg-2)}.courseChoice select{width:100%;padding:12px;color:var(--fg-1);border:1px solid var(--border-color);border-radius:10px;background:var(--bg-1)}.courseChoice small{color:var(--fg-4);font-size:10px}.courseChoice select:disabled{opacity:.55}
 
 @keyframes popIn {
     0% {

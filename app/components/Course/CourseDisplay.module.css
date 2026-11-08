@@ -59,7 +59,13 @@
 
 .cardBody {
   display: block;
+  width: 100%;
   margin-top: 15px;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  border: 0;
+  background: transparent;
 }
 
 .cardBody h3 {
@@ -171,6 +177,10 @@
 
 .cardActions button:disabled { cursor: wait; opacity: .65; }
 .cardActions span { font-size: 14px; }
+
+.marketplaceCard {
+  min-height: 292px;
+}
 
 @media (max-width: 520px) {
   .compactCard { min-height: 280px; padding: 16px; }

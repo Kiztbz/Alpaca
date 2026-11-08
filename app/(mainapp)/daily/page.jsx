@@ -1,110 +1,30 @@
-import { getPermittedResources, getRelationships } from "@/lib/db/helpers";
-import styles from "../AppScreen.module.css";
-import { cookies } from "next/headers";
-import { getSessionUser } from "@/lib/auth";
-import { DailyTrain, FillStore } from "@client";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth";
+import { getEnrolledLearningData, selectEnrolledCourse } from "@/lib/enrolledCourses";
+import { DailyTrain, FillStore, CourseSwitcher } from "@client";
 import shuffleQuizzes from "@/lib/shuffleQuizzes";
-import { expandCourseRelationships } from "@/lib/resourceRelations";
-import { filterPaidCourseContent } from "@/lib/courseAccess";
+import styles from "../AppScreen.module.css";
+import switcherStyles from "@/app/components/CourseContext/CourseSwitcher.module.css";
 
-export default async function DailyPage() {
+export const metadata = { title: "Daily train", robots: { index: false, follow: false } };
+
+export default async function DailyPage(props) {
   const user = await getSessionUser((await cookies()).get("token")?.value);
+  if (!user) redirect("/login?next=/daily");
+  const searchParams = await props.searchParams;
+  const { resources, relationships, courses } = await getEnrolledLearningData(user.id);
+  const activeCourse = selectEnrolledCourse(courses, searchParams.course);
+  if (!activeCourse) return <main className={switcherStyles.empty}><div><h1>Enroll before training</h1><p>Daily Train builds a focused queue from one of your enrolled courses.</p><Link className="button primary" href="/marketplace">Browse courses</Link></div></main>;
 
-  const [resourcesObject, rawRelationships] = await Promise.all([
-    getPermittedResources({
-      userId: user?.id,
-      takeAll: true,
-    }),
-    getRelationships(),
-  ]);
-  const relationships = expandCourseRelationships(rawRelationships);
-  const safeResources = {
-    ...resourcesObject,
-    notes: filterPaidCourseContent({ items: resourcesObject.notes, resourceType: "note", courses: resourcesObject.courses, relationships, userId: user?.id }),
-    quizzes: filterPaidCourseContent({ items: resourcesObject.quizzes, resourceType: "quiz", courses: resourcesObject.courses, relationships, userId: user?.id }),
-    sources: filterPaidCourseContent({ items: resourcesObject.sources, resourceType: "source", courses: resourcesObject.courses, relationships, userId: user?.id }),
-  };
-  const quizzes = safeResources.quizzes;
-  const sortedQuizzes = shuffleQuizzes(quizzes);
-  
-  function pushToList(rel, type) {
-    const resourceList = [
-      {
-        name: "sources",
-        title: "Sources",
-        singular: "source",
-        description:
-          "A source is a record of a resource such as a book, website, or video tutorial, that you can cite for your notes or quiz questions.",
-      },
-      {
-        name: "notes",
-        title: "Notes",
-        singular: "note",
-        description:
-          "A note is a record of your thoughts, ideas, or summaries of a source. You can use notes to create quiz questions or to help you study.",
-      },
-      {
-        name: "quizzes",
-        title: "Quizzes",
-        singular: "quiz",
-        description:
-          "A quiz is a question that challenges your understanding and recall of information from a source or note.",
-      },
-      {
-        name: "courses",
-        title: "Courses",
-        singular: "course",
-        description:
-          "A course is a collection of notes, quizzes, and sources that are related to a specific topic or subject.",
-      },
-    ];
-    if (rel.AType === type) {
-      quizzes
-        .filter((x) => String(x.id) === String(rel.A))
-        .forEach((x) => {
-          const listType = resourceList.find(
-            (x) => x.singular === rel.BType
-          ).name;
-          if (!x[listType]) x[listType] = [];
-          if (!x[listType].includes(rel.B)) x[listType].push(rel.B);
-        });
-    }
+  const quizIds = new Set((activeCourse.quizzes || []).map(String));
+  const courseQuizzes = resources.quizzes.filter((quiz) => quizIds.has(String(quiz.id))).map((quiz) => ({ ...quiz, courses: [activeCourse.id] }));
+  const sortedQuizzes = shuffleQuizzes(courseQuizzes);
 
-    if (rel.BType === type) {
-      quizzes
-        .filter((x) => String(x.id) === String(rel.B))
-        .forEach((x) => {
-          const listType = resourceList.find(
-            (x) => x.singular === rel.AType
-          ).name;
-          if (!x[listType]) x[listType] = [];
-          if (!x[listType].includes(rel.A)) x[listType].push(rel.A);
-        });
-    }
-  }
-
-  relationships.forEach((rel) => pushToList(rel, "quiz"));
-
-  return (
-    <main className={styles.screen}>
-      {user && <FillStore user={user} relationships={relationships} {...safeResources} />}
-      <header className={styles.screenHeader}>
-        <div><span>Spaced repetition (FSRS v5)</span><h1>Daily Train</h1><p>A focused, adaptive session of questions optimized by the Free Spaced Repetition Scheduler.</p></div>
-      </header>
-      <section className={styles.content}><div className={styles.sessionPanel}><div><span>Today&apos;s queue</span><h2>{sortedQuizzes.length} questions ready</h2><p>Adaptive intervals powered by FSRS. Mastered cards wait longer before returning, while tricky cards return sooner to reinforce retention.</p></div>
-        {user ? (
-          <DailyTrain quizzes={sortedQuizzes} />
-        ) : (
-          <p>
-            Please{" "}
-            <Link className="link" href="/login">
-              log in
-            </Link>{" "}
-            to start training
-          </p>
-        )}</div>
-      </section>
-    </main>
-  );
+  return <main className={styles.screen}>
+    <FillStore user={user} relationships={relationships} {...resources} quizzes={courseQuizzes} />
+    <header className={switcherStyles.bar}><div><span>Spaced repetition · FSRS v5</span><h1>Daily Train</h1></div><CourseSwitcher courses={courses} activeCourse={activeCourse} label="Training course" /></header>
+    <section className={styles.content}><div className={styles.sessionPanel}><div><span>{activeCourse.name}</span><h2>{sortedQuizzes.length} questions ready</h2><p>Your queue only includes practice from this enrolled course. Mastered cards wait longer; difficult cards return sooner.</p></div><DailyTrain quizzes={sortedQuizzes} /></div></section>
+  </main>;
 }

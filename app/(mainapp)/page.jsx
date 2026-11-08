@@ -1,6 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./page.module.css";
 import { absoluteUrl, siteConfig } from "@/lib/metadatas";
+import { cookies } from "next/headers";
+import { getSessionUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 const steps = [
     ["↗", "Bring your sources", "Keep books, articles, videos, and websites together so every idea has context."],
@@ -10,7 +14,9 @@ const steps = [
 
 const quizTypes = ["Flashcards", "Multiple choice", "Fill in the blank", "Ordered lists", "Verbatim recall"];
 
-export default function HomePage() {
+export default async function HomePage() {
+    const user = await getSessionUser((await cookies()).get("token")?.value);
+    if (user) redirect("/learn");
     const structuredData = {
         "@context": "https://schema.org",
         "@graph": [
@@ -48,8 +54,8 @@ export default function HomePage() {
                     <h1>Turn what you learn into what you <em>remember.</em></h1>
                     <p>Alpaca connects your sources, notes, and quizzes in one calm place—so studying feels less scattered and progress feels natural.</p>
                     <div className={styles.actions}>
-                        <Link href="/register" className={styles.primary}>Start learning <span>→</span></Link>
-                        <Link href="/courses" className={styles.secondary}>Explore courses</Link>
+                        <Link href="/login" className={styles.primary}>Log in <span>→</span></Link>
+                        <Link href="/marketplace" className={styles.secondary}>Explore courses</Link>
                     </div>
                     <div className={styles.proof}>
                         <span className={styles.proofLine} />
@@ -57,15 +63,7 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                <div className={styles.preview} aria-label="Alpaca learning flow preview">
-                    <header><span className={styles.logo}>A</span><strong>Learning Fundamentals</strong><b>7 day streak</b></header>
-                    <div className={styles.previewBody}>
-                        <article><span className={styles.sourceIcon}>↗</span><div><small>SOURCE</small><strong>Learning how to learn</strong><p>Book · 4 key ideas</p></div><i>✓</i></article>
-                        <article><span className={styles.noteIcon}>✦</span><div><small>NOTE</small><strong>Active recall</strong><p>Connected to 2 sources</p></div><i>✓</i></article>
-                        <article className={styles.quizCard}><span className={styles.quizIcon}>?</span><div><small>QUIZ</small><strong>What makes recall active?</strong><div className={styles.progress}><span /></div></div><b>LV 4</b></article>
-                    </div>
-                    <footer><span>Today&apos;s progress</span><strong>8 / 10 complete</strong></footer>
-                </div>
+                <div className={styles.heroMascot} aria-label="Alpaca mascot"><span className={styles.logoWord}>ALPACA</span><Image src="/assets/images/llama-mascot-white-v2.png" alt="Friendly white Alpaca mascot" width={1064} height={1478} priority /></div>
             </section>
 
             <section className={styles.method}>
@@ -78,7 +76,7 @@ export default function HomePage() {
             <section className={styles.practice}>
                 <div className={styles.mascotWrap}>
                     <div className={styles.orbit} />
-                    <div className={styles.mascot}><span>A</span><b>Daily review</b><strong>8 of 10 complete</strong></div>
+                    <Image className={styles.mascotImage} src="/assets/images/llama-mascot-white-v2.png" alt="Friendly white Alpaca mascot standing on two legs" width={1064} height={1478} priority={false} />
                     <i className={styles.xp}>Level 4</i><i className={styles.nice}>On track</i>
                 </div>
                 <div className={styles.practiceCopy}>

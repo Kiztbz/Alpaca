@@ -24,7 +24,7 @@ import {
   Card,
 } from "@client";
 
-export function CourseDisplay({ lighter = false, darker = false, course, compact = false }) {
+export function CourseDisplay({ lighter = false, darker = false, course, compact = false, presentation = "default", onDemo }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -87,15 +87,18 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
 
   if (compact) {
     return (
-      <article className={`${courseStyles.compactCard} ${isEnrolled || isOwned ? courseStyles.learningCard : courseStyles.marketCard}`}>
+      <article className={`${courseStyles.compactCard} ${isEnrolled || isOwned ? courseStyles.learningCard : courseStyles.marketCard} ${presentation === "marketplace" ? courseStyles.marketplaceCard : ""}`}>
         <div className={courseStyles.cardTopline}>
-          <span>{isOwned ? "Your course" : isEnrolled ? progress === 100 ? "Completed" : "In progress" : "Marketplace"}</span>
+          <span>{course.isDemo ? "Platform demo" : isOwned ? "Your course" : isEnrolled ? progress === 100 ? "Completed" : "In progress" : "Marketplace"}</span>
           <span>Level {course.level || 0}</span>
         </div>
-        <Link href={`/courses/${encodeURIComponent(course.name)}`} className={courseStyles.cardBody}>
+        {course.isDemo && onDemo ? <button type="button" onClick={onDemo} className={courseStyles.cardBody}>
           <h3>{course.name}</h3>
           <p>{course.description || "A focused learning path with lessons, practice, and trusted sources."}</p>
-        </Link>
+        </button> : <Link href={`/courses/${encodeURIComponent(course.name)}`} className={courseStyles.cardBody}>
+          <h3>{course.name}</h3>
+          <p>{course.description || "A focused learning path with lessons, practice, and trusted sources."}</p>
+        </Link>}
         <div className={courseStyles.courseMeta}>
           <span>{notesTotal} lessons</span>
           <span>{quizzesTotal} quizzes</span>
@@ -109,7 +112,9 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
           </div>
         )}
         <div className={courseStyles.cardActions}>
-          {isEnrolled || isOwned ? (
+          {course.isDemo && onDemo ? (
+            <button type="button" onClick={onDemo}>Try interactive demo<span>→</span></button>
+          ) : isEnrolled || isOwned ? (
             <Link href={`/courses/${encodeURIComponent(course.name)}`}>{progress === 100 && !isOwned ? "Review course" : isOwned ? "Manage course" : "Continue course"}<span>→</span></Link>
           ) : course.enrollment === "open" ? (
             <button type="button" onClick={enroll} disabled={joining}>{joining ? "Enrolling…" : "Enroll free"}<span>→</span></button>

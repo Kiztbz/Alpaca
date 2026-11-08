@@ -26,7 +26,7 @@ function Icon({ name }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
 
-export function CourseDash({ course, isLogged, canAccessContent = true }) {
+export function CourseDash({ course, isLogged, canAccessContent = true, embedded = false }) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
   const user = useStore((state) => state.user);
@@ -76,9 +76,9 @@ export function CourseDash({ course, isLogged, canAccessContent = true }) {
   const resourceCount = Number(course.notesTotal ?? course.notes?.length ?? 0) + Number(course.quizzesTotal ?? course.quizzes?.length ?? 0) + (course.sources?.length || 0);
 
   return (
-    <main className={styles.shell}>
+    <main className={`${styles.shell} ${embedded ? styles.embedded : ""}`}>
       <aside className={styles.sidebar}>
-        <Link href="/courses" className={styles.backLink}><Icon name="arrow" /> All courses</Link>
+        <Link href="/marketplace" className={styles.backLink}><Icon name="arrow" /> Marketplace</Link>
         <div className={styles.sideCourse}>
           <span>Current course</span>
           <h2>{course.name}</h2>
@@ -99,7 +99,7 @@ export function CourseDash({ course, isLogged, canAccessContent = true }) {
       </aside>
 
       <section className={styles.appView}>
-        <Link href="/courses" className={styles.mobileBack}><Icon name="arrow" /> All courses</Link>
+        <Link href="/marketplace" className={styles.mobileBack}><Icon name="arrow" /> Marketplace</Link>
         <header className={styles.courseHero}>
           <div className={styles.heroCopy}>
             <span className={styles.eyebrow}>Course dashboard</span>

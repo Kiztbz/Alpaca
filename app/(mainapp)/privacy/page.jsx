@@ -1,0 +1,3 @@
+import styles from "../InfoPage.module.css";
+export const metadata={title:"Privacy policy"};
+export default function PrivacyPage(){return <main className={styles.page}><span>Legal</span><h1>Privacy policy</h1><p>Alpaca stores the account, course enrollment, learning progress, authentication, and operational analytics needed to provide and secure the service.</p><div className={styles.sections}><section><h2>Data used</h2><p>We use account identifiers, course activity, session information, and aggregated page activity to operate the learning experience.</p></section><section><h2>Your controls</h2><p>Account and security controls are available in Settings. Sensitive credentials are stored using one-way password hashing.</p></section></div></main>}

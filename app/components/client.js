@@ -18,6 +18,8 @@ export { Input, TextArea, Label } from "./Form/Input";
 export { Permissions } from "./Form/Permissions";
 
 export { RightContainer } from "./Header/RightContainer";
+export { AppShell } from "./AppShell/AppShell";
+export { CourseSwitcher } from "./CourseContext/CourseSwitcher";
 
 export { InputPopup } from "./InputPopup/InputPopup";
 

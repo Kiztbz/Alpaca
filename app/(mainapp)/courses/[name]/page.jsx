@@ -88,7 +88,7 @@ export default async function CoursePage(props) {
   ]);
 
   const course = resources.courses.find((x) => x.name === name);
-  if (!course) return redirect("/courses");
+  if (!course) return redirect("/marketplace");
 
   const canAccessContent = hasCourseContentAccess(course, user?.id);
 

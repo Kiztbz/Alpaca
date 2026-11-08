@@ -8,10 +8,11 @@ import styles from "./UserInput.module.css";
 import { useAlerts } from "@/store/store";
 import Link from "next/link";
 
-export function UserInput({ isRegistering, onSubmit }) {
+export function UserInput({ isRegistering, onSubmit, courses = [] }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [confirm, setConfirm] = useState("");
+    const [courseId, setCourseId] = useState(courses[0]?.id ? String(courses[0].id) : "");
 
     const [showTwoFactor, setShowTwoFactor] = useState(true);
     const [twoFactorToken, setTwoFactorToken] = useState("");
@@ -50,10 +51,11 @@ export function UserInput({ isRegistering, onSubmit }) {
             },
         ]);
 
-        if (!validator.isValid || password !== confirm) {
+        if (!validator.isValid || password !== confirm || !courseId) {
             return setErrors({
                 ...validator.errors,
                 confirm: password !== confirm ? "Passwords do not match" : "",
+                course: !courseId ? "Choose a course to continue" : "",
             });
         }
 
@@ -69,6 +71,7 @@ export function UserInput({ isRegistering, onSubmit }) {
                 body: JSON.stringify({
                     username: name,
                     password,
+                    courseId,
                 }),
             }
         );
@@ -322,6 +325,14 @@ export function UserInput({ isRegistering, onSubmit }) {
                     setErrors((errors) => ({ ...errors, username: "" }));
                 }}
             />
+
+            {isRegistering && <label className={styles.courseChoice}>
+                <span>Start with a course</span>
+                <select value={courseId} onChange={(event) => { setCourseId(event.target.value); setErrors((current) => ({ ...current, course: "" })); }} required disabled={!courses.length}>
+                    {courses.length ? courses.map((course) => <option key={course.id} value={course.id}>{course.name}</option>) : <option value="">No open courses available</option>}
+                </select>
+                <small>{errors.course || "Every new account begins enrolled in one open course."}</small>
+            </label>}
 
             <Tooltip placement="right">
                 <TooltipTrigger>

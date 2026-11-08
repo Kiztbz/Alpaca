@@ -180,7 +180,7 @@ export function Dashboard() {
               <div><strong>Certificate</strong><small>{certificateReady ? "Course complete" : activeCourse ? `${activitiesRemaining} activit${activitiesRemaining === 1 ? "y" : "ies"} remaining` : "Choose a course first"}</small></div>
               <b>{certificateReady ? "Ready" : "Locked"}</b>
             </div>
-            <Link href="/courses" className={styles.optionRow}>
+            <Link href="/marketplace" className={styles.optionRow}>
               <span><Icon name="book" /></span>
               <div><strong>Other courses</strong><small>{sortedCourses.length > 1 ? `${sortedCourses.length - 1} more available` : "Browse learning paths"}</small></div>
               <Icon name="chevron" />

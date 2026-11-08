@@ -5,6 +5,7 @@
   border-top: 1px solid var(--bg-3);
   background: var(--bg-1);
 }
+.shell.embedded{grid-template-columns:minmax(0,1fr);min-height:auto}.embedded>.sidebar{display:none}.embedded>.appView{padding-top:22px}.embedded .mobileBack{display:none}
 
 .shell svg { width: 19px; height: 19px; flex: 0 0 auto; }
 .sidebar {

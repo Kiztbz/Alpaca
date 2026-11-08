@@ -1,9 +1,14 @@
+"use client";
+
 import { RightContainer } from "@client";
 import styles from "./Header.module.css";
 import { DynamicNav } from "@server";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-export async function Header({ user }) {
+export function Header({ user }) {
+    const pathname = usePathname();
+    if (pathname === "/") return null;
     return (
         <div className={styles.header}>
             <header>

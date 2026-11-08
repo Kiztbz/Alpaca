@@ -1,0 +1,3 @@
+import styles from "../InfoPage.module.css";
+export const metadata={title:"Terms and conditions"};
+export default function TermsPage(){return <main className={styles.page}><span>Legal</span><h1>Terms and conditions</h1><p>Use Alpaca responsibly and only upload or share learning material you are permitted to use.</p><div className={styles.sections}><section><h2>Your account</h2><p>You are responsible for protecting your credentials and for activity performed through your account.</p></section><section><h2>Course content</h2><p>Course owners and administrators are responsible for the accuracy, permissions, and lawful use of their published material.</p></section></div></main>}

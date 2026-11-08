@@ -19,8 +19,9 @@ export const metadata = {
     category: "education",
     alternates: { canonical: absoluteUrl("/") },
     icons: {
-        icon: [{ url: "/favicon.ico", sizes: "any" }],
-        shortcut: "/favicon.ico",
+        icon: [{ url: "/assets/images/llama-face-v2.png", type: "image/png" }],
+        shortcut: "/assets/images/llama-face-v2.png",
+        apple: "/assets/images/llama-face-v2.png",
     },
     manifest: "/manifest.webmanifest",
     openGraph: {

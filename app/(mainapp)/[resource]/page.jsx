@@ -83,6 +83,7 @@ export default async function ResourcePage(props) {
 
   const current = resourceList.find((r) => r.name === params.resource);
   if (!current) return redirect("/resources");
+  if (current.name === "courses") return redirect("/marketplace");
 
   const user = await getSessionUser((await cookies()).get("token")?.value);
 
@@ -322,7 +323,7 @@ export default async function ResourcePage(props) {
                     <CourseRail label="Course marketplace">
                       {resources
                         .filter((course) => !course.isEnrolled && !course.isOwned)
-                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                        .sort((a, b) => Number(b.isDemo) - Number(a.isDemo) || new Date(b.createdAt) - new Date(a.createdAt))
                         .map((course) => <li key={course.id}><CourseDisplay course={course} compact /></li>)}
                     </CourseRail>
                   ) : <div className={coursePageStyles.emptyShelf}><strong>You’re all caught up</strong><span>New marketplace courses will appear here.</span></div>}

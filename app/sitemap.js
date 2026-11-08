@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap() {
     const staticPages = [
-        ["/", 1, "weekly"], ["/courses", 0.9, "daily"],
+        ["/", 1, "weekly"], ["/marketplace", 0.9, "daily"],
         ["/notes", 0.7, "daily"], ["/quizzes", 0.7, "daily"],
         ["/sources", 0.7, "daily"], ["/about", 0.5, "monthly"],
     ].map(([path, priority, changeFrequency]) => ({
