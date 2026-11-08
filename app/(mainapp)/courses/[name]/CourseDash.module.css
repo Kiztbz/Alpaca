@@ -49,7 +49,7 @@
 .heroStats span { font-size: 10px; font-weight: 700; opacity: .78; }
 .heroStats strong { color: inherit; font-size: 13px; opacity: 1; }
 .courseActions { display: flex; flex: 0 0 auto; align-items: flex-end; flex-direction: column; gap: 8px; }
-.courseActions > button { min-width: 132px; padding: 11px 16px; border: 0; border-radius: 11px; cursor: pointer; font-size: 11px; font-weight: 900; box-shadow: 0 3px 0 rgba(0, 0, 0, .14); }
+.courseActions > button, .courseActions > a { min-width: 132px; padding: 11px 16px; border: 0; border-radius: 11px; cursor: pointer; font-size: 11px; font-weight: 900; text-align: center; box-shadow: 0 3px 0 rgba(0, 0, 0, .14); }
 .primaryAction { color: var(--accent); background: var(--accent-fg); }
 .secondaryAction { color: var(--accent-fg); background: rgba(0, 0, 0, .17); }
 .ownerActions { display: flex; gap: 6px; }
@@ -71,6 +71,12 @@
 .sectionHeader h2 { margin: 0; font-size: 19px; letter-spacing: -.02em; }
 .countPill { padding: 6px 9px; border-radius: 99px; color: var(--accent); background: var(--accent-08); font-size: 9px; font-weight: 900; }
 .contentBody { min-height: 360px; padding: 22px; }
+.lockedWorkspace { max-width: 760px; min-height: 310px; display: flex; align-items: center; justify-content: center; flex-direction: column; margin: 0 auto; padding: 42px; border: 1px solid var(--bg-4); border-radius: 16px; text-align: center; background: var(--bg-2); }
+.lockedIcon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 16px; border-radius: 18px; color: var(--accent); background: var(--accent-08); }
+.lockedIcon svg { width: 25px; height: 25px; }
+.lockedWorkspace small { color: var(--accent); font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.lockedWorkspace h2 { margin: 8px 0; font-size: 25px; letter-spacing: -.025em; }
+.lockedWorkspace p { max-width: 520px; margin: 0; color: var(--fg-4); font-size: 12px; line-height: 1.6; }
 
 .lessonGrid, .cardGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .appCard { min-width: 0; min-height: 222px; display: flex; flex-direction: column; padding: 17px; border: 1px solid var(--bg-4); border-radius: 13px; color: var(--fg-1); background: var(--bg-0); box-shadow: 0 3px 0 var(--bg-3); transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }

@@ -107,6 +107,7 @@ export const DialogTrigger = forwardRef(function DialogTrigger(
 
     return (
         <button
+            type="button"
             ref={ref}
             // The user can style the trigger based on the state
             data-state={context.open ? "open" : "closed"}
@@ -204,6 +205,7 @@ export const DialogClose = forwardRef(function DialogClose(props, ref) {
     return (
         <button
             type="button"
+            aria-label="Close dialog"
             {...props}
             ref={ref}
             onClick={() => setOpen(false)}

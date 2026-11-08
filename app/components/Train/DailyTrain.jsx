@@ -375,27 +375,19 @@ export function DailyTrain({ quizzes = [] }) {
   return (
     <>
       {/* ── Main Start Bar ── */}
-      <div className={styles.buttonContainer}>
+      {!start && <div className={styles.buttonContainer}>
         <button
+          type="button"
           className="button"
-          onClick={() => {
-            if (start) {
-              setIsPaused(!isPaused);
-            } else {
-              handleStartSession();
-            }
-          }}
+          onClick={handleStartSession}
         >
-          {start
-            ? isPaused
-              ? "Continue Training"
-              : "Pause Training"
-            : filteredQuizzes.length > 0
-              ? `Start Daily Train (${filteredQuizzes.length})`
-              : "Start Training"}
+          {filteredQuizzes.length > 0
+            ? `Start Daily Train (${filteredQuizzes.length})`
+            : "Start Training"}
         </button>
 
         <button
+          type="button"
           onClick={() => setShowSettings(true)}
           className={styles.settingsButton}
           title="Daily Train Settings"
@@ -409,7 +401,7 @@ export function DailyTrain({ quizzes = [] }) {
             </g>
           </svg>
         </button>
-      </div>
+      </div>}
 
       {/* ── Settings Dialog ── */}
       <Dialog open={showSettings} onOpenChange={() => setShowSettings(false)}>
@@ -431,6 +423,7 @@ export function DailyTrain({ quizzes = [] }) {
           <header className={styles.trainHeader}>
             <div className={styles.headerLeft}>
               <button
+                type="button"
                 className={styles.exitButton}
                 onClick={() => setShowExitConfirm(true)}
                 title="Quit lesson (Esc)"
@@ -449,6 +442,15 @@ export function DailyTrain({ quizzes = [] }) {
             </div>
 
             <div className={styles.headerRight}>
+              <button
+                type="button"
+                className={styles.headerIconBtn}
+                onClick={() => setIsPaused(!isPaused)}
+                aria-label={isPaused ? "Resume training" : "Pause training"}
+                title={isPaused ? "Resume training" : "Pause training"}
+              >
+                {isPaused ? "▶" : "Ⅱ"}
+              </button>
               {queue.length > 0 && !sessionFinished && (
                 <div className={styles.queueBadge} title="Questions remaining">
                   ⚡ {queue.length} left
@@ -456,6 +458,7 @@ export function DailyTrain({ quizzes = [] }) {
               )}
 
               <button
+                type="button"
                 className={styles.headerIconBtn}
                 onClick={() => setShowSettings(true)}
                 title="Settings"
@@ -465,6 +468,20 @@ export function DailyTrain({ quizzes = [] }) {
               </button>
             </div>
           </header>
+
+          {isPaused && (
+            <div className={styles.blurContainer}>
+              <div className={styles.dialogModal}>
+                <h3>Training paused</h3>
+                <p>Your place and remaining time are preserved.</p>
+                <div className={styles.modalActions}>
+                  <button type="button" className="button primary" onClick={() => setIsPaused(false)}>
+                    Resume Training
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── Main Canvas (Center) ── */}
           <div className={styles.trainBody}>
@@ -712,12 +729,14 @@ export function DailyTrain({ quizzes = [] }) {
                 </p>
                 <div className={styles.modalActions}>
                   <button
+                    type="button"
                     className="button primary"
                     onClick={() => setShowExitConfirm(false)}
                   >
                     Keep Practicing
                   </button>
                   <button
+                    type="button"
                     className="button border"
                     onClick={() => {
                       setShowExitConfirm(false);

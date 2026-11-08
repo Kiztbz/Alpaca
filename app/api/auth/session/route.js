@@ -22,7 +22,7 @@ export async function DELETE(req) {
                 .set({
                     tokens: JSON.stringify([]),
                 })
-                .where({ id: user.id })
+                .where("id", "=", user.id)
                 .execute();
 
             return NextResponse.json(

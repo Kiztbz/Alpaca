@@ -6,8 +6,9 @@ import { UserInput } from "@client";
 import Link from "next/link";
 
 export const metadata = {
-    title: "Sign up · Alpaca",
-    description: "Create a Alpaca account",
+    title: "Sign up",
+    description: "Create an Alpaca account",
+    robots: { index: false, follow: false },
 };
 
 export default async function RegisterPage() {

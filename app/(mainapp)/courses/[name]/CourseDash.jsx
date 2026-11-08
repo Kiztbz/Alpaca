@@ -20,11 +20,12 @@ function Icon({ name }) {
     book: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" /><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5v-16Z" /></>,
     bolt: <path d="m13 2-7 11h5l-1 9 8-12h-5V2Z" />,
     file: <><path d="M6 2h8l4 4v16H6z" /><path d="M14 2v5h5M9 12h6M9 16h6" /></>,
+    lock: <><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
   };
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
 
-export function CourseDash({ course, isLogged }) {
+export function CourseDash({ course, isLogged, canAccessContent = true }) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
   const user = useStore((state) => state.user);
@@ -65,7 +66,7 @@ export function CourseDash({ course, isLogged }) {
   }
 
   const activeTab = tabs[currentTab];
-  const resourceCount = (course.notes?.length || 0) + (course.quizzes?.length || 0) + (course.sources?.length || 0);
+  const resourceCount = Number(course.notesTotal ?? course.notes?.length ?? 0) + Number(course.quizzesTotal ?? course.quizzes?.length ?? 0) + (course.sources?.length || 0);
 
   return (
     <main className={styles.shell}>
@@ -76,9 +77,9 @@ export function CourseDash({ course, isLogged }) {
           <h2>{course.name}</h2>
           <p>{resourceCount} learning items</p>
         </div>
-        <nav className={styles.sideNav} aria-label="Course navigation">
+        {canAccessContent && <nav className={styles.sideNav} aria-label="Course navigation">
           {tabs.map((tab, index) => <button type="button" key={tab.name} className={currentTab === index ? styles.active : ""} onClick={() => selectTab(index)} aria-current={currentTab === index ? "page" : undefined}><span><Icon name={tab.icon} /></span><div><strong>{tab.name}</strong><small>{tab.eyebrow}</small></div></button>)}
-        </nav>
+        </nav>}
         <div className={styles.sideFooter}>
           <span>Course level</span>
           <strong>{course.level || 0}</strong>
@@ -94,27 +95,32 @@ export function CourseDash({ course, isLogged }) {
             <h1>{course.name}</h1>
             <p>{course.description || "A focused learning path built from notes, practice, and trusted sources."}</p>
             <div className={styles.heroStats}>
-              <span><strong>{course.notes?.length || 0}</strong> lessons</span>
-              <span><strong>{course.quizzes?.length || 0}</strong> practices</span>
-              <span><strong>{course.sources?.length || 0}</strong> sources</span>
+              <span><strong>{course.notesTotal ?? course.notes?.length ?? 0}</strong> lessons</span>
+              <span><strong>{course.quizzesTotal ?? course.quizzes?.length ?? 0}</strong> practices</span>
+              {canAccessContent && <span><strong>{course.sources?.length || 0}</strong> sources</span>}
             </div>
           </div>
           <CourseActions course={course} user={user} isLogged={isLogged} isEnrolled={isEnrolled} isLoading={isLoading} setIsLoading={setIsLoading} />
         </header>
 
-        <section className={styles.workspace}>
+        {canAccessContent ? <section className={styles.workspace}>
           <header className={styles.sectionHeader}>
             <span className={styles.sectionIcon}><Icon name={activeTab.icon} /></span>
             <div><small>{activeTab.eyebrow}</small><h2>{activeTab.name}</h2></div>
             {activeTab.info}
           </header>
           <div className={styles.contentBody}>{activeTab.main}</div>
-        </section>
+        </section> : <section className={styles.lockedWorkspace} aria-label="Locked course content">
+          <span className={styles.lockedIcon}><Icon name="lock" /></span>
+          <small>Paid course</small>
+          <h2>Unlock the course to start learning</h2>
+          <p>Lessons, practice questions, sources, and study tools become available after the demo payment is completed.</p>
+        </section>}
       </section>
 
-      <nav className={styles.mobileNav} aria-label="Course navigation">
+      {canAccessContent && <nav className={styles.mobileNav} aria-label="Course navigation">
         {tabs.map((tab, index) => <button type="button" key={tab.name} className={currentTab === index ? styles.active : ""} onClick={() => selectTab(index)} aria-current={currentTab === index ? "page" : undefined}><Icon name={tab.icon} /><span>{tab.name}</span></button>)}
-      </nav>
+      </nav>}
     </main>
   );
 }

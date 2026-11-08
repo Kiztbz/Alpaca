@@ -1,23 +1,43 @@
 import { FillStore, Timer, Alerts, ThemeSetter } from "@client";
-import { metadatas } from "@/lib/metadatas";
+import { absoluteUrl, siteConfig } from "@/lib/metadatas";
 import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/auth";
 import "./globals.css";
 
 export const metadata = {
-    metadataBase: new URL(metadatas.layout.url),
-    title: metadatas.layout.title,
-    description: metadatas.layout.description,
-    keywords: metadatas.layout.keywords.join(", "),
-    openGraph: {
-        title: metadatas.layout.title,
-        description: metadatas.layout.description,
-        url: metadatas.layout.url,
-        type: "website",
-        siteName: metadatas.layout.title,
-        locale: "en_US",
-        images: metadatas.layout.images,
+    metadataBase: new URL(siteConfig.origin),
+    applicationName: siteConfig.name,
+    title: {
+        default: "Alpaca · Learn it for good",
+        template: "%s · Alpaca",
     },
+    description: siteConfig.description,
+    keywords: siteConfig.keywords,
+    creator: siteConfig.legalName,
+    publisher: siteConfig.legalName,
+    category: "education",
+    alternates: { canonical: absoluteUrl("/") },
+    icons: {
+        icon: [{ url: "/favicon.ico", sizes: "any" }],
+        shortcut: "/favicon.ico",
+    },
+    manifest: "/manifest.webmanifest",
+    openGraph: {
+        title: "Alpaca · Learn it for good",
+        description: siteConfig.description,
+        url: absoluteUrl("/"),
+        type: "website",
+        siteName: siteConfig.name,
+        locale: siteConfig.locale,
+        images: [{ url: absoluteUrl("/opengraph-image"), width: 1200, height: 630, alt: "Alpaca learning workspace" }],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Alpaca · Learn it for good",
+        description: siteConfig.description,
+        images: [absoluteUrl("/opengraph-image")],
+    },
+    robots: { index: true, follow: true },
 };
 
 export default async function RootLayout({ children }) {

@@ -130,6 +130,7 @@ export const TooltipTrigger = forwardRef(function TooltipTrigger(
 
     return (
         <button
+            type="button"
             ref={ref}
             // The user can style the trigger based on the state
             data-state={context.open ? "open" : "closed"}

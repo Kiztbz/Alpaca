@@ -21,6 +21,7 @@ import {
 export function SourceDisplay({ source, contextCourse }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (!source) return null;
 
@@ -28,6 +29,7 @@ export function SourceDisplay({ source, contextCourse }) {
   const coursesStore = useStore((state) => state.courses);
   const addAlert = useAlerts((state) => state.addAlert);
   const router = useRouter();
+  const showTools = user?.settings?.showTools ?? true;
 
   const courses = source.courses
     ? source.courses
@@ -104,7 +106,7 @@ export function SourceDisplay({ source, contextCourse }) {
         </section>
       )}
 
-      {(!!canEdit || !!canDelete) && (
+      {showTools && (!!canEdit || !!canDelete) && (
         <div className={styles.tools}>
           {!!canEdit && (
             <Tooltip>
@@ -194,38 +196,32 @@ export function SourceDisplay({ source, contextCourse }) {
                 <DialogDescription />
 
                 <button
+                  type="button"
                   className="button danger"
                   onClick={async () => {
-                    const response = await fetch(
-                      `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/source/${source.id}`,
-                      {
-                        method: "DELETE",
-                      }
-                    );
-
-                    let data = null;
                     try {
-                      data = await response.json();
-                    } catch (e) {
-                      console.error(`Error parsing response: ${e}`);
-                    }
-
-                    if (response.status === 200) {
+                      setDeleting(true);
+                      const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/source/${source.id}`, { method: "DELETE" });
+                      const data = await response.json().catch(() => ({}));
+                      if (!response.ok) throw new Error(data.message || "Could not delete this source");
+                      setDeleteOpen(false);
                       addAlert({
                         success: true,
                         message: data.message || "Successfully deleted source",
                       });
-                    } else if (response.status === 403) {
+                      router.refresh();
+                    } catch (error) {
                       addAlert({
                         success: false,
-                        message:
-                          data.message ||
-                          "You do not have permission to delete this source",
+                        message: error.message || "Could not delete this source",
                       });
+                    } finally {
+                      setDeleting(false);
                     }
                   }}
+                  disabled={deleting}
                 >
-                  Yes, I want to delete this source
+                  {deleting ? "Deleting…" : "Yes, I want to delete this source"}
                 </button>
               </DialogContent>
             </Dialog>

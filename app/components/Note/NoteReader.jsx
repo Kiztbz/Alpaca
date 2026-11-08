@@ -178,7 +178,7 @@ export function NoteReader({
         </Link>
         <div className={styles.titleBlock}>
           <span>{activeCourse?.name || "Quick lesson"}</span>
-          <strong>{note.title}</strong>
+          <h1>{note.title}</h1>
         </div>
         <div className={styles.headerStatus}>
           <span>{activeCourse ? `${position} of ${totalNotes} notes` : "Note"}</span>
@@ -192,12 +192,13 @@ export function NoteReader({
       <div className={styles.workspace}>
         <aside className={styles.lessonRail}>
           <div className={styles.lessonBadge}>Lesson {position || 1}</div>
-          <h1>{note.title}</h1>
+          <h2>{note.title}</h2>
           <p>{cards.length} bite-sized ideas · {Math.max(1, Math.ceil(notePlainText(note.text).split(/\s+/).length / 220))} min</p>
 
           <div className={styles.cardMap} aria-label="Lesson cards">
             {cards.map((card, cardIndex) => (
               <button
+                type="button"
                 key={`${card.label}-${cardIndex}`}
                 className={cardIndex === index && !complete ? styles.activeStep : cardIndex < index || complete ? styles.doneStep : ""}
                 onClick={() => goTo(cardIndex)}
@@ -237,17 +238,17 @@ export function NoteReader({
           )}
 
           {!complete && <div className={styles.cardControls}>
-            <button onClick={() => goTo(index - 1)} disabled={index === 0}>↑ Previous card</button>
+            <button type="button" onClick={() => goTo(index - 1)} disabled={index === 0}>↑ Previous card</button>
             <span>{index + 1} of {cards.length}</span>
-            <button onClick={advance}>{index === cards.length - 1 ? "Complete note ✓" : "Next card ↓"}</button>
+            <button type="button" onClick={advance}>{index === cards.length - 1 ? "Complete note ✓" : "Next card ↓"}</button>
           </div>}
         </section>
 
         <aside className={styles.actionRail}>
-          <button onClick={toggleBookmark} className={bookmarked ? styles.activeAction : ""} aria-pressed={bookmarked}>
+          <button type="button" onClick={toggleBookmark} className={bookmarked ? styles.activeAction : ""} aria-pressed={bookmarked}>
             <span>{bookmarked ? "★" : "☆"}</span><small>{bookmarked ? "Saved" : "Save"}</small>
           </button>
-          <button onClick={toggleSpeech} className={speaking ? styles.activeAction : ""} aria-pressed={speaking}>
+          <button type="button" onClick={toggleSpeech} className={speaking ? styles.activeAction : ""} aria-pressed={speaking}>
             <span>{speaking ? "■" : "◖"}</span><small>{speaking ? "Stop" : "Listen"}</small>
           </button>
           {previousNote ? <Link href={`/notes/${previousNote.publicId}${courseQuery}`} aria-label={`Previous note: ${previousNote.title}`}><span>←</span><small>Previous note</small></Link> : <span className={styles.disabledAction}><span>←</span><small>First note</small></span>}
@@ -255,7 +256,7 @@ export function NoteReader({
         </aside>
       </div>
 
-      <button className={styles.infoButton} aria-label="Open note information" onClick={() => setInfoOpen(true)}>i</button>
+      <button type="button" className={styles.infoButton} aria-label="Open note information" onClick={() => setInfoOpen(true)}>i</button>
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
         <DialogContent>
           <DialogHeading>About this note</DialogHeading>

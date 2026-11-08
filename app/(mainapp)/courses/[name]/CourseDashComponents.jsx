@@ -99,7 +99,11 @@ export function CourseActions({ course, user, isLogged, isEnrolled, isLoading, s
     if (updated) setCourseState((current) => ({ ...current, ...patch }));
   }
 
-  if (!isLogged && !isOwner) return null;
+  if (!isLogged && !isOwner) {
+    return <div className={styles.courseActions}>
+      <Link className={styles.primaryAction} href={`/login?next=${encodeURIComponent(`/courses/${course.name}`)}`}>Log in to enroll</Link>
+    </div>;
+  }
 
   const completeItems = (certificateStatus?.notes.completed || 0) + (certificateStatus?.quizzes.completed || 0);
   const totalItems = (certificateStatus?.notes.total || 0) + (certificateStatus?.quizzes.total || 0);

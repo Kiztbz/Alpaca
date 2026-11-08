@@ -70,7 +70,7 @@ export function RightContainer({ user }) {
                             : "",
                     }}
                 >
-                    <nav>
+                    <nav id="mobile-navigation" aria-label="Mobile navigation">
                         <ul className={styles.links}>
                             {list.map((link) => (
                                 <li key={link.name}>
@@ -100,7 +100,11 @@ export function RightContainer({ user }) {
             )}
 
             <button
+                type="button"
                 className={styles.button}
+                aria-label={open ? "Close navigation" : "Open navigation"}
+                aria-expanded={open}
+                aria-controls="mobile-navigation"
                 onClick={() => {
                     if (open) return handleClose();
                     handleOpen();

@@ -1,10 +1,17 @@
 import styles from "@/app/(mainapp)/page.module.css";
+import { pageMetadata } from "@/lib/metadatas";
+
+export const metadata = pageMetadata({
+    title: "About",
+    description: "Learn why Alpaca connects sources, notes, and flexible active-recall quizzes in one learning system.",
+    path: "/about",
+});
 
 export default function About() {
     return (
         <main className={styles.main}>
             <div className={styles.titleBlock}>
-                <h2>About Alpaca</h2>
+                <h1>About Alpaca</h1>
             </div>
 
             <section className="paragraph">
@@ -39,9 +46,9 @@ export default function About() {
                         href="https://en.wikipedia.org/wiki/Alpaca"
                         target="_blank"
                     >
-                        Greek Muse for memory
+                        alpaca
                     </a>
-                    , Alpaca will be a web application and API for submitting,
+                    , Alpaca is a web application for submitting,
                     storing, and retrieving learning materials in a database.
                     These learning materials can be sources of information, such
                     as articles, news reports, official documents, scientific
@@ -54,7 +61,8 @@ export default function About() {
                     This project is open source. Contributors are welcome to{" "}
                     <a
                         className="link"
-                        href="https://github.com/joewrotehaikus/mnemefeast"
+                        href="https://github.com/LLAMA-Coop/Alpaca"
+                        rel="noopener noreferrer"
                         target="_blank"
                     >
                         view the source code on GitHub
@@ -67,7 +75,8 @@ export default function About() {
                     For discussion about the application,{" "}
                     <a
                         className="link"
-                        href="https://discord.com/channels/1122590467633184920/1122590468400746590"
+                        href="https://discord.gg/JUc27txA95"
+                        rel="noopener noreferrer"
                         target="_blank"
                     >
                         go to our Discord server
@@ -75,7 +84,7 @@ export default function About() {
                     .
                 </p>
 
-                <p>This application is using NextJs 13 and Mongoose.</p>
+                <p>Alpaca is built by LLAMA as an open-source learning platform.</p>
             </section>
         </main>
     );

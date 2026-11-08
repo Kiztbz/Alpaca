@@ -14,6 +14,18 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
+    async headers() {
+        const noIndex = [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }];
+        const privateRoutes = [
+            "/api/:path*", "/me/:path*", "/admin/:path*", "/study", "/daily",
+            "/create", "/input", "/login", "/register", "/forgot-password",
+            "/reset-password", "/verify-email/:path*", "/groups/:path*",
+            "/users/:path*", "/certificates/:path*", "/notes/:id",
+            "/quizzes/:id", "/sources/:id",
+        ];
+
+        return privateRoutes.map((source) => ({ source, headers: noIndex }));
+    },
 };
 
 module.exports = nextConfig;

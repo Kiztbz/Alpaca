@@ -3,7 +3,7 @@
 import styles from "@/app/components/Card/Card.module.css";
 import courseStyles from "./CourseDisplay.module.css";
 import { useRouter } from "next/navigation";
-import { useStore } from "@/store/store";
+import { useAlerts, useStore } from "@/store/store";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -29,10 +29,12 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
   const [editOpen, setEditOpen] = useState(false);
   const [joining, setJoining] = useState(false);
   const [joined, setJoined] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (!course) return null;
 
   const user = useStore((state) => state.user);
+  const addAlert = useAlerts((state) => state.addAlert);
   const router = useRouter();
 
   const canEdit =
@@ -63,6 +65,22 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
       router.refresh();
     } finally {
       setJoining(false);
+    }
+  }
+
+  async function deleteCourse() {
+    setDeleting(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${course.id}`, { method: "DELETE" });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Could not delete this course");
+      setDeleteOpen(false);
+      addAlert({ success: true, message: payload.message || "Successfully deleted course" });
+      router.refresh();
+    } catch (error) {
+      addAlert({ success: false, message: error.message || "Could not delete this course" });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -150,6 +168,7 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
             <Tooltip>
               <TooltipTrigger>
                 <button
+                  type="button"
                   className={styles.edit}
                   style={{ backgroundColor: lighter ? "var(--bg-2)" : "" }}
                   onClick={(e) => {
@@ -179,6 +198,7 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
             <Tooltip>
               <TooltipTrigger>
                 <button
+                  type="button"
                   className={styles.delete}
                   style={{ backgroundColor: lighter ? "var(--bg-2)" : "" }}
                   onClick={(e) => {
@@ -236,12 +256,12 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
                 <DialogDescription />
 
                 <button
+                  type="button"
                   className="button danger"
-                  onClick={() => {
-                    alert("Not implemented yet, we're working on it!");
-                  }}
+                  onClick={deleteCourse}
+                  disabled={deleting}
                 >
-                  Yes, I want to delete this course
+                  {deleting ? "Deleting…" : "Yes, I want to delete this course"}
                 </button>
               </DialogContent>
             </Dialog>

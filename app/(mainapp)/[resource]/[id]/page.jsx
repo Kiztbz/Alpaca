@@ -1,4 +1,4 @@
-import { getPermittedResources, getRelationships } from "@/lib/db/helpers";
+import { getCourseAccessRows, getPermittedResources, getRelationships } from "@/lib/db/helpers";
 import { CardDescription, QuizDisplay } from "@/app/components/client";
 import styles from "./ResourceDetail.module.css";
 import { redirect } from "next/navigation";
@@ -7,6 +7,12 @@ import { getSessionUser } from "@/lib/auth";
 import Link from "next/link";
 import { NoteReader } from "@/app/components/Note/NoteReader";
 import { expandCourseRelationships } from "@/lib/resourceRelations";
+import { hasCourseContentAccess } from "@/lib/courseAccess";
+
+export const metadata = {
+    title: "Learning resource",
+    robots: { index: false, follow: false, nocache: true },
+};
 
 const resourceConfig = {
     sources: { singular: "source", label: "Source", title: (item) => item.title },
@@ -51,9 +57,10 @@ export default async function ResourceDetailPage(props) {
     const user = await getSessionUser((await cookies()).get("token")?.value);
     if (!user) redirect(`/login?next=/${resource}/${id}`);
 
-    const [resourcesObject, rawRelationships] = await Promise.all([
+    const [resourcesObject, rawRelationships, courseAccessRows] = await Promise.all([
         getPermittedResources({ userId: user.id, takeAll: true }),
         getRelationships(),
+        getCourseAccessRows(user.id),
     ]);
     const relationships = expandCourseRelationships(rawRelationships);
 
@@ -67,14 +74,26 @@ export default async function ResourceDetailPage(props) {
         .filter((end) => end?.type === "course")
         .map((end) => String(end.id));
 
-    const courses = resourcesObject.courses
-        .filter((course) => courseIds.includes(String(course.id)))
+    const courses = courseIds
+        .map((courseId) => resourcesObject.courses.find((course) => String(course.id) === courseId) || courseAccessRows.find((course) => String(course.id) === courseId))
+        .filter(Boolean)
         .sort((a, b) => a.name.localeCompare(b.name));
 
     const requestedCourse = searchParams.course;
-    const activeCourse = courses.find((course) =>
+    const requestedCourseRecord = courses.find((course) =>
         course.publicId === requestedCourse || course.name === requestedCourse || String(course.id) === String(requestedCourse)
-    ) || courses[0];
+    );
+
+    if (requestedCourseRecord && !hasCourseContentAccess(requestedCourseRecord, user.id)) {
+        redirect(`/courses/${encodeURIComponent(requestedCourseRecord.name)}`);
+    }
+
+    const accessibleCourses = courses.filter((course) => hasCourseContentAccess(course, user.id));
+    if (courses.length && !accessibleCourses.length) {
+        redirect(`/courses/${encodeURIComponent(courses[0].name)}`);
+    }
+
+    const activeCourse = requestedCourseRecord || accessibleCourses[0];
 
     const courseResourceIds = activeCourse
         ? relationships

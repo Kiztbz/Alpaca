@@ -31,8 +31,8 @@ export function Appearance({ user }) {
     const setSettings = useStore((state) => state.setSettings);
 
     useEffect(() => {
-        setSettings({ showConfetti });
-    }, [showConfetti]);
+        setSettings({ showConfetti, showTools });
+    }, [setSettings, showConfetti, showTools]);
 
     function handleThemeChange(theme) {
         if (current.name === theme.name) {
@@ -123,6 +123,8 @@ export function Appearance({ user }) {
                         >
                             <TooltipTrigger>
                                 <button
+                                    type="button"
+                                    aria-label={`Use ${theme.name} theme`}
                                     className={styles.theme}
                                     onClick={() => handleThemeChange(theme)}
                                     style={{
@@ -149,6 +151,8 @@ export function Appearance({ user }) {
                         >
                             <TooltipTrigger>
                                 <button
+                                    type="button"
+                                    aria-label={`Use ${a[0]} accent color`}
                                     className={styles.theme}
                                     onClick={() => handleAccentChange(a)}
                                     style={{
@@ -210,8 +214,7 @@ export function Appearance({ user }) {
                 <InfoBox>
                     When viewing resources, buttons to edit or delete those resources are available
                     to you if you have the permissions to do so. You can hide these buttons if you
-                    only want to view the content. This can be re-enabled at any time. Hiding them
-                    will still allow you to edit or delete the resources in their respective pages.
+                    only want to view the content. This can be re-enabled at any time.
                 </InfoBox>
 
                 <Checkbox
@@ -219,8 +222,27 @@ export function Appearance({ user }) {
                     value={showTools}
                     loading={toolsLoading}
                     label="Show edit and delete options on resources"
-                    onChange={() => {
-                        alert("Not implemented yet, we're working on it!");
+                    onChange={async () => {
+                        if (toolsLoading) return;
+
+                        setToolsLoading(true);
+                        try {
+                            const response = await fetch(`${getApiUrl()}/me`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    settings: {
+                                        ...user.settings,
+                                        showTools: !showTools,
+                                    },
+                                }),
+                            });
+
+                            if (!response.ok) throw new Error("Could not update resource controls");
+                            setShowTools((current) => !current);
+                        } finally {
+                            setToolsLoading(false);
+                        }
                     }}
                 />
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { noteCardCount } from "@/lib/noteCards";
+import { expandCourseRelationships } from "@/lib/resourceRelations";
 import { useStore } from "@/store/store";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -34,6 +35,7 @@ export function Dashboard() {
   const notes = useStore((state) => state.notes);
   const quizzes = useStore((state) => state.quizzes);
   const courses = useStore((state) => state.courses);
+  const relationships = useStore((state) => state.relationships || []);
   const [savedProgress, setSavedProgress] = useState({});
   const [streak, setStreak] = useState({ count: 0, date: null });
 
@@ -65,15 +67,26 @@ export function Dashboard() {
   const firstName = (user.displayName || user.username || "Learner").trim().split(/\s+/)[0];
   const sortedCourses = [...courses].sort((a, b) => (b.level || 0) - (a.level || 0));
   const activeCourse = sortedCourses[0];
-  const courseLessons = activeCourse ? lessons.filter((note) => note.courses?.some((id) => String(id) === String(activeCourse.id))) : [];
+  const courseNoteIds = new Set(activeCourse ? expandCourseRelationships(relationships).flatMap((relation) => {
+    if (relation.AType === "course" && String(relation.A) === String(activeCourse.id) && relation.BType === "note") return [String(relation.B)];
+    if (relation.BType === "course" && String(relation.B) === String(activeCourse.id) && relation.AType === "note") return [String(relation.A)];
+    return [];
+  }) : []);
+  const courseLessons = activeCourse ? lessons.filter((note) => courseNoteIds.has(String(note.id)) || note.courses?.some((id) => String(id) === String(activeCourse.id))) : [];
   const pathLessons = (courseLessons.length ? courseLessons : lessons).slice(0, 8);
   const completed = pathLessons.filter((note) => savedProgress[note.publicId]?.complete).length;
   const continueNote = pathLessons.find((note) => savedProgress[note.publicId]?.index > 0 && !savedProgress[note.publicId]?.complete)
     || pathLessons.find((note) => !savedProgress[note.publicId]?.complete)
     || pathLessons[0];
-  const progressPercent = pathLessons.length ? Math.round((completed / pathLessons.length) * 100) : 0;
-  const lessonsRemaining = Math.max(pathLessons.length - completed, 0);
-  const certificateReady = Boolean(activeCourse && pathLessons.length && lessonsRemaining === 0);
+  const courseActivityTotal = Number(activeCourse?.notesTotal || 0) + Number(activeCourse?.quizzesTotal || 0);
+  const courseActivityCompleted = Number(activeCourse?.notesCompleted || 0) + Number(activeCourse?.quizzesCompleted || 0);
+  const progressPercent = courseActivityTotal
+    ? Math.min(100, Math.round((courseActivityCompleted / courseActivityTotal) * 100))
+    : pathLessons.length ? Math.round((completed / pathLessons.length) * 100) : 0;
+  const activitiesRemaining = courseActivityTotal
+    ? Math.max(courseActivityTotal - courseActivityCompleted, 0)
+    : Math.max(pathLessons.length - completed, 0);
+  const certificateReady = Boolean(activeCourse && (courseActivityTotal || pathLessons.length) && activitiesRemaining === 0);
   const dueQuizzes = quizzes.filter((quiz) => !quiz.hiddenUntil || new Date(quiz.hiddenUntil) <= new Date());
   const today = new Date().toISOString().slice(0, 10);
   const learnedToday = streak.date === today;
@@ -101,7 +114,7 @@ export function Dashboard() {
           <p>{activeCourse?.description || "Complete each short lesson to build momentum."}</p>
           <div className={styles.courseProgress}><i style={{ width: `${progressPercent}%` }} /></div>
           <div className={styles.courseBottom}>
-            <span>{completed} of {pathLessons.length} lessons</span>
+            <span>{courseActivityTotal ? `${courseActivityCompleted} of ${courseActivityTotal} activities` : `${completed} of ${pathLessons.length} lessons`}</span>
             {activeCourse && <Link href={`/courses/${encodeURIComponent(activeCourse.name)}`}>Course details <Icon name="chevron" /></Link>}
           </div>
         </section>
@@ -165,7 +178,7 @@ export function Dashboard() {
           <div className={styles.optionList}>
             <div className={`${styles.optionRow} ${certificateReady ? styles.optionReady : ""}`}>
               <span><Icon name={certificateReady ? "award" : "lock"} /></span>
-              <div><strong>Certificate</strong><small>{certificateReady ? "Course complete" : activeCourse ? `${lessonsRemaining} lesson${lessonsRemaining === 1 ? "" : "s"} remaining` : "Choose a course first"}</small></div>
+              <div><strong>Certificate</strong><small>{certificateReady ? "Course complete" : activeCourse ? `${activitiesRemaining} activit${activitiesRemaining === 1 ? "y" : "ies"} remaining` : "Choose a course first"}</small></div>
               <b>{certificateReady ? "Ready" : "Locked"}</b>
             </div>
             <Link href="/courses" className={styles.optionRow}>

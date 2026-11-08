@@ -26,10 +26,8 @@ export async function POST(req, props) {
 
         await db
             .deleteFrom("course_users")
-            .where({
-                courseId: id,
-                userId: user.id,
-            })
+            .where("courseId", "=", id)
+            .where("userId", "=", user.id)
             .execute();
 
         return NextResponse.json(

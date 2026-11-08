@@ -1,4 +1,4 @@
-import { getPermittedResources, getRelationships } from "@/lib/db/helpers";
+import { getCourseAccessRows, getPermittedResources, getRelationships } from "@/lib/db/helpers";
 import { SearchOptions } from "./SearchOptions";
 import coursePageStyles from "./CoursesPage.module.css";
 import styles from "@main/page.module.css";
@@ -11,6 +11,8 @@ import Link from "next/link";
 import { sql } from "kysely";
 import { NotesHub } from "@/app/components/Note/NotesHub";
 import { expandCourseRelationships } from "@/lib/resourceRelations";
+import { filterPaidCourseContent } from "@/lib/courseAccess";
+import { absoluteUrl, pageMetadata, siteConfig } from "@/lib/metadatas";
 import {
   SourceDisplay,
   CourseDisplay,
@@ -53,6 +55,24 @@ const resourceList = [
   },
 ];
 
+export async function generateMetadata(props) {
+  const params = await props.params;
+  const searchParams = await props.searchParams;
+  const current = resourceList.find((item) => item.name === params.resource);
+
+  if (!current) {
+    return pageMetadata({ title: "Not found", description: siteConfig.description, path: "/", index: false });
+  }
+
+  const isFiltered = Number(searchParams.page || 1) > 1 || Boolean(searchParams.tag) || Number(searchParams.amount || DEFAULT_PAGE_SIZE) !== DEFAULT_PAGE_SIZE;
+  return pageMetadata({
+    title: current.title,
+    description: current.description,
+    path: `/${current.name}`,
+    index: !isFiltered,
+  });
+}
+
 export default async function ResourcePage(props) {
   const params = await props.params;
   const searchParams = await props.searchParams;
@@ -74,7 +94,7 @@ export default async function ResourcePage(props) {
     );
   }
 
-  const [resourcesObject, rawRelationships, maxPage] = await Promise.all([
+  const [resourcesObject, rawRelationships, maxPage, courseAccessRows] = await Promise.all([
     getPermittedResources({
       withSources: current.name === "sources" || current.name === "notes",
       withNotes: current.name === "notes",
@@ -92,9 +112,16 @@ export default async function ResourcePage(props) {
       type: current.singular,
       amount,
     }),
+    getCourseAccessRows(user?.id),
   ]);
 
   const relationships = expandCourseRelationships(rawRelationships);
+
+  if (current.name !== "courses") {
+    resourcesObject.notes = filterPaidCourseContent({ items: resourcesObject.notes, resourceType: "note", courses: courseAccessRows, relationships, userId: user?.id });
+    resourcesObject.quizzes = filterPaidCourseContent({ items: resourcesObject.quizzes, resourceType: "quiz", courses: courseAccessRows, relationships, userId: user?.id });
+    resourcesObject.sources = filterPaidCourseContent({ items: resourcesObject.sources, resourceType: "source", courses: courseAccessRows, relationships, userId: user?.id });
+  }
 
   const type = resourceList.find((x) => x.name === current.name).singular;
 
@@ -179,13 +206,31 @@ export default async function ResourcePage(props) {
     );
   }
 
+  const courseStructuredData = current.name === "courses" ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Alpaca course marketplace",
+    url: absoluteUrl("/courses"),
+    numberOfItems: resources.filter((course) => course.enrollment !== "private").length,
+    itemListElement: resources
+      .filter((course) => course.enrollment !== "private")
+      .slice(0, amount)
+      .map((course, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: absoluteUrl(`/courses/${encodeURIComponent(course.name)}`),
+        name: course.name,
+      })),
+  } : null;
+
   return (
     <main className={styles.main}>
+      {courseStructuredData && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseStructuredData).replace(/</g, "\\u003c") }} />}
       <section>
         {resources.length > 0 || !!tag ? (
           <>
             <header>
-              <h2>
+              <h1>
                 {current.title}
                     <button
                       type="button"
@@ -208,7 +253,7 @@ export default async function ResourcePage(props) {
                         <path d="M12 19l0 .01" />
                       </svg>
                     </button>
-              </h2>
+              </h1>
 
               <SearchOptions
                 tag={tag}

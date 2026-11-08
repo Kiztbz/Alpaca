@@ -58,6 +58,7 @@ export function QuizDisplay({
   const [practice, setPractice] = useState(false);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -115,6 +116,7 @@ export function QuizDisplay({
   );
   const addAlert = useAlerts((state) => state.addAlert);
   const router = useRouter();
+  const showTools = user?.settings?.showTools ?? true;
 
   const canEdit =
     !!user &&
@@ -470,7 +472,7 @@ export function QuizDisplay({
         </div>
       )}
 
-      {!trainMode && !!canEditDelete && (!!canEdit || !!canDelete) && (
+      {!trainMode && !!canEditDelete && (showTools || showDetailLink === false) && (!!canEdit || !!canDelete) && (
         <div className={styles.tools}>
           {!!canEdit && (
             <Tooltip>
@@ -560,38 +562,32 @@ export function QuizDisplay({
                 <DialogDescription />
 
                 <button
+                  type="button"
                   className="button danger"
                   onClick={async () => {
-                    const response = await fetch(
-                      `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/quiz/${quiz.id}`,
-                      {
-                        method: "DELETE",
-                      }
-                    );
-
-                    let data = null;
                     try {
-                      data = await response.json();
-                    } catch (e) {
-                      console.error(`Error parsing response: ${e}`);
-                    }
-
-                    if (response.status === 200) {
+                      setDeleting(true);
+                      const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/quiz/${quiz.id}`, { method: "DELETE" });
+                      const data = await response.json().catch(() => ({}));
+                      if (!response.ok) throw new Error(data.message || "Could not delete this quiz");
+                      setDeleteOpen(false);
                       addAlert({
                         success: true,
                         message: data.message || "Successfully deleted quiz",
                       });
-                    } else if (response.status === 403) {
+                      router.refresh();
+                    } catch (error) {
                       addAlert({
                         success: false,
-                        message:
-                          data.message ||
-                          "You do not have permission to delete this quiz",
+                        message: error.message || "Could not delete this quiz",
                       });
+                    } finally {
+                      setDeleting(false);
                     }
                   }}
+                  disabled={deleting}
                 >
-                  Yes, I want to delete this quiz question
+                  {deleting ? "Deleting…" : "Yes, I want to delete this quiz question"}
                 </button>
               </DialogContent>
             </Dialog>

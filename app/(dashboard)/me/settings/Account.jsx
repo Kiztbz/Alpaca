@@ -597,15 +597,10 @@ export function Account({ user }) {
                     Please be sure before you delete your account.
                 </InfoBox>
 
-                <button
-                    type="button"
-                    className="button danger border"
-                    onClick={() => {
-                        alert("Not implemented yet, we're working on it!");
-                    }}
-                >
-                    Delete Account
-                </button>
+                <p className="paragraph">
+                    Account deletion is currently unavailable. Your account and data will not be
+                    changed until a verified deletion flow is available.
+                </p>
             </div>
         </section>
     );

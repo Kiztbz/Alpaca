@@ -29,7 +29,7 @@ export async function POST(req, props) {
       );
     }
 
-    if (!doesUserMeetPrerequisites(user.id, id)) {
+    if (!(await doesUserMeetPrerequisites(user.id, id))) {
       return NextResponse.json(
         {
           message: "You do not meet the prerequisites for this course",

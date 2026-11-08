@@ -6,6 +6,7 @@ import { DailyTrain, FillStore } from "@client";
 import Link from "next/link";
 import shuffleQuizzes from "@/lib/shuffleQuizzes";
 import { expandCourseRelationships } from "@/lib/resourceRelations";
+import { filterPaidCourseContent } from "@/lib/courseAccess";
 
 export default async function DailyPage() {
   const user = await getSessionUser((await cookies()).get("token")?.value);
@@ -17,10 +18,15 @@ export default async function DailyPage() {
     }),
     getRelationships(),
   ]);
-  const { quizzes } = resourcesObject;
-  const sortedQuizzes = shuffleQuizzes(quizzes);
-
   const relationships = expandCourseRelationships(rawRelationships);
+  const safeResources = {
+    ...resourcesObject,
+    notes: filterPaidCourseContent({ items: resourcesObject.notes, resourceType: "note", courses: resourcesObject.courses, relationships, userId: user?.id }),
+    quizzes: filterPaidCourseContent({ items: resourcesObject.quizzes, resourceType: "quiz", courses: resourcesObject.courses, relationships, userId: user?.id }),
+    sources: filterPaidCourseContent({ items: resourcesObject.sources, resourceType: "source", courses: resourcesObject.courses, relationships, userId: user?.id }),
+  };
+  const quizzes = safeResources.quizzes;
+  const sortedQuizzes = shuffleQuizzes(quizzes);
   
   function pushToList(rel, type) {
     const resourceList = [
@@ -82,7 +88,7 @@ export default async function DailyPage() {
 
   return (
     <main className={styles.screen}>
-      {user && <FillStore user={user} relationships={relationships} {...resourcesObject} />}
+      {user && <FillStore user={user} relationships={relationships} {...safeResources} />}
       <header className={styles.screenHeader}>
         <div><span>Spaced repetition (FSRS v5)</span><h1>Daily Train</h1><p>A focused, adaptive session of questions optimized by the Free Spaced Repetition Scheduler.</p></div>
       </header>

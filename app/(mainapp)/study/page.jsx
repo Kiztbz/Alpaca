@@ -1,10 +1,12 @@
-import { getPermittedResources } from "@/lib/db/helpers";
+import { getCourseAccessRows, getPermittedResources, getRelationships } from "@/lib/db/helpers";
 import { SearchOptions } from "../[resource]/SearchOptions";
 import styles from "../AppScreen.module.css";
 import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/auth";
 import shuffleArray from "@/lib/shuffleArray";
 import StudyList from "./StudyList";
+import { expandCourseRelationships } from "@/lib/resourceRelations";
+import { filterPaidCourseContent } from "@/lib/courseAccess";
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -16,16 +18,23 @@ export default async function StudyPage(props) {
   const amount = Number(searchParams["amount"] ?? DEFAULT_PAGE_SIZE);
   const tag = searchParams["tag"] ?? null;
 
-  const { notes, quizzes, sources } = await getPermittedResources({
-    userId: user ? user.id : undefined,
-    withNotes: true,
-    withQuizzes: true,
-    withSources: true,
-    userId: user?.id,
-    limit: amount,
-    offset: (page - 1) * amount,
-    tagSearch: tag ? tag : undefined,
-  });
+  const [resources, rawRelationships, courses] = await Promise.all([
+    getPermittedResources({
+      withNotes: true,
+      withQuizzes: true,
+      withSources: true,
+      userId: user?.id,
+      limit: amount,
+      offset: (page - 1) * amount,
+      tagSearch: tag ? tag : undefined,
+    }),
+    getRelationships(),
+    getCourseAccessRows(user?.id),
+  ]);
+  const relationships = expandCourseRelationships(rawRelationships);
+  const notes = filterPaidCourseContent({ items: resources.notes, resourceType: "note", courses, relationships, userId: user?.id });
+  const quizzes = filterPaidCourseContent({ items: resources.quizzes, resourceType: "quiz", courses, relationships, userId: user?.id });
+  const sources = filterPaidCourseContent({ items: resources.sources, resourceType: "source", courses, relationships, userId: user?.id });
 
   return (
     <main className={styles.screen}>

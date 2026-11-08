@@ -6,8 +6,9 @@ import { UserInput } from "@client";
 import Link from "next/link";
 
 export const metadata = {
-    title: "Login · Alpaca",
+    title: "Log in",
     description: "Log in to Alpaca",
+    robots: { index: false, follow: false },
 };
 
 export default async function LoginPage(props) {

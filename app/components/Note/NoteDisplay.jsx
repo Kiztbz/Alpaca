@@ -2,7 +2,7 @@
 
 import styles from "@/app/components/Card/Card.module.css";
 import { useRouter } from "next/navigation";
-import { useStore } from "@/store/store";
+import { useAlerts, useStore } from "@/store/store";
 import { useState } from "react";
 import {
   DialogDescription,
@@ -25,11 +25,30 @@ import {
 export function NoteDisplay({ note, contextCourse }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (!note) return null;
 
   const user = useStore((state) => state.user);
+  const addAlert = useAlerts((state) => state.addAlert);
   const router = useRouter();
+  const showTools = user?.settings?.showTools ?? true;
+
+  async function deleteNote() {
+    setDeleting(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/note/${note.id}`, { method: "DELETE" });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Could not delete this note");
+      setDeleteOpen(false);
+      addAlert({ success: true, message: payload.message || "Successfully deleted note" });
+      router.refresh();
+    } catch (error) {
+      addAlert({ success: false, message: error.message || "Could not delete this note" });
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const coursesStore = useStore((state) => state.courses);
   const sourcesStore = useStore((state) => state.sources);
@@ -115,7 +134,7 @@ export function NoteDisplay({ note, contextCourse }) {
         </section>
       )}
 
-      {(!!canEdit || !!canDelete) && (
+      {showTools && (!!canEdit || !!canDelete) && (
         <div className={styles.tools}>
           {!!canEdit && (
             <Tooltip>
@@ -205,12 +224,12 @@ export function NoteDisplay({ note, contextCourse }) {
                 <DialogDescription />
 
                 <button
+                  type="button"
                   className="button danger"
-                  onClick={() => {
-                    alert("Not implemented yet, we're working on it!");
-                  }}
+                  onClick={deleteNote}
+                  disabled={deleting}
                 >
-                  Yes, I want to delete this note
+                  {deleting ? "Deleting…" : "Yes, I want to delete this note"}
                 </button>
               </DialogContent>
             </Dialog>

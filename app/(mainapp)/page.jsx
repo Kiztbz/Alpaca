@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import { absoluteUrl, siteConfig } from "@/lib/metadatas";
 
 const steps = [
     ["↗", "Bring your sources", "Keep books, articles, videos, and websites together so every idea has context."],
@@ -10,8 +11,38 @@ const steps = [
 const quizTypes = ["Flashcards", "Multiple choice", "Fill in the blank", "Ordered lists", "Verbatim recall"];
 
 export default function HomePage() {
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": `${absoluteUrl("/")}#website`,
+                url: absoluteUrl("/"),
+                name: siteConfig.name,
+                description: siteConfig.description,
+                inLanguage: "en",
+            },
+            {
+                "@type": "SoftwareApplication",
+                name: "Alpaca Learning",
+                applicationCategory: "EducationalApplication",
+                operatingSystem: "Web",
+                url: absoluteUrl("/"),
+                description: siteConfig.description,
+                offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+            },
+            {
+                "@type": "Organization",
+                name: siteConfig.legalName,
+                url: absoluteUrl("/"),
+                logo: absoluteUrl("/assets/images/logo.png"),
+            },
+        ],
+    };
+
     return (
         <main className={styles.landing}>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
             <section className={styles.hero}>
                 <div className={styles.heroContent}>
                     <h1>Turn what you learn into what you <em>remember.</em></h1>

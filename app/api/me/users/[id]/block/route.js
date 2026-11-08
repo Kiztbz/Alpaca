@@ -101,7 +101,11 @@ export async function DELETE(req, props) {
             );
         }
 
-        await db.deleteFrom("blocked").where({ blocker: user.id, blocked: id }).execute();
+        await db
+            .deleteFrom("blocked")
+            .where("blocker", "=", user.id)
+            .where("blocked", "=", id)
+            .execute();
 
         return NextResponse.json(
             {
