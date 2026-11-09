@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-function updateStreak() {
+function updateStreak(userId) {
   const today = new Date();
   const todayKey = today.toISOString().slice(0, 10);
   const yesterday = new Date(today);
@@ -15,14 +15,14 @@ function updateStreak() {
   const yesterdayKey = yesterday.toISOString().slice(0, 10);
   let stored = null;
   try {
-    stored = JSON.parse(localStorage.getItem("alpaca-note-streak") || "null");
+    stored = JSON.parse(localStorage.getItem(`alpaca-note-streak:${userId}`) || "null");
   } catch {
-    localStorage.removeItem("alpaca-note-streak");
+    localStorage.removeItem(`alpaca-note-streak:${userId}`);
   }
 
   if (stored?.date === todayKey) return stored.count || 1;
   const count = stored?.date === yesterdayKey ? (stored.count || 0) + 1 : 1;
-  localStorage.setItem("alpaca-note-streak", JSON.stringify({ date: todayKey, count }));
+  localStorage.setItem(`alpaca-note-streak:${userId}`, JSON.stringify({ date: todayKey, count }));
   return count;
 }
 
@@ -37,6 +37,7 @@ export function NoteReader({
   sources = [],
   related = [],
   initialProgress = null,
+  userId,
 }) {
   const cards = useMemo(() => {
     const generated = createNoteCards(note.text);
@@ -56,7 +57,7 @@ export function NoteReader({
   const [ready, setReady] = useState(false);
   const touchStart = useRef(null);
   const router = useRouter();
-  const storageKey = `alpaca-note-progress:${note.publicId}`;
+  const storageKey = `alpaca-note-progress:${userId || "anonymous"}:${note.publicId}`;
   const progress = complete ? 100 : Math.round(((index + 1) / cards.length) * 100);
   const current = cards[index] || cards[0];
   const courseHref = activeCourse ? `/learn?course=${encodeURIComponent(activeCourse.publicId)}` : "/learn";
@@ -113,7 +114,7 @@ export function NoteReader({
   const finish = useCallback(async () => {
     setComplete(true);
     setCompletedBefore(true);
-    updateStreak();
+    updateStreak(userId || "anonymous");
 
     if (activeCourse?.id) {
       await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${activeCourse.id}/progress`, {
@@ -126,7 +127,7 @@ export function NoteReader({
 
     const destination = nextNote ? learnResourceHref("note", nextNote.publicId) : courseHref;
     window.setTimeout(() => router.push(destination), 450);
-  }, [activeCourse?.id, cards.length, courseHref, learnResourceHref, nextNote, note.id, router]);
+  }, [activeCourse?.id, cards.length, courseHref, learnResourceHref, nextNote, note.id, router, userId]);
 
   const advance = useCallback(() => {
     if (index === cards.length - 1) return finish();

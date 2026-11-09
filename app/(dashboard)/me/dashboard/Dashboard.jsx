@@ -48,19 +48,19 @@ export function Dashboard() {
     const progress = {};
     lessons.forEach((note) => {
       try {
-        progress[note.publicId] = JSON.parse(localStorage.getItem(`alpaca-note-progress:${note.publicId}`) || "null");
+        progress[note.publicId] = JSON.parse(localStorage.getItem(`alpaca-note-progress:${user?.id || "anonymous"}:${note.publicId}`) || "null");
       } catch {
         progress[note.publicId] = null;
       }
     });
     setSavedProgress(progress);
     try {
-      const value = JSON.parse(localStorage.getItem("alpaca-note-streak") || "null");
+      const value = JSON.parse(localStorage.getItem(`alpaca-note-streak:${user?.id || "anonymous"}`) || "null");
       setStreak({ count: value?.count || 0, date: value?.date || null });
     } catch {
       setStreak({ count: 0, date: null });
     }
-  }, [lessons]);
+  }, [lessons, user?.id]);
 
   if (!user) return null;
 

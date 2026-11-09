@@ -59,6 +59,7 @@ export default async function LearnPage(props) {
         previousNote={currentIndex > 0 ? items[currentIndex - 1] : null}
         nextNote={currentIndex < items.length - 1 ? items[currentIndex + 1] : null}
         sources={sources}
+        userId={user.id}
       />
     </>;
   }

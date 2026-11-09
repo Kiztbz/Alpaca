@@ -16,6 +16,7 @@ const guestPages = new Set([
 ]);
 
 const authenticatedPages = new Set([
+    "/admin",
     "/daily",
     "/help",
     "/learn",
