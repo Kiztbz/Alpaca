@@ -48,6 +48,7 @@ export function FillStore({
         return () => ws.close();
     }, [
         user,
+        users,
         sources,
         notes,
         quizzes,

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/store/store";
 import styles from "./CourseSwitcher.module.css";
 
-export function CourseSwitcher({ courses, activeCourse, label = "Course" }) {
+export function CourseSwitcher({ courses, activeCourse, label = "Course", hero = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -40,11 +40,12 @@ export function CourseSwitcher({ courses, activeCourse, label = "Course" }) {
     params.set("course", publicId);
     params.delete("view");
     params.delete("item");
+    params.delete("unit");
     setOpen(false);
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  return <div className={styles.switcher} ref={switcherRef}>
+  return <div className={`${styles.switcher} ${hero ? styles.hero : ""}`} ref={switcherRef}>
     <span className={styles.label}>{label}</span>
     <div className={styles.control}>
       <button type="button" className={styles.trigger} onClick={() => setOpen((value) => !value)} aria-haspopup="listbox" aria-expanded={open}>

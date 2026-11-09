@@ -20,6 +20,7 @@ export const useStore = create((set) => ({
   notes: [],
   quizzes: [],
   courses: [],
+  relationships: [],
 
   groups: [],
 
@@ -76,7 +77,8 @@ export const useStore = create((set) => ({
     }));
   },
 
-  fillInitialData: (data) => set(() => ({ ...data })),
+  hydrated: false,
+  fillInitialData: (data) => set(() => ({ ...data, hydrated: true })),
 
   addItem: (type, item) => {
     if (!keyMap[type]) {

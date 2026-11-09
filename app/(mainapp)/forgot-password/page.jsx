@@ -6,7 +6,7 @@ import { useStore } from "@/store/store";
 import styles from "../page.module.css";
 import { useState } from "react";
 
-export default function forgotPasswordPage() {
+export default function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [waiting, setWaiting] = useState(false);
     const [errors, setErrors] = useState({});

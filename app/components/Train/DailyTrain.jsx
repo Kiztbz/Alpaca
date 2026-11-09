@@ -326,7 +326,7 @@ export function DailyTrain({ quizzes = [], courseId, courseName }) {
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ rating: ratingValue }),
+              body: JSON.stringify({ rating: ratingValue, courseId }),
             }
           );
         } catch (e) {
@@ -492,10 +492,11 @@ export function DailyTrain({ quizzes = [], courseId, courseName }) {
           type="button"
           className="button"
           onClick={handleStartSession}
+          disabled={filteredQuizzes.length === 0}
         >
           {filteredQuizzes.length > 0
             ? `Start Daily Train (${Math.min(SESSION_SIZE, filteredQuizzes.length)})`
-            : "Start Training"}
+            : "Complete a unit to unlock training"}
         </button>
 
         <button
@@ -727,6 +728,7 @@ export function DailyTrain({ quizzes = [], courseId, courseName }) {
                   <QuizDisplay
                     key={currentQuiz.id}
                     quiz={currentQuiz}
+                    contextCourseId={courseId}
                     canClientCheck={false}
                     trainMode={true}
                     formId={formId}

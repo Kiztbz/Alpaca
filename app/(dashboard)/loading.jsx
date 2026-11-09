@@ -3,6 +3,7 @@ import styles from "../(mainapp)/Loading.module.css";
 export default function Loading() {
     return (
         <main className={styles.shell} aria-label="Loading page" aria-busy="true">
+            <span className={styles.srOnly}>Loading your dashboard…</span>
             <div className={styles.heading} />
             <div className={styles.line} />
             <div className={styles.cards}>

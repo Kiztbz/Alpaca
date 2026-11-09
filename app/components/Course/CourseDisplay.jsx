@@ -30,12 +30,12 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
   const [joining, setJoining] = useState(false);
   const [joined, setJoined] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  if (!course) return null;
-
   const user = useStore((state) => state.user);
   const addAlert = useAlerts((state) => state.addAlert);
   const router = useRouter();
+
+  if (!course) return null;
+
 
   const canEdit =
     !!user &&

@@ -22,13 +22,13 @@ export function SourceDisplay({ source, contextCourse }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  if (!source) return null;
-
   const user = useStore((state) => state.user);
   const coursesStore = useStore((state) => state.courses);
   const addAlert = useAlerts((state) => state.addAlert);
   const router = useRouter();
+
+  if (!source) return null;
+
   const showTools = user?.settings?.showTools ?? true;
 
   const courses = source.courses

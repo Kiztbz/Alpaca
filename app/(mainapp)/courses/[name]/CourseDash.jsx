@@ -2,7 +2,7 @@
 
 import { useStore } from "@/store/store";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   CourseActions,
   ManageWorkspace,
@@ -22,15 +22,12 @@ function Icon({ name }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
 
-export function CourseDash({ course, isLogged, canAccessContent = true, embedded = false }) {
+export function CourseDash({ course, courses = [], resources = {}, relationships, isLogged, canAccessContent = true, embedded = false }) {
   const [isLoading, setIsLoading] = useState(false);
   const user = useStore((state) => state.user);
   const isManager = Boolean(course.isAdmin || user?.role === "superadmin");
-  const [mode, setMode] = useState(isManager && !embedded ? "manage" : "preview");
-
-  useEffect(() => {
-    setMode(isManager && !embedded ? "manage" : "preview");
-  }, [embedded, isManager, course.id]);
+  const [selectedMode, setSelectedMode] = useState("manage");
+  const mode = isManager && !embedded ? selectedMode : "preview";
 
   const isEnrolled = Boolean(course.isEnrolled);
   const noteCount = Number(course.notesTotal ?? course.notes?.length ?? 0);
@@ -45,8 +42,8 @@ export function CourseDash({ course, isLogged, canAccessContent = true, embedded
           <p>{noteCount} notes</p>
         </div>
         {isManager && <nav className={styles.modeNav} aria-label="Administration view">
-          <button type="button" className={mode === "manage" ? styles.active : ""} onClick={() => setMode("manage")}>Manage</button>
-          <button type="button" className={mode === "preview" ? styles.active : ""} onClick={() => setMode("preview")}>Preview</button>
+          <button type="button" className={mode === "manage" ? styles.active : ""} onClick={() => setSelectedMode("manage")}>Manage</button>
+          <button type="button" className={mode === "preview" ? styles.active : ""} onClick={() => setSelectedMode("preview")}>Preview</button>
         </nav>}
         {canAccessContent && mode === "preview" && <nav className={styles.sideNav} aria-label="Course navigation">
           <button type="button" className={styles.active} aria-current="page"><span><Icon name="book" /></span><div><strong>Learn</strong><small>Course notes</small></div></button>
@@ -72,13 +69,13 @@ export function CourseDash({ course, isLogged, canAccessContent = true, embedded
           <CourseActions course={course} user={user} isLogged={isLogged} isEnrolled={isEnrolled} isManager={isManager} isLoading={isLoading} setIsLoading={setIsLoading} />
         </header>}
 
-        {isManager && mode === "manage" ? <ManageWorkspace course={course} /> : canAccessContent ? <section className={`${styles.workspace} ${embedded ? styles.embeddedWorkspace : ""}`}>
+        {isManager && mode === "manage" ? <ManageWorkspace course={course} resources={resources} /> : canAccessContent ? <section className={`${styles.workspace} ${embedded ? styles.embeddedWorkspace : ""}`}>
           {!embedded && <header className={styles.sectionHeader}>
             <span className={styles.sectionIcon}><Icon name="book" /></span>
             <div><small>Course notes</small><h2>Learn</h2></div>
-            <NotesTabInfo course={course} />
+            <NotesTabInfo course={course} initialNotes={resources.notes} />
           </header>}
-          <div className={styles.contentBody}><NotesTabMain course={course} /></div>
+          <div className={styles.contentBody}><NotesTabMain course={course} courses={courses} initialNotes={resources.notes} initialRelationships={relationships} /></div>
         </section> : <section className={styles.lockedWorkspace} aria-label="Locked course content">
           <span className={styles.lockedIcon}><Icon name="lock" /></span>
           <small>Paid course</small>

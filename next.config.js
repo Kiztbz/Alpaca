@@ -10,9 +10,8 @@ const nextConfig = {
             },
         ],
         dangerouslyAllowSVG: true,
-    },
-    typescript: {
-        ignoreBuildErrors: true,
+        contentDispositionType: "attachment",
+        contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     },
     async headers() {
         const noIndex = [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }];

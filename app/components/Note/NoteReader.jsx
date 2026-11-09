@@ -1,8 +1,9 @@
 "use client";
 
 import { createNoteCards, notePlainText } from "@/lib/noteCards";
-import { Dialog, DialogContent, DialogDescription, DialogHeading } from "@client";
+import { Dialog, DialogContent, DialogHeading } from "@client";
 import styles from "./NoteReader.module.css";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -52,10 +53,11 @@ export function NoteReader({
   const [complete, setComplete] = useState(false);
   const [completedBefore, setCompletedBefore] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [exitOpen, setExitOpen] = useState(false);
-  const [exitError, setExitError] = useState("");
+  const [closing, setClosing] = useState(false);
   const [ready, setReady] = useState(false);
+  const [transitionReady, setTransitionReady] = useState(false);
   const touchStart = useRef(null);
+  const transitionTimer = useRef(null);
   const router = useRouter();
   const storageKey = `alpaca-note-progress:${userId || "anonymous"}:${note.publicId}`;
   const progress = complete ? 100 : Math.round(((index + 1) / cards.length) * 100);
@@ -68,6 +70,12 @@ export function NoteReader({
     params.set("item", publicId);
     return `/learn?${params.toString()}`;
   }, [activeCourse?.publicId]);
+  const nextDestination = nextNote ? learnResourceHref("note", nextNote.publicId) : courseHref;
+
+  useEffect(() => {
+    router.prefetch(courseHref);
+    if (nextNote) router.prefetch(nextDestination);
+  }, [courseHref, nextDestination, nextNote, router]);
 
   useEffect(() => {
     let saved = null;
@@ -81,6 +89,9 @@ export function NoteReader({
     setIndex(wasCompleted ? 0 : Math.min(savedIndex, cards.length - 1));
     setCompletedBefore(wasCompleted);
     setComplete(false);
+    setClosing(false);
+    setTransitionReady(false);
+    setDirection("next");
     setReady(true);
   }, [cards.length, initialProgress?.completedAt, initialProgress?.lastCardIndex, storageKey]);
 
@@ -111,23 +122,39 @@ export function NoteReader({
     setComplete(false);
   }, [cards.length, index]);
 
+  useEffect(() => () => {
+    if (transitionTimer.current) window.clearTimeout(transitionTimer.current);
+  }, []);
+
   const finish = useCallback(async () => {
+    if (complete) return;
     setComplete(true);
     setCompletedBefore(true);
     updateStreak(userId || "anonymous");
 
+    let saved = completedBefore || !activeCourse?.id;
+    const minimumTransition = new Promise((resolve) => window.setTimeout(resolve, 900));
     if (activeCourse?.id && !completedBefore) {
-      await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${activeCourse.id}/progress`, {
+      const controller = new AbortController();
+      const saveTimeout = window.setTimeout(() => controller.abort(), 6000);
+      saved = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${activeCourse.id}/progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ noteId: note.id, cardIndex: cards.length - 1, totalCards: cards.length, complete: true }),
         keepalive: true,
-      }).catch(() => null);
+        signal: controller.signal,
+      }).then((response) => response.ok).catch(() => false);
+      window.clearTimeout(saveTimeout);
     }
 
-    const destination = nextNote ? learnResourceHref("note", nextNote.publicId) : courseHref;
-    window.setTimeout(() => router.push(destination), 450);
-  }, [activeCourse?.id, cards.length, completedBefore, courseHref, learnResourceHref, nextNote, note.id, router, userId]);
+    await minimumTransition;
+    setTransitionReady(true);
+    const destination = saved ? nextDestination : courseHref;
+    transitionTimer.current = window.setTimeout(() => {
+      setClosing(true);
+      transitionTimer.current = window.setTimeout(() => router.push(destination), 180);
+    }, 320);
+  }, [activeCourse?.id, cards.length, complete, completedBefore, courseHref, nextDestination, note.id, router, userId]);
 
   const advance = useCallback(() => {
     if (index === cards.length - 1) return finish();
@@ -153,32 +180,9 @@ export function NoteReader({
   }, [advance, goTo, index, infoOpen]);
 
   function requestClose() {
-    if (completedBefore || complete) {
-      router.push(courseHref);
-      return;
-    }
-    setExitError("");
-    setExitOpen(true);
-  }
-
-  async function leaveAndReset() {
-    if (activeCourse?.id) {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${activeCourse.id}/progress`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ noteId: note.id }),
-        });
-        if (!response.ok) throw new Error("Reset failed");
-      } catch {
-        setExitError("We could not reset your progress. Please try again.");
-        return;
-      }
-    }
-    localStorage.removeItem(storageKey);
-    setExitOpen(false);
-    router.push(courseHref);
-    router.refresh();
+    if (closing) return;
+    setClosing(true);
+    window.setTimeout(() => router.push(courseHref), 160);
   }
 
   function handleTouchEnd(event) {
@@ -191,7 +195,7 @@ export function NoteReader({
   }
 
   return (
-    <main className={styles.reader}>
+    <main className={`${styles.reader} ${closing ? styles.closing : ""}`}>
       <header className={styles.topbar}>
         <button type="button" className={styles.close} onClick={requestClose} aria-label="Close note"><span>×</span><strong>Close</strong></button>
         <div className={styles.titleBlock}>
@@ -208,10 +212,10 @@ export function NoteReader({
       </header>
 
       <div className={styles.workspace}>
-        <section className={styles.stage} aria-live="polite">
+        <section className={`${styles.stage} ${complete ? styles.completeStage : ""}`} aria-live="polite">
           {!complete ? (
             <div
-              key={`${index}-${direction}`}
+              key={`${note.publicId}-${index}-${direction}`}
               className={`${styles.flashcard} ${direction === "previous" ? styles.fromTop : styles.fromBottom}`}
               onTouchStart={(event) => { touchStart.current = event.touches[0].clientY; }}
               onTouchEnd={handleTouchEnd}
@@ -224,11 +228,20 @@ export function NoteReader({
               <div className={styles.swipeHint}>Use <kbd>↓</kbd> or <kbd>Space</kbd> to continue</div>
             </div>
           ) : (
-            <div className={styles.completionCard}>
-              <div className={styles.completionMark}>✓</div>
-              <span>Lesson complete</span>
-              <h2>{nextNote ? "Loading your next note…" : "Course notes complete."}</h2>
-              <p>Your progress is saved. You’ll continue automatically.</p>
+            <div className={`${styles.completionCard} ${transitionReady ? styles.transitionReady : ""}`}>
+              <div className={styles.completionVisual} aria-hidden="true">
+                <span className={styles.loaderOrbit}><i /><i /><i /></span>
+                <Image src="/assets/images/llama-mascot.png" width={92} height={142} alt="" priority />
+                <span className={styles.completionMark}>✓</span>
+              </div>
+              <span>Unit {position} complete</span>
+              <h2>{nextNote ? nextNote.title : "You completed every unit."}</h2>
+              <p>{transitionReady ? nextNote ? "Opening your next unit…" : "Returning to your course…" : "Saving your progress and preparing what’s next…"}</p>
+              <div className={styles.unitTransition} aria-label={transitionReady ? "Ready to continue" : "Preparing next unit"}>
+                <strong>Unit {position}<b>✓</b></strong>
+                <i><span /></i>
+                <strong>{nextNote ? `Unit ${position + 1}` : "Course"}</strong>
+              </div>
             </div>
           )}
 
@@ -255,17 +268,6 @@ export function NoteReader({
           <section className={styles.infoSection}><h3>Sources</h3>{sources.length ? <div className={styles.infoLinks}>{sources.map((src) => <a key={src.id} href={src.url || courseHref} target={src.url ? "_blank" : undefined} rel={src.url ? "noopener noreferrer" : undefined}><span>{src.medium || "Source"}</span><strong>{src.title}</strong></a>)}</div> : <p>No sources are linked to this note.</p>}</section>
           {courses.length > 1 && <section className={styles.infoSection}><h3>Also in</h3><div className={styles.infoLinks}>{courses.filter((course) => course.id !== activeCourse?.id).map((course) => <Link key={course.id} href={learnResourceHref("note", note.publicId, course.publicId)}><strong>{course.name}</strong></Link>)}</div></section>}
           {related.length > 0 && <section className={styles.infoSection}><h3>Related resources</h3><div className={styles.infoLinks}>{related.map((item) => <Link key={`${item.resource}-${item.id}`} href={learnResourceHref(item.resource.replace(/s$/, ""), item.publicId)}><span>{item.resource}</span><strong>{item.title}</strong></Link>)}</div></section>}
-        </DialogContent>
-      </Dialog>
-      <Dialog open={exitOpen} onOpenChange={setExitOpen}>
-        <DialogContent>
-          <DialogHeading>Leave this note?</DialogHeading>
-          <DialogDescription>You have not completed this note. If you leave now, your progress will be cleared and you will restart from the beginning next time.</DialogDescription>
-          {exitError && <p className={styles.exitError}>{exitError}</p>}
-          <div className={styles.exitActions}>
-            <button type="button" onClick={() => setExitOpen(false)}>Keep reading</button>
-            <button type="button" onClick={leaveAndReset}>Leave and restart</button>
-          </div>
         </DialogContent>
       </Dialog>
     </main>

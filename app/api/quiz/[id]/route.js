@@ -20,6 +20,7 @@ import {
   catchRouteError,
   updateQuiz,
 } from "@/lib/db/helpers";
+import { contiguousCompletedNoteIds } from "@/lib/courseUnits";
 
 // UPDATE QUIZ
 export async function PATCH(req, { params }) {
@@ -133,7 +134,7 @@ export async function PATCH(req, { params }) {
 export async function POST(req, props) {
   const params = await props.params;
   const body = await req.json();
-  const { answers, rating: explicitRating } = body;
+  const { answers, rating: explicitRating, courseId: requestedCourseId } = body;
   const { id } = params;
 
   try {
@@ -155,6 +156,29 @@ export async function POST(req, props) {
         },
         { status: 404 }
       );
+    }
+
+    if (requestedCourseId) {
+      const courseId = Number(requestedCourseId);
+      if (!Number.isInteger(courseId) || courseId < 1) {
+        return NextResponse.json({ message: "Invalid course context" }, { status: 400 });
+      }
+      const [enrollment, linkedUnit, orderedNotes, completedNotes] = await Promise.all([
+        db.selectFrom("course_users").select("courseId")
+          .where("courseId", "=", courseId).where("userId", "=", user.id).executeTakeFirst(),
+        db.selectFrom("resource_relations as qr")
+          .innerJoin("resource_relations as nr", (join) => join.onRef("nr.a", "=", "qr.b").on("nr.aType", "=", "note").on("nr.b", "=", courseId).on("nr.bType", "=", "course"))
+          .select("qr.b as noteId")
+          .where("qr.a", "=", quiz.id).where("qr.aType", "=", "quiz").where("qr.bType", "=", "note").executeTakeFirst(),
+        db.selectFrom("resource_relations as rr").innerJoin("notes as n", "n.id", "rr.a")
+          .select("n.id").where("rr.aType", "=", "note").where("rr.b", "=", courseId).where("rr.bType", "=", "course").orderBy("n.createdAt", "asc").execute(),
+        db.selectFrom("course_note_progress").select(["noteId", "completedAt"])
+          .where("courseId", "=", courseId).where("userId", "=", user.id).where("completedAt", "is not", null).execute(),
+      ]);
+      const completedUnitIds = contiguousCompletedNoteIds({ notes: orderedNotes.map((note) => note.id), noteProgress: completedNotes });
+      if (!enrollment || !linkedUnit || !completedUnitIds.some((noteId) => String(noteId) === String(linkedUnit.noteId))) {
+        return NextResponse.json({ message: "Complete this unit before practicing its questions" }, { status: 403 });
+      }
     }
 
     let isCorrect = false;

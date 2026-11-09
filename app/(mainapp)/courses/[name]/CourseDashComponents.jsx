@@ -1,13 +1,16 @@
 "use client";
 
-import { CourseInput, Dialog, DialogContent, DialogDescription, DialogHeading, NoteInput, QuizInput, SourceInput, Spinner } from "@client";
+import { CourseInput, CourseSwitcher, Dialog, DialogContent, DialogDescription, DialogHeading, NoteInput, QuizInput, SourceInput, Spinner } from "@client";
 import { noteCardCount } from "@/lib/noteCards";
+import { quizIdsForUnit } from "@/lib/courseUnits";
 import { useAlerts, useStore } from "@/store/store";
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./CourseDash.module.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASEPATH ?? "";
+const PATH_SHIFTS = [0, 40, 58, 40, 0, -40, -58, -40];
 
 function Icon({ name }) {
   const paths = {
@@ -17,6 +20,7 @@ function Icon({ name }) {
     check: <path d="m5 12 4 4L19 6" />,
     file: <><path d="M6 2h8l4 4v16H6z" /><path d="M14 2v5h5M9 12h6M9 16h6" /></>,
     lock: <><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
+    star: <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />,
   };
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
@@ -145,10 +149,13 @@ export function CourseActions({ course, user, isLogged, isEnrolled, isManager, i
   </>;
 }
 
-export function ManageWorkspace({ course }) {
-  const notes = useStore((state) => state.notes);
-  const quizzes = useStore((state) => state.quizzes);
-  const sources = useStore((state) => state.sources);
+export function ManageWorkspace({ course, resources = {} }) {
+  const storedNotes = useStore((state) => state.notes);
+  const storedQuizzes = useStore((state) => state.quizzes);
+  const storedSources = useStore((state) => state.sources);
+  const notes = resources.notes ?? storedNotes;
+  const quizzes = resources.quizzes ?? storedQuizzes;
+  const sources = resources.sources ?? storedSources;
   const groups = [
     { type: "note", label: "Lessons", create: "Note", items: relatedItems(course.notes, notes) },
     { type: "quiz", label: "Practice", create: "Quiz", items: relatedItems(course.quizzes, quizzes) },
@@ -200,8 +207,9 @@ function ManageResourceCard({ item, type, course }) {
   </article>;
 }
 
-export function NotesTabInfo({ course }) {
-  const notes = useStore((state) => state.notes);
+export function NotesTabInfo({ course, initialNotes }) {
+  const storedNotes = useStore((state) => state.notes);
+  const notes = initialNotes ?? storedNotes;
   const courseNotes = relatedItems(course.notes, notes);
   const completedIds = new Set((course.noteProgress || []).filter((item) => item.completedAt).map((item) => String(item.noteId)));
   const completedNotes = courseNotes.findIndex((note) => !completedIds.has(String(note.id)));
@@ -209,70 +217,111 @@ export function NotesTabInfo({ course }) {
   return <span className={styles.countPill}>{contiguousCompleted} / {courseNotes.length} complete</span>;
 }
 
-export function NotesTabMain({ course }) {
-  const notes = useStore((state) => state.notes);
+export function NotesTabMain({ course, courses = [], initialNotes, initialRelationships }) {
+  const storedNotes = useStore((state) => state.notes);
+  const storedRelationships = useStore((state) => state.relationships);
+  const notes = initialNotes ?? storedNotes;
+  const relationships = initialRelationships ?? storedRelationships;
   const courseNotes = useMemo(() => relatedItems(course.notes, notes), [course.notes, notes]);
   const pathRef = useRef(null);
   const currentRef = useRef(null);
+  const scrollFrame = useRef(null);
+  const scrollVelocity = useRef(0);
 
   const serverProgress = new Map((course.noteProgress || []).map((item) => [String(item.noteId), item]));
-  let sequenceOpen = true;
+  const firstIncompleteIndex = courseNotes.findIndex((note) => !serverProgress.get(String(note.id))?.completedAt);
   const statuses = courseNotes.map((note, index) => {
     const server = serverProgress.get(String(note.id)) || {};
     const cards = Math.max(1, noteCardCount(note.text));
     const recordedComplete = Boolean(server.completedAt);
-    const complete = sequenceOpen && recordedComplete;
-    const unlocked = sequenceOpen;
-    if (!recordedComplete) sequenceOpen = false;
+    const complete = recordedComplete && (firstIncompleteIndex < 0 || index < firstIncompleteIndex);
+    const unlocked = firstIncompleteIndex < 0 || index <= firstIncompleteIndex;
     const lastCardIndex = complete ? cards - 1 : Math.min(cards - 1, Number(server.lastCardIndex || 0));
     const started = unlocked && (complete || Boolean(server.updatedAt));
     const percent = complete ? 100 : started ? Math.min(99, Math.round(((lastCardIndex + 1) / cards) * 100)) : 0;
-    return { item: note, title: note.title, cards, complete, unlocked, lastCardIndex, started, percent, index };
+    const quizCount = quizIdsForUnit(relationships, note.id).size;
+    return { item: note, title: note.title, cards, complete, unlocked, lastCardIndex, started, percent, quizCount, index };
   });
   const partialIndex = statuses.findIndex((item) => item.started && !item.complete && item.unlocked);
   const unfinishedIndex = statuses.findIndex((item) => !item.complete && item.unlocked);
   const currentIndex = partialIndex >= 0 ? partialIndex : unfinishedIndex >= 0 ? unfinishedIndex : Math.max(0, statuses.length - 1);
   const current = statuses[currentIndex];
   const allComplete = statuses.length > 0 && statuses.every((item) => item.complete);
-  const completedLessons = statuses.filter((item) => item.complete).length;
-  const completedCards = statuses.reduce((total, item) => total + (item.complete ? item.cards : item.started ? item.lastCardIndex : 0), 0);
-  const totalCards = statuses.reduce((total, item) => total + item.cards, 0);
-  const completedActivities = statuses.filter((item) => item.complete).length;
-  const totalActivities = statuses.length;
-  const coursePercent = totalActivities ? Math.round((completedActivities / totalActivities) * 100) : 0;
   const pathHref = (item) => `/learn?course=${encodeURIComponent(course.publicId)}&view=note&item=${encodeURIComponent(item.item.publicId)}`;
   const currentHref = current ? pathHref(current) : "#";
+  const practiceHref = (item) => `/daily?course=${encodeURIComponent(course.publicId)}&unit=${encodeURIComponent(item.item.publicId)}`;
+
+  const handleWeightedScroll = useCallback((event) => {
+    if (!pathRef.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    event.preventDefault();
+    scrollVelocity.current = Math.max(-80, Math.min(80, scrollVelocity.current + event.deltaY * .18));
+    if (scrollFrame.current) return;
+    const step = () => {
+      if (!pathRef.current) return;
+      pathRef.current.scrollTop += scrollVelocity.current;
+      scrollVelocity.current *= .86;
+      if (Math.abs(scrollVelocity.current) > .45) scrollFrame.current = requestAnimationFrame(step);
+      else { scrollVelocity.current = 0; scrollFrame.current = null; }
+    };
+    scrollFrame.current = requestAnimationFrame(step);
+  }, []);
+
+  useEffect(() => () => {
+    if (scrollFrame.current) cancelAnimationFrame(scrollFrame.current);
+  }, []);
 
   useEffect(() => {
+    let frame;
     const target = currentRef.current;
-    if (!pathRef.current || !target || currentIndex < 3) return;
-    target.scrollIntoView({ block: "center", behavior: "smooth" });
-  }, [currentIndex, course.id]);
+    const container = pathRef.current;
+    if (!container || !target) return undefined;
+    frame = requestAnimationFrame(() => {
+      const top = target.offsetTop - (container.clientHeight - target.offsetHeight) / 2;
+      container.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentIndex, course.id, statuses.length]);
 
   if (!statuses.length) return <EmptyState icon="book" title="No notes yet" copy="Notes added to this course will appear here as one learning path." />;
 
   return <div className={styles.learningDashboard}>
     <section className={styles.pathWorkspace}>
-      <header className={styles.pathHeader}>
-        <div><small>{allComplete ? "Course complete" : `Note ${currentIndex + 1} of ${statuses.length}`}</small><h2>{allComplete ? "Review any note" : current.title}</h2><p>{allComplete ? "Every note is complete and ready to replay." : current.started ? `Resume at card ${current.lastCardIndex + 1} of ${current.cards}.` : `${current.cards} cards · ${Math.max(2, Math.ceil(current.cards * .7))} min`}</p></div>
-        <Link href={currentHref}><Icon name="book" />{allComplete ? "Review" : current.started ? "Continue" : "Start note"}</Link>
+      <header className={`${styles.pathHeader} ${courses.length ? "" : styles.pathHeaderSimple}`}>
+        <div><small>{allComplete ? "Course complete" : `Unit ${currentIndex + 1} of ${statuses.length}`}</small><h2>{allComplete ? "Review any unit" : current.title}</h2><p>{allComplete ? "Every unit and its practice are unlocked." : current.started ? `Resume at card ${current.lastCardIndex + 1} of ${current.cards}.` : `${current.cards} cards · ${Math.max(2, Math.ceil(current.cards * .7))} min`}</p></div>
+        {courses.length > 0 && <CourseSwitcher courses={courses} activeCourse={course} label="Course" hero />}
+        <Link href={currentHref}><Icon name="book" />{allComplete ? "Review" : current.started ? "Continue" : "Start unit"}</Link>
       </header>
-      <div className={styles.pathScroller} ref={pathRef}>
+      <div className={styles.pathScroller} ref={pathRef} onWheel={handleWeightedScroll}>
         {statuses.map((item, index) => {
           const isCurrent = index === currentIndex;
           const status = item.complete ? "Completed" : !item.unlocked ? "Locked" : isCurrent ? item.started ? `Card ${item.lastCardIndex + 1} of ${item.cards}` : "Up next" : "Ready";
-          return <article ref={isCurrent ? currentRef : null} className={`${styles.pathStep} ${item.complete ? styles.pathComplete : ""} ${isCurrent ? styles.pathCurrent : ""} ${!item.unlocked ? styles.pathLocked : ""}`} key={item.item.id}>
-            {item.unlocked ? <Link className={styles.pathNode} title={`Note ${index + 1}: ${item.title}`} href={pathHref(item)} aria-label={`Note ${index + 1} · ${status}: ${item.title}`}>{item.complete ? <Icon name="check" /> : isCurrent ? <Icon name="book" /> : index + 1}</Link> : <span className={styles.pathNode} aria-label={`Note ${index + 1} locked`}><Icon name="lock" /></span>}
-            {item.unlocked ? <Link className={styles.pathBubble} href={pathHref(item)}><small>Note {index + 1} · {status}</small><strong>{item.title}</strong><span>{item.started ? "Continue note" : "Open note"}<Icon name="arrow" /></span></Link> : <div className={styles.pathBubble}><small>Note {index + 1} · Locked</small><strong>{item.title}</strong><span>Complete note {index} to unlock</span></div>}
+          const pathShift = PATH_SHIFTS[index % PATH_SHIFTS.length];
+          const nodeIcon = item.complete ? "check" : ["star", "book", "bolt"][index % 3];
+          return <article
+            ref={isCurrent ? currentRef : null}
+            className={`${styles.pathStep} ${item.complete ? styles.pathComplete : ""} ${isCurrent ? styles.pathCurrent : ""} ${!item.unlocked ? styles.pathLocked : ""}`}
+            style={{ "--path-shift": `${pathShift}px`, "--path-shift-mobile": `${Math.round(pathShift * .52)}px`, "--step-delay": `${index * -.37}s` }}
+            key={item.item.id}
+          >
+            <div className={styles.pathNodeWrap}>
+              {isCurrent && <span className={styles.pathFlag}>{item.started ? "Continue" : "Start"}</span>}
+              {isCurrent && <Image className={styles.pathMascot} src="/assets/images/llama-mascot.png" width={118} height={182} alt="Alpaca at your current unit" priority />}
+              {item.unlocked
+                ? <Link className={styles.pathNode} title={`Unit ${index + 1}: ${item.title}`} href={pathHref(item)} aria-label={`Unit ${index + 1} · ${status}: ${item.title}`}><Icon name={nodeIcon} /></Link>
+                : <span className={styles.pathNode} aria-label={`Unit ${index + 1} locked`}><Icon name={nodeIcon} /></span>}
+              <span className={styles.pathUnitTag}>Unit {index + 1}</span>
+              <div className={styles.pathBubble}>
+                {item.unlocked
+                  ? <Link className={styles.pathBubbleMain} href={pathHref(item)}><small>Unit {index + 1} · {status}</small><strong>{item.title}</strong><div className={styles.pathMeta}><span>{item.cards} cards</span><span>{Math.max(2, Math.ceil(item.cards * .7))} min</span></div><span>{item.started ? `Resume at card ${item.lastCardIndex + 1}` : "Open unit"}<Icon name="arrow" /></span></Link>
+                  : <div className={styles.pathBubbleMain}><small>Unit {index + 1} · Locked</small><strong>{item.title}</strong><div className={styles.pathMeta}><span>{item.cards} cards</span><span>{Math.max(2, Math.ceil(item.cards * .7))} min</span></div><span>Complete unit {index} to unlock</span></div>}
+                <div className={styles.unitPractice}>{item.complete ? <Link href={practiceHref(item)}><Icon name="bolt" /> Practice · {item.quizCount} questions</Link> : <span><Icon name="lock" /> Practice locked</span>}</div>
+              </div>
+            </div>
           </article>;
         })}
       </div>
     </section>
 
-    <aside className={styles.learningRail}>
-      <section className={styles.railProgress}><span>Course progress</span><strong>{coursePercent}%</strong><div><i style={{ width: `${coursePercent}%` }} /></div><p>{completedActivities} of {totalActivities} notes complete</p></section>
-      <section className={styles.railCard}><header><span className={styles.typeIcon}><Icon name="book" /></span><div><small>Notes</small><h3>{completedLessons} of {statuses.length}</h3></div></header><p>{completedCards} of {totalCards} cards completed</p><Link href={currentHref}>{allComplete ? "Review notes" : "Continue notes"}<Icon name="arrow" /></Link></section>
-    </aside>
   </div>;
 }
 

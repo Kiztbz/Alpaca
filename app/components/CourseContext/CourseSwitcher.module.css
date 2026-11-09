@@ -1,21 +1,27 @@
 .bar { position: relative; z-index: 20; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 24px clamp(22px, 4vw, 54px) 0; }
 .bar > div:first-child span { color: var(--accent); font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
 .bar h1 { margin: 5px 0 0; font-size: clamp(28px, 4vw, 42px); letter-spacing: -.04em; }
-.switcher { display: grid; flex: 0 1 390px; min-width: 280px; gap: 7px; }
-.label { color: var(--fg-4); font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.switcher { display: grid; flex: 0 1 280px; min-width: 220px; gap: 5px; }
+.label { color: var(--fg-4); font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .control { position: relative; }
-.trigger { display: flex; width: 100%; min-height: 48px; padding: 0 14px 0 16px; cursor: pointer; color: var(--fg-1); align-items: center; justify-content: space-between; gap: 16px; text-align: left; border: 1px solid var(--bg-4); border-radius: 13px; background: var(--bg-2); box-shadow: 0 3px 0 var(--bg-3); }
+.trigger { display: flex; width: 100%; min-height: 40px; padding: 0 11px 0 13px; cursor: pointer; color: var(--fg-1); align-items: center; justify-content: space-between; gap: 12px; text-align: left; border: 1px solid var(--bg-4); border-radius: 11px; background: var(--bg-2); box-shadow: 0 2px 0 var(--bg-3); }
 .trigger:hover, .trigger[aria-expanded="true"] { border-color: var(--accent-50); }
 .trigger:focus-visible { outline: 3px solid var(--accent-20); outline-offset: 2px; }
-.trigger strong { min-width: 0; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.trigger svg { flex: 0 0 auto; width: 18px; height: 18px; transition: transform .15s ease; }
+.trigger strong { min-width: 0; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.trigger svg { flex: 0 0 auto; width: 15px; height: 15px; transition: transform .15s ease; }
 .trigger[aria-expanded="true"] svg { transform: rotate(180deg); }
-.menu { position: absolute; z-index: 100; top: calc(100% + 8px); right: 0; left: 0; display: grid; gap: 4px; max-height: 280px; padding: 7px; overflow-y: auto; border: 1px solid var(--bg-4); border-radius: 13px; background: var(--bg-2); box-shadow: 0 18px 45px rgba(0, 0, 0, .35); }
+.menu { position: absolute; z-index: 100; top: calc(100% + 8px); right: 0; left: 0; display: grid; gap: 4px; max-height: 280px; padding: 7px; overflow-x: hidden; overflow-y: auto; border: 1px solid var(--bg-4); border-radius: 13px; background: var(--bg-2); box-shadow: 0 18px 45px rgba(0, 0, 0, .35); scrollbar-width: none; -ms-overflow-style: none; }
+.menu::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .menu button { display: flex; width: 100%; min-height: 42px; padding: 9px 11px; cursor: pointer; color: var(--fg-3); align-items: center; justify-content: space-between; gap: 12px; text-align: left; border: 0; border-radius: 9px; background: transparent; }
 .menu button:hover { color: var(--fg-1); background: var(--bg-3); }
 .menu button.selected { color: var(--accent); background: var(--accent-08); }
-.menu button span { overflow: hidden; font-size: 11px; font-weight: 800; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.menu button span { min-width: 0; overflow: hidden; font-size: 11px; font-weight: 800; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .menu button b { flex: 0 0 auto; color: var(--accent); font-size: 12px; }
+.hero { min-width: 0; }
+.hero .label { color: rgba(255, 255, 255, .72); }
+.hero .trigger { min-height: 38px; color: #fff; border-color: rgba(112, 43, 146, .4); background: rgba(80, 27, 108, .16); box-shadow: 0 2px 0 rgba(112, 43, 146, .28); }
+.hero .trigger:hover, .hero .trigger[aria-expanded="true"] { border-color: rgba(255, 255, 255, .55); }
+.hero .menu { color: var(--fg-1); }
 .empty { min-height: 70dvh; display: grid; place-items: center; padding: 32px; }
 .empty > div { max-width: 520px; text-align: center; }
 .empty h1 { margin-bottom: 10px; }

@@ -5,7 +5,7 @@ import { getSessionUser } from "@/lib/auth";
 import { getGroups } from "@/lib/db/helpers";
 import { getEnrolledLearningData, selectEnrolledCourse } from "@/lib/enrolledCourses";
 import { CourseDash } from "../courses/[name]/CourseDash";
-import { CourseSwitcher, FillStore } from "@client";
+import { FillStore } from "@client";
 import { NoteReader } from "@/app/components/Note/NoteReader";
 import switcherStyles from "@/app/components/CourseContext/CourseSwitcher.module.css";
 
@@ -68,7 +68,6 @@ export default async function LearnPage(props) {
 
   return <>
     <FillStore user={user} groups={groups} relationships={relationships} {...resources} />
-    <header className={switcherStyles.bar}><div><span>Your classroom</span><h1>Learn</h1></div><CourseSwitcher courses={courses} activeCourse={activeCourse} label="Enrolled course" /></header>
-    <CourseDash course={activeCourse} isLogged canAccessContent embedded />
+    <CourseDash course={activeCourse} courses={courses} resources={resources} relationships={relationships} isLogged canAccessContent embedded />
   </>;
 }

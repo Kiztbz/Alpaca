@@ -6,10 +6,23 @@
 
 .heading,
 .line,
-.card {
+.card,
+.step i,
+.step span {
     background: color-mix(in srgb, var(--foreground, #8aa0bd) 12%, transparent);
     border-radius: 12px;
     animation: pulse 1.15s ease-in-out infinite alternate;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .heading {
@@ -34,6 +47,32 @@
     height: 220px;
 }
 
+.timeline {
+    width: min(760px, 100%);
+    display: grid;
+    gap: 20px;
+    margin-top: 42px;
+}
+
+.step {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+}
+
+.step i {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    animation-delay: var(--delay);
+}
+
+.step span {
+    height: 68px;
+    animation-delay: var(--delay);
+}
+
 @keyframes pulse {
     to { opacity: 0.48; }
 }
@@ -46,5 +85,7 @@
 @media (prefers-reduced-motion: reduce) {
     .heading,
     .line,
-    .card { animation: none; }
+    .card,
+    .step i,
+    .step span { animation: none; }
 }

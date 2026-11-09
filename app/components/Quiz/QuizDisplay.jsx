@@ -40,6 +40,7 @@ export function QuizDisplay({
   canEditDelete,
   lighter,
   contextCourse,
+  contextCourseId,
   showDetailLink = true,
   trainMode = false,
   formId,
@@ -66,6 +67,12 @@ export function QuizDisplay({
   const [flashcard, setFlashcard] = useState(!!isFlashcard);
   const [reveal, setReveal] = useState(false);
   const [hints, setHints] = useState([]);
+  const user = useStore((state) => state.user);
+  const storeQuiz = useStore((state) =>
+    state.quizzes.find((x) => x.id === quiz?.id)
+  );
+  const addAlert = useAlerts((state) => state.addAlert);
+  const router = useRouter();
 
   // Notify parent of answer changes
   useEffect(() => {
@@ -108,14 +115,8 @@ export function QuizDisplay({
 
   if (!quiz || !quiz.id) return null;
 
-  const user = useStore((state) => state.user);
   const showConfetti =
     (user && user.settings && user.settings.showConfetti) ?? true;
-  const storeQuiz = useStore((state) =>
-    state.quizzes.find((x) => x.id === quiz.id)
-  );
-  const addAlert = useAlerts((state) => state.addAlert);
-  const router = useRouter();
   const showTools = user?.settings?.showTools ?? true;
 
   const canEdit = quiz.canManage || user?.role === "superadmin" ||
@@ -188,7 +189,7 @@ export function QuizDisplay({
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ answers: answers }),
+            body: JSON.stringify({ answers: answers, courseId: contextCourseId }),
           }
         );
 

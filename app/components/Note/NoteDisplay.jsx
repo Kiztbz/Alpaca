@@ -26,12 +26,14 @@ export function NoteDisplay({ note, contextCourse }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  if (!note) return null;
-
   const user = useStore((state) => state.user);
   const addAlert = useAlerts((state) => state.addAlert);
   const router = useRouter();
+  const coursesStore = useStore((state) => state.courses);
+  const sourcesStore = useStore((state) => state.sources);
+
+  if (!note) return null;
+
   const showTools = user?.settings?.showTools ?? true;
 
   async function deleteNote() {
@@ -49,9 +51,6 @@ export function NoteDisplay({ note, contextCourse }) {
       setDeleting(false);
     }
   }
-
-  const coursesStore = useStore((state) => state.courses);
-  const sourcesStore = useStore((state) => state.sources);
 
   const courses = note.courses ? note.courses
     .map((x) => (typeof x === "object" && x !== null) ? x : coursesStore.find((crs) => String(crs.id) === String(x)))

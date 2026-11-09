@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import styles from "./Card.module.css";
 import hljs from "highlight.js";
 import Link from "next/link";
+import { sanitizeNoteHtml } from "@/lib/noteCards";
 
 export function Card({ link, darker, border, lighter, fullWidth, hideAnimatedBorder, ...props }) {
     // Link is external if it starts with http
@@ -90,7 +91,7 @@ export function CardDescriptionHTML({ children }) {
         <p
             ref={contentRef}
             className={styles.description}
-            dangerouslySetInnerHTML={{ __html: children }}
+            dangerouslySetInnerHTML={{ __html: sanitizeNoteHtml(children) }}
         />
     );
 }

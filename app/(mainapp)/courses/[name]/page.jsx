@@ -103,7 +103,7 @@ export default async function CoursePage(props) {
     return <>
       <CourseStructuredData course={course} />
       {user && <FillStore user={user} groups={groups} />}
-      <CourseDash course={lockedCourse} isLogged={!!user} canAccessContent={false} />
+      <CourseDash course={lockedCourse} resources={resources} relationships={relationships} isLogged={!!user} canAccessContent={false} />
     </>;
   }
 
@@ -140,6 +140,6 @@ export default async function CoursePage(props) {
   return <>
     <CourseStructuredData course={course} />
     {user && <FillStore user={user} groups={groups} relationships={expandedRelationships} {...resources} />}
-    <CourseDash course={course} isLogged={!!user} canAccessContent />
+    <CourseDash course={course} resources={resources} relationships={expandedRelationships} isLogged={!!user} canAccessContent />
   </>;
 }

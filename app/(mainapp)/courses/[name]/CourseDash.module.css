@@ -5,7 +5,7 @@
   border-top: 1px solid var(--bg-3);
   background: var(--bg-1);
 }
-.shell.embedded{grid-template-columns:minmax(0,1fr);min-height:auto}.embedded>.sidebar{display:none}.embedded>.appView{padding-top:20px}.embedded .mobileBack{display:none}
+.shell.embedded{grid-template-columns:minmax(0,1fr);min-height:auto}.embedded>.sidebar{display:none}.embedded>.appView{padding-top:20px;padding-bottom:4px}.embedded .mobileBack{display:none}
 
 .shell svg { width: 19px; height: 19px; flex: 0 0 auto; }
 .sidebar {
@@ -77,48 +77,56 @@
 .sectionHeader h2 { margin: 0; font-size: 19px; letter-spacing: -.02em; }
 .countPill { padding: 6px 9px; border-radius: 99px; color: var(--accent); background: var(--accent-08); font-size: 9px; font-weight: 900; }
 .contentBody { min-height: 360px; padding: 22px; }
-.learningDashboard { display: grid; grid-template-columns: minmax(480px, 1fr) 330px; gap: 28px; align-items: start; }
+.learningDashboard { display: block; }
 .pathWorkspace { min-width: 0; overflow: hidden; }
-.pathHeader { display: flex; gap: 24px; padding: 22px 25px; align-items: center; justify-content: space-between; color: #fff; border-radius: 16px; background: #c979ed; box-shadow: inset 0 -5px 0 #9b55bd; }
+.pathHeader { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 230px) auto; gap: 16px; padding: 14px 18px 17px; align-items: center; color: #fff; border-radius: 14px; background: #c979ed; box-shadow: inset 0 -4px 0 #9b55bd; }
+.pathHeaderSimple { grid-template-columns: minmax(0, 1fr) auto; }
 .pathHeader > div { min-width: 0; }
 .pathHeader small { display: block; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; opacity: .82; }
-.pathHeader h2 { margin: 8px 0 0; color: inherit; font-size: 25px; line-height: 1.1; letter-spacing: -.025em; }
-.pathHeader p { margin: 7px 0 0; font-size: 12px; font-weight: 750; opacity: .86; }
-.pathHeader > a { min-height: 58px; display: flex; gap: 9px; padding: 0 18px; flex: 0 0 auto; align-items: center; color: #fff; font-size: 12px; font-weight: 900; text-transform: uppercase; border: 3px solid rgba(112, 43, 146, .42); border-radius: 16px; background: rgba(255, 255, 255, .12); box-shadow: 0 4px 0 rgba(112, 43, 146, .35); }
-.pathHeader > a svg { width: 20px; height: 20px; }
-.pathScroller { position: relative; display: grid; gap: 18px; min-height: 420px; padding: 40px 24px 72px; }
-.pathStep { position: relative; z-index: 1; display: grid; width: min(540px, 100%); min-height: 92px; margin: 0 auto; align-items: center; grid-template-columns: 72px minmax(0, 1fr); gap: 18px; }
-.pathStep:not(:last-child)::after { position: absolute; z-index: -1; top: 68px; bottom: -23px; left: 35px; width: 2px; content: ""; background: var(--bg-4); }
-.pathNode { width: 72px; height: 64px; display: grid; place-items: center; color: #8b9aa3; font-size: 17px; font-weight: 900; border: 0; border-radius: 50%; background: #37464f; box-shadow: 0 7px 0 #26343c; transition: transform .15s ease, filter .15s ease; }
-.pathNode:hover { filter: brightness(1.12); transform: translateY(-2px); }
-.pathNode svg { width: 29px; height: 29px; stroke-width: 3; }
-.pathComplete .pathNode { color: #fff; background: #c979ed; box-shadow: 0 7px 0 #9850b8; }
-.pathCurrent .pathNode { color: #fff; outline: 7px solid rgba(255, 200, 0, .2); background: #ffc800; box-shadow: 0 7px 0 #d7a700; transform: scale(1.08); }
-.pathBubble { position: relative; z-index: 3; display: grid; min-width: 0; gap: 5px; padding: 14px 16px; color: var(--fg-1); border: 1px solid var(--bg-4); border-radius: 14px; background: var(--bg-2); box-shadow: 0 3px 0 var(--bg-3); }
-.pathBubble small { color: var(--fg-4); font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-.pathBubble strong { overflow-wrap: anywhere; font-size: 12px; line-height: 1.35; }
-.pathBubble span { display: flex; gap: 5px; margin-top: 3px; align-items: center; color: var(--accent); font-size: 9px; font-weight: 900; }
-.pathBubble span svg { width: 12px; height: 12px; }
+.pathHeader h2 { margin: 5px 0 0; color: inherit; font-size: 20px; line-height: 1.1; letter-spacing: -.025em; }
+.pathHeader p { margin: 5px 0 0; font-size: 10px; font-weight: 750; opacity: .86; }
+.pathHeader > a { min-height: 46px; display: flex; gap: 7px; padding: 0 14px; flex: 0 0 auto; align-items: center; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; border: 2px solid rgba(112, 43, 146, .42); border-radius: 13px; background: rgba(255, 255, 255, .12); box-shadow: 0 3px 0 rgba(112, 43, 146, .35); }
+.pathHeader > a svg { width: 17px; height: 17px; }
+.pathScroller { position: relative; display: grid; gap: 3px; min-height: 430px; max-height: min(68dvh, 680px); padding: 68px 56px 88px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; background: radial-gradient(circle at 50% 20%, color-mix(in srgb, #c979ed 8%, transparent), transparent 44%); scrollbar-width: none; -ms-overflow-style: none; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 58px, #000 calc(100% - 68px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 58px, #000 calc(100% - 68px), transparent 100%); }
+.embedded .pathScroller { height: calc(100dvh - 190px); max-height: none; }
+.pathScroller::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.pathStep { position: relative; z-index: 1; min-height: 112px; display: grid; place-items: center; animation: path-step-idle 4.2s ease-in-out var(--step-delay) infinite; }
+.pathNodeWrap { position: relative; width: 82px; height: 76px; display: grid; place-items: center; transform: translateX(var(--path-shift)); transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
+.pathNode { position: relative; z-index: 3; width: 78px; height: 70px; display: grid; place-items: center; color: #718892; border: 0; border-radius: 50%; background: #374951; box-shadow: 0 8px 0 #26373e, inset 0 2px 0 rgba(255, 255, 255, .04); transition: transform .16s ease, filter .16s ease, box-shadow .16s ease; }
+.pathNode:hover, .pathNode:focus-visible { filter: brightness(1.13); transform: translateY(-3px); }
+.pathNode:focus-visible { outline: 4px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 5px; }
+.pathNode svg { width: 31px; height: 31px; fill: currentColor; fill-opacity: .12; stroke-width: 2.7; }
+.pathComplete .pathNode { color: #fff; background: #c979ed; box-shadow: 0 7px 0 #9850b8, inset 0 2px 0 rgba(255, 255, 255, .2); }
+.pathCurrent .pathNode { color: #fff; outline: 7px solid rgba(255, 120, 200, .15); background: #ff78c8; box-shadow: 0 7px 0 #ca54a1, 0 0 0 3px #31444c; transform: scale(1.08); }
+.pathLocked .pathNode { cursor: not-allowed; color: #6f848d; opacity: .72; box-shadow: 0 7px 0 #26373e; }
+.pathFlag { position: absolute; z-index: 6; bottom: calc(100% + 10px); left: 50%; padding: 7px 10px; color: #ff78c8; border: 2px solid #344951; border-radius: 9px; background: var(--bg-1); box-shadow: 0 2px 0 #26373e; font-size: 8px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; transform: translateX(-50%); }
+.pathFlag::after { position: absolute; top: 100%; left: 50%; width: 10px; height: 10px; content: ""; border-right: 3px solid #344951; border-bottom: 3px solid #344951; background: var(--bg-1); transform: translate(-50%, -5px) rotate(45deg); }
+.pathMascot { position: absolute; z-index: 5; right: calc(100% + 30px); bottom: -20px; width: 84px; height: auto; pointer-events: none; filter: drop-shadow(0 6px 0 rgba(21, 32, 38, .42)); transform-origin: bottom center; animation: mascot-idle 3.2s ease-in-out infinite; }
+.pathUnitTag { position: absolute; z-index: 4; top: calc(100% + 11px); left: 50%; padding: 5px 9px; color: var(--fg-3); border: 1px solid var(--bg-4); border-radius: 8px; background: var(--bg-1); font-size: 8px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; transform: translateX(-50%); transition: opacity .15s ease, transform .15s ease; }
+.pathComplete .pathUnitTag { color: #c979ed; border-color: color-mix(in srgb, #c979ed 45%, var(--bg-4)); }
+.pathCurrent .pathUnitTag { color: #ff78c8; border-color: color-mix(in srgb, #ff78c8 55%, var(--bg-4)); }
+.pathStep:hover .pathUnitTag, .pathStep:focus-within .pathUnitTag { opacity: 0; transform: translate(-50%, -3px); }
+.pathBubble { position: absolute; z-index: 8; top: -2px; left: calc(100% + 28px); width: 236px; display: grid; gap: 7px; padding: 13px 14px; pointer-events: none; opacity: 0; color: var(--fg-1); border: 2px solid var(--bg-4); border-radius: 14px; background: var(--bg-1); box-shadow: 0 5px 0 var(--bg-3), 0 14px 32px rgba(0, 0, 0, .22); transform: translateX(-8px) scale(.97); transition: opacity .15s ease, transform .15s ease; }
+.pathStep:nth-child(2n) .pathBubble { right: calc(100% + 28px); left: auto; transform: translateX(8px) scale(.97); }
+.pathStep:hover .pathBubble, .pathStep:focus-within .pathBubble { pointer-events: auto; opacity: 1; transform: translateX(0) scale(1); }
+.pathBubbleMain { display: grid; gap: 5px; color: var(--fg-1); }
+.pathBubbleMain small { color: var(--fg-4); font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.pathBubbleMain strong { overflow-wrap: anywhere; font-size: 12px; line-height: 1.35; }
+.pathBubbleMain span { display: flex; gap: 5px; margin-top: 2px; align-items: center; color: var(--accent); font-size: 9px; font-weight: 900; }
+.pathBubbleMain span svg { width: 12px; height: 12px; }
+.pathMeta { display: flex; gap: 6px; margin: 2px 0 1px; }
+.pathMeta span { display: inline-flex; margin: 0; padding: 4px 6px; color: var(--fg-3); border-radius: 6px; background: var(--bg-3); font-size: 7px; line-height: 1; }
 .pathComplete .pathBubble { border-color: color-mix(in srgb, #c979ed 55%, var(--bg-4)); }
-.pathComplete .pathBubble small { color: #c979ed; }
-.pathCurrent .pathBubble { border: 2px solid #ffc800; box-shadow: 0 4px 0 #d7a700; }
-.pathCurrent .pathBubble small { color: #d7a700; }
-.pathLocked .pathNode { cursor: not-allowed; color: var(--fg-4); opacity: .58; box-shadow: 0 5px 0 #26343c; }
-.pathLocked .pathBubble { cursor: default; opacity: .62; }
-.pathLocked .pathBubble span { color: var(--fg-4); }
-.learningRail { position: sticky; top: 20px; display: grid; gap: 12px; align-content: start; }
-.railProgress, .railCard { padding: 20px; border: 3px solid var(--bg-4); border-radius: 18px; background: var(--bg-1); }
-.railProgress > span { color: var(--fg-4); font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-.railProgress > strong { display: block; margin-top: 8px; color: #58cc02; font-size: 34px; line-height: 1; }
-.railProgress > div { height: 6px; margin-top: 13px; overflow: hidden; border-radius: 99px; background: var(--bg-3); }
-.railProgress > div i { display: block; height: 100%; border-radius: inherit; background: #58cc02; }
-.railProgress p, .railCard > p { margin: 9px 0 0; color: var(--fg-4); font-size: 9px; line-height: 1.45; }
-.railCard header { display: flex; gap: 10px; align-items: center; }
-.railCard header > div { min-width: 0; }
-.railCard small { display: block; color: var(--fg-4); font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-.railCard h3 { margin: 3px 0 0; font-size: 15px; }
-.railCard > a { display: flex; margin-top: 13px; align-items: center; justify-content: space-between; color: var(--accent); font-size: 9px; font-weight: 900; }
-.railCard > a svg { width: 13px; height: 13px; }
+.pathCurrent .pathBubble { border-color: #ff78c8; }
+.pathLocked .pathBubble { opacity: 0; }
+.pathLocked:hover .pathBubble, .pathLocked:focus-within .pathBubble { opacity: .9; }
+.unitPractice { padding-top: 7px; border-top: 1px solid var(--bg-3); }
+.unitPractice a, .unitPractice span { display: inline-flex; gap: 6px; align-items: center; color: var(--fg-4); font-size: 8px; font-weight: 850; }
+.unitPractice a { color: #58cc02; }
+.unitPractice a:hover { filter: brightness(1.15); }
+.unitPractice svg { width: 12px; height: 12px; }
+@keyframes path-step-idle { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+@keyframes mascot-idle { 0%, 100% { transform: translateY(0) rotate(-1deg); } 45% { transform: translateY(-7px) rotate(1.5deg); } 55% { transform: translateY(-7px) rotate(1deg); } }
 .lockedWorkspace { max-width: 760px; min-height: 310px; display: flex; align-items: center; justify-content: center; flex-direction: column; margin: 0 auto; padding: 42px; border: 1px solid var(--bg-4); border-radius: 16px; text-align: center; background: var(--bg-2); }
 .lockedIcon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 16px; border-radius: 18px; color: var(--accent); background: var(--accent-08); }
 .lockedIcon svg { width: 25px; height: 25px; }
@@ -178,9 +186,6 @@
   .shell { grid-template-columns: 220px minmax(0, 1fr); }
   .appView { padding-inline: 24px; }
   .lessonGrid, .cardGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .learningDashboard { grid-template-columns: 1fr; }
-  .learningRail { position: static; grid-template-columns: repeat(3, 1fr); }
-  .railProgress { grid-column: 1 / -1; }
 }
 
 @media (max-width: 760px) {
@@ -202,14 +207,19 @@
   .mobileNav button { min-width: 0; display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border: 0; border-radius: 12px; color: var(--fg-4); background: transparent; font-size: 9px; font-weight: 800; }
   .mobileNav button.active { color: var(--accent-fg); background: var(--accent); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .13); }
   .mobileNav svg { width: 18px; height: 18px; }
-  .pathHeader { align-items: stretch; flex-direction: column; gap: 15px; }
+  .pathHeader { grid-template-columns: 1fr; align-items: stretch; gap: 12px; }
   .pathHeader > a { justify-content: center; }
-  .pathScroller { min-height: 420px; padding-inline: 8px; }
-  .pathStep { width: 100%; grid-template-columns: 58px minmax(0, 1fr); gap: 12px; }
-  .pathNode { width: 58px; height: 54px; }
-  .pathStep:not(:last-child)::after { top: 58px; left: 28px; }
-  .learningRail { grid-template-columns: 1fr; }
-  .railProgress { grid-column: auto; }
+  .pathScroller { min-height: 420px; padding: 66px 14px 94px; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 46px, #000 calc(100% - 58px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 46px, #000 calc(100% - 58px), transparent 100%); }
+  .embedded .pathScroller { height: calc(100dvh - 280px); min-height: 380px; }
+  .pathStep { min-height: 116px; }
+  .pathNodeWrap { transform: translateX(var(--path-shift-mobile)); }
+  .pathNodeWrap { width: 84px; height: 78px; }
+  .pathNode { width: 80px; height: 72px; }
+  .pathNode svg { width: 32px; height: 32px; }
+  .pathMascot { right: calc(100% + 24px); bottom: -17px; width: 74px; }
+  .pathUnitTag { top: calc(100% + 12px); padding: 5px 9px; font-size: 8px; }
+  .pathBubble { display: none; }
+  .pathFlag { bottom: calc(100% + 10px); padding: 7px 10px; font-size: 8px; }
 }
 
 @media (max-width: 550px) {
@@ -226,5 +236,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .appCard { transition: none; }
+  .appCard, .pathNodeWrap, .pathNode, .pathBubble { transition: none; }
+  .pathStep { animation: none; }
+  .pathMascot { animation: none; }
 }

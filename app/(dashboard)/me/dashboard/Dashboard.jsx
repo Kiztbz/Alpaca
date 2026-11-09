@@ -35,7 +35,7 @@ export function Dashboard() {
   const notes = useStore((state) => state.notes);
   const quizzes = useStore((state) => state.quizzes);
   const courses = useStore((state) => state.courses);
-  const relationships = useStore((state) => state.relationships || []);
+  const relationships = useStore((state) => state.relationships);
   const [savedProgress, setSavedProgress] = useState({});
   const [streak, setStreak] = useState({ count: 0, date: null });
 

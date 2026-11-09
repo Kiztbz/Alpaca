@@ -1,4 +1,7 @@
-.reader { position: fixed; z-index: 1000; inset: 0; width: 100vw; height: 100dvh; overflow: hidden; background: var(--bg-0); }
+.reader { position: fixed; z-index: 1000; inset: 0; width: 100vw; height: 100dvh; overflow: hidden; background: var(--bg-0); animation: noteOpen .22s cubic-bezier(.2,.8,.2,1) both; transform-origin: 50% 55%; }
+.reader.closing { pointer-events: none; animation: noteClose .16s cubic-bezier(.4,0,1,1) both; }
+@keyframes noteOpen { from { opacity: 0; transform: translateY(18px) scale(.985); } }
+@keyframes noteClose { to { opacity: 0; transform: translateY(12px) scale(.985); } }
 .topbar { display: grid; height: 68px; padding: 0 28px; align-items: center; border-bottom: 1px solid var(--bg-4); background: color-mix(in srgb, var(--bg-0) 96%, transparent); grid-template-columns: 120px minmax(0, 1fr) 220px; }
 .close { gap: 8px; display: inline-flex; width: fit-content; height: 38px; padding: 0 13px; cursor: pointer; color: var(--fg-3); align-items: center; border: 1px solid var(--bg-4); border-radius: var(--radius-full); background: var(--bg-2); }
 .close:hover { color: var(--fg-1); border-color: var(--accent-50); }
@@ -32,6 +35,7 @@
 .reader kbd { min-width: 20px; padding: 3px 5px; color: var(--fg-3); font: inherit; text-align: center; border: 1px solid var(--bg-4); border-radius: 5px; background: var(--bg-2); }
 
 .stage { display: grid; height: 100%; min-width: 0; min-height: 0; grid-template-rows: minmax(0, 1fr) 56px; }
+.completeStage { grid-template-rows: minmax(0, 1fr); }
 .flashcard, .completionCard { height: 100%; min-height: 0; padding: clamp(30px, 5vh, 60px) clamp(32px, 7vw, 88px); position: relative; overflow: hidden; border: 1px solid var(--bg-4); border-radius: 20px; background: var(--bg-2); box-shadow: 0 22px 60px rgba(0, 5, 17, .3); touch-action: none; }
 .fromBottom { animation: fromBottom .25s cubic-bezier(.2,.75,.25,1); }
 .fromTop { animation: fromTop .25s cubic-bezier(.2,.75,.25,1); }
@@ -63,11 +67,35 @@
 .actionRail .activeAction span, .actionRail .activeAction small { color: var(--accent); }
 .disabledAction { cursor: default; opacity: .3; }
 
-.completionCard { display: grid; text-align: center; place-items: center; align-content: center; background: radial-gradient(circle at 50% 35%, var(--accent-20), transparent 35%), var(--bg-1); }
-.completionMark { display: grid; width: 62px; height: 62px; color: var(--accent-fg); font-size: 28px; font-weight: 900; place-items: center; border-radius: 20px; background: var(--accent); }
-.completionCard > span { margin-top: 20px; color: var(--accent); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-.completionCard h2 { max-width: 18ch; margin-top: 10px; color: var(--fg-1); font-size: clamp(26px, 4vh, 40px); line-height: 1.05; }
-.completionCard > p { margin-top: 12px; color: var(--fg-4); font-size: 13px; }
+.completionCard { display: flex; text-align: center; align-items: center; justify-content: center; flex-direction: column; background: radial-gradient(circle at 50% 40%, var(--accent-20), transparent 27%), linear-gradient(145deg, color-mix(in srgb, var(--bg-2) 92%, var(--accent) 8%), var(--bg-1)); animation: completionIn .36s cubic-bezier(.2, .8, .2, 1) both; }
+.completionCard::before, .completionCard::after { position: absolute; width: 220px; height: 220px; content: ""; pointer-events: none; border: 1px solid var(--accent-20); border-radius: 50%; opacity: .35; }
+.completionCard::before { top: -130px; left: -90px; }
+.completionCard::after { right: -110px; bottom: -145px; }
+.completionVisual { position: relative; width: 142px; height: 142px; display: grid; place-items: center; }
+.completionVisual > img { position: relative; z-index: 2; width: 72px; height: auto; filter: drop-shadow(0 9px 8px rgba(0, 0, 0, .3)); animation: transitionMascot 1.4s ease-in-out infinite; }
+.loaderOrbit { position: absolute; inset: 8px; border: 2px solid var(--accent-20); border-radius: 50%; animation: orbitSpin 2.2s linear infinite; }
+.loaderOrbit i { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 18px var(--accent-50); }
+.loaderOrbit i:nth-child(1) { top: -5px; left: 50%; }
+.loaderOrbit i:nth-child(2) { right: 5px; bottom: 18px; width: 7px; height: 7px; opacity: .7; }
+.loaderOrbit i:nth-child(3) { bottom: 18px; left: 5px; width: 6px; height: 6px; opacity: .45; }
+.completionMark { position: absolute; z-index: 3; right: 20px; bottom: 18px; width: 34px; height: 34px; display: grid; color: var(--accent-fg); font-size: 17px; font-weight: 900; place-items: center; border: 4px solid var(--bg-1); border-radius: 50%; background: #58cc02; transform: scale(0); animation: checkPop .35s cubic-bezier(.2, 1.4, .4, 1) .28s forwards; }
+.completionCard > span { margin-top: 10px; color: var(--accent); font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.completionCard h2 { max-width: 26ch; margin-top: 8px; color: var(--fg-1); font-size: clamp(24px, 3.5vh, 36px); line-height: 1.08; }
+.completionCard > p { min-height: 20px; margin-top: 10px; color: var(--fg-4); font-size: 12px; transition: opacity .2s ease; }
+.unitTransition { width: min(390px, 82%); display: grid; margin-top: 28px; align-items: center; grid-template-columns: auto minmax(80px, 1fr) auto; gap: 12px; }
+.unitTransition strong { display: inline-flex; gap: 6px; color: var(--fg-3); align-items: center; font-size: 9px; font-weight: 900; text-transform: uppercase; white-space: nowrap; }
+.unitTransition strong:first-child { color: #58cc02; }
+.unitTransition strong b { width: 18px; height: 18px; display: grid; color: #fff; place-items: center; border-radius: 50%; background: #58cc02; }
+.unitTransition > i { height: 5px; overflow: hidden; border-radius: 99px; background: var(--bg-3); }
+.unitTransition > i span { display: block; width: 42%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #58cc02, var(--accent)); animation: loadingTrack 1s ease-in-out infinite; }
+.transitionReady .unitTransition > i span { width: 100%; animation: readyTrack .25s ease-out both; }
+.transitionReady .loaderOrbit { border-color: color-mix(in srgb, #58cc02 42%, transparent); animation-duration: 1.1s; }
+@keyframes completionIn { from { opacity: 0; transform: translateY(20px) scale(.985); } }
+@keyframes transitionMascot { 0%, 100% { transform: translateY(2px) rotate(-1deg); } 50% { transform: translateY(-7px) rotate(1deg); } }
+@keyframes orbitSpin { to { transform: rotate(360deg); } }
+@keyframes checkPop { to { transform: scale(1); } }
+@keyframes loadingTrack { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
+@keyframes readyTrack { from { width: 42%; } to { width: 100%; } }
 
 .infoButton { display: grid; width: 44px; height: 44px; right: 22px; bottom: 22px; z-index: 30; cursor: pointer; position: absolute; color: var(--accent-fg); font-family: Georgia, serif; font-size: 20px; font-weight: 900; place-items: center; border: 1px solid var(--accent); border-radius: 50%; background: var(--accent); box-shadow: 0 10px 28px var(--accent-20); }
 .infoButton:hover { transform: translateY(-2px); }
@@ -105,6 +133,10 @@
   .stage { height: 100%; grid-template-rows: minmax(0, 1fr) 50px; }
   .actionRail { display: none; }
   .flashcard, .completionCard { padding: 22px 20px; border-radius: 17px; }
+  .completionVisual { width: 120px; height: 120px; }
+  .completionVisual > img { width: 62px; }
+  .completionCard h2 { font-size: clamp(22px, 3.5vh, 30px); }
+  .unitTransition { width: min(320px, 94%); margin-top: 22px; gap: 8px; }
   .cardContent { padding: 18px 0 38px; }
   .cardContent h1, .cardContent h2, .cardContent h3, .cardContent h4 { font-size: clamp(22px, 4vh, 30px); }
   .cardContent p, .cardContent li, .cardContent blockquote { font-size: clamp(15px, 2.6vh, 19px); }
@@ -118,6 +150,8 @@
   .cardContent p, .cardContent li, .cardContent blockquote { font-size: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fromBottom, .fromTop { animation: none; }
+  .reader, .reader.closing, .fromBottom, .fromTop, .completionCard, .completionVisual > img, .loaderOrbit, .completionMark, .unitTransition > i span { animation: none; }
+  .completionMark { transform: scale(1); }
+  .transitionReady .unitTransition > i span { width: 100%; }
   .headerProgress i, .actionRail button, .actionRail > a { transition: none; }
 }
