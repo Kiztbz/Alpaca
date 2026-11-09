@@ -203,45 +203,35 @@ function ManageResourceCard({ item, type, course }) {
 export function NotesTabInfo({ course }) {
   const notes = useStore((state) => state.notes);
   const courseNotes = relatedItems(course.notes, notes);
-  const noteIds = new Set(courseNotes.map((note) => String(note.id)));
-  const completedNotes = new Set((course.noteProgress || []).filter((item) => item.completedAt && noteIds.has(String(item.noteId))).map((item) => String(item.noteId))).size;
-  return <span className={styles.countPill}>{completedNotes} / {courseNotes.length} complete</span>;
+  const completedIds = new Set((course.noteProgress || []).filter((item) => item.completedAt).map((item) => String(item.noteId)));
+  const completedNotes = courseNotes.findIndex((note) => !completedIds.has(String(note.id)));
+  const contiguousCompleted = completedNotes < 0 ? courseNotes.length : completedNotes;
+  return <span className={styles.countPill}>{contiguousCompleted} / {courseNotes.length} complete</span>;
 }
 
 export function NotesTabMain({ course }) {
   const notes = useStore((state) => state.notes);
   const courseNotes = useMemo(() => relatedItems(course.notes, notes), [course.notes, notes]);
-  const [progress, setProgress] = useState({});
   const pathRef = useRef(null);
   const currentRef = useRef(null);
 
-  useEffect(() => {
-    const saved = {};
-    courseNotes.forEach((note) => {
-      try { saved[note.publicId] = JSON.parse(localStorage.getItem(`alpaca-note-progress:${note.publicId}`) || "null"); }
-      catch { saved[note.publicId] = null; }
-    });
-    setProgress(saved);
-  }, [courseNotes]);
-
   const serverProgress = new Map((course.noteProgress || []).map((item) => [String(item.noteId), item]));
-  const noteStatuses = courseNotes.map((note) => {
-    const saved = progress[note.publicId] || {};
+  let sequenceOpen = true;
+  const statuses = courseNotes.map((note, index) => {
     const server = serverProgress.get(String(note.id)) || {};
     const cards = Math.max(1, noteCardCount(note.text));
-    const complete = Boolean(server.completedAt || saved.complete);
-    const lastCardIndex = complete ? cards - 1 : Math.min(cards - 1, Math.max(Number(server.lastCardIndex || 0), Number(saved.index || 0)));
-    const started = complete || Boolean(server.updatedAt || saved.index > 0);
+    const recordedComplete = Boolean(server.completedAt);
+    const complete = sequenceOpen && recordedComplete;
+    const unlocked = sequenceOpen;
+    if (!recordedComplete) sequenceOpen = false;
+    const lastCardIndex = complete ? cards - 1 : Math.min(cards - 1, Number(server.lastCardIndex || 0));
+    const started = unlocked && (complete || Boolean(server.updatedAt));
     const percent = complete ? 100 : started ? Math.min(99, Math.round(((lastCardIndex + 1) / cards) * 100)) : 0;
-    return { item: note, title: note.title, cards, complete, lastCardIndex, started, percent };
+    return { item: note, title: note.title, cards, complete, unlocked, lastCardIndex, started, percent, index };
   });
-  const statuses = noteStatuses.map((item, index) => ({
-    ...item,
-    unlocked: item.complete || index === 0 || noteStatuses[index - 1].complete,
-  }));
   const partialIndex = statuses.findIndex((item) => item.started && !item.complete && item.unlocked);
   const unfinishedIndex = statuses.findIndex((item) => !item.complete && item.unlocked);
-  const currentIndex = partialIndex >= 0 ? partialIndex : unfinishedIndex >= 0 ? unfinishedIndex : 0;
+  const currentIndex = partialIndex >= 0 ? partialIndex : unfinishedIndex >= 0 ? unfinishedIndex : Math.max(0, statuses.length - 1);
   const current = statuses[currentIndex];
   const allComplete = statuses.length > 0 && statuses.every((item) => item.complete);
   const completedLessons = statuses.filter((item) => item.complete).length;

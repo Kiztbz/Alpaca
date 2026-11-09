@@ -1,4 +1,4 @@
-import { FillStore, Timer, Alerts, ThemeSetter } from "@client";
+import { AppShell, FillStore, Alerts, ThemeSetter } from "@client";
 import { absoluteUrl, siteConfig } from "@/lib/metadatas";
 import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/auth";
@@ -61,10 +61,9 @@ export default async function RootLayout({ children }) {
                 {/* So Firefox displays page after css has loaded */}
                 <script>0</script>
 
-                {children}
+                {user ? <AppShell user={user}>{children}</AppShell> : children}
 
                 <AnalyticsTracker />
-                <Timer />
                 <Alerts />
             </body>
         </html>

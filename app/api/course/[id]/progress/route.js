@@ -58,6 +58,43 @@ export async function POST(req, props) {
 
     if (!relation) return NextResponse.json({ message: "Note is not part of this course" }, { status: 400 });
 
+    const orderedNotes = await db
+      .selectFrom("resource_relations as rr")
+      .innerJoin("notes as n", "n.id", "rr.a")
+      .select("n.id")
+      .where("rr.aType", "=", "note")
+      .where("rr.b", "=", id)
+      .where("rr.bType", "=", "course")
+      .orderBy("n.createdAt", "asc")
+      .execute();
+    const noteIndex = orderedNotes.findIndex((note) => String(note.id) === String(noteId));
+    if (noteIndex < 0) return NextResponse.json({ message: "Note is not part of this course" }, { status: 400 });
+
+    if (noteIndex > 0) {
+      const prerequisiteIds = orderedNotes.slice(0, noteIndex).map((note) => note.id);
+      const completedPrerequisites = await db
+        .selectFrom("course_note_progress")
+        .select("noteId")
+        .where("courseId", "=", id)
+        .where("userId", "=", user.id)
+        .where("noteId", "in", prerequisiteIds)
+        .where("completedAt", "is not", null)
+        .execute();
+      if (completedPrerequisites.length !== prerequisiteIds.length) {
+        return NextResponse.json({ message: "Complete the previous note before starting this one" }, { status: 409 });
+      }
+    }
+
+    const futureNoteIds = orderedNotes.slice(noteIndex + 1).map((note) => note.id);
+    if (futureNoteIds.length) {
+      await db
+        .deleteFrom("course_note_progress")
+        .where("courseId", "=", id)
+        .where("userId", "=", user.id)
+        .where("noteId", "in", futureNoteIds)
+        .execute();
+    }
+
     const existing = await db.selectFrom("course_note_progress").selectAll()
       .where("courseId", "=", id).where("userId", "=", user.id).where("noteId", "=", noteId).executeTakeFirst();
     const now = new Date();

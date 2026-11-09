@@ -102,6 +102,7 @@ export default async function ResourcePage(props) {
       withQuizzes: current.name === "quizzes",
       withCourses: current.name === "courses",
       userId: user?.id,
+      userRole: user?.role,
       limit: amount + 1,
       offset: (page - 1) * amount,
       tagSearch: tag ? tag : undefined,

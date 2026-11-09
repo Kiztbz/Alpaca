@@ -11,7 +11,7 @@ export default async function CreatePage(props) {
   if (!user) return redirect("/login?next=/create");
 
   const [resources, groups] = await Promise.all([
-    getPermittedResources({ userId: user.id, takeAll: true }),
+    getPermittedResources({ userId: user.id, userRole: user.role, takeAll: true }),
     getGroups(user.id),
   ]);
   const requestedCourse = resources.courses.find((course) =>

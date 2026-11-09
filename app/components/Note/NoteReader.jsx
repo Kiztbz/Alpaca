@@ -76,7 +76,7 @@ export function NoteReader({
     } catch {
       localStorage.removeItem(storageKey);
     }
-    const wasCompleted = Boolean(initialProgress?.completedAt || saved?.complete);
+    const wasCompleted = Boolean(initialProgress?.completedAt);
     const savedIndex = Math.max(Number(initialProgress?.lastCardIndex || 0), Number(saved?.index || 0));
     setIndex(wasCompleted ? 0 : Math.min(savedIndex, cards.length - 1));
     setCompletedBefore(wasCompleted);
@@ -90,7 +90,7 @@ export function NoteReader({
   }, [cards.length, complete, completedBefore, index, ready, storageKey]);
 
   useEffect(() => {
-    if (!ready || !activeCourse?.id || complete) return;
+    if (!ready || !activeCourse?.id || complete || completedBefore) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${activeCourse.id}/progress`, {
@@ -102,7 +102,7 @@ export function NoteReader({
       }).catch(() => null);
     }, 180);
     return () => { window.clearTimeout(timer); controller.abort(); };
-  }, [activeCourse?.id, cards.length, complete, index, note.id, ready]);
+  }, [activeCourse?.id, cards.length, complete, completedBefore, index, note.id, ready]);
 
   const goTo = useCallback((nextIndex) => {
     const bounded = Math.max(0, Math.min(cards.length - 1, nextIndex));
@@ -116,7 +116,7 @@ export function NoteReader({
     setCompletedBefore(true);
     updateStreak(userId || "anonymous");
 
-    if (activeCourse?.id) {
+    if (activeCourse?.id && !completedBefore) {
       await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${activeCourse.id}/progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -127,7 +127,7 @@ export function NoteReader({
 
     const destination = nextNote ? learnResourceHref("note", nextNote.publicId) : courseHref;
     window.setTimeout(() => router.push(destination), 450);
-  }, [activeCourse?.id, cards.length, courseHref, learnResourceHref, nextNote, note.id, router, userId]);
+  }, [activeCourse?.id, cards.length, completedBefore, courseHref, learnResourceHref, nextNote, note.id, router, userId]);
 
   const advance = useCallback(() => {
     if (index === cards.length - 1) return finish();

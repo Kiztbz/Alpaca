@@ -2,12 +2,14 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useStore } from "@/store/store";
 import styles from "./CourseSwitcher.module.css";
 
 export function CourseSwitcher({ courses, activeCourse, label = "Course" }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const userId = useStore((state) => state.user?.id);
   const [open, setOpen] = useState(false);
   const switcherRef = useRef(null);
 
@@ -25,6 +27,13 @@ export function CourseSwitcher({ courses, activeCourse, label = "Course" }) {
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, []);
+
+  useEffect(() => {
+    if (!userId || !activeCourse?.publicId) return;
+    const value = encodeURIComponent(activeCourse.publicId);
+    localStorage.setItem(`alpaca-course-${userId}`, activeCourse.publicId);
+    document.cookie = `alpaca-course-${userId}=${value}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  }, [activeCourse?.publicId, userId]);
 
   function selectCourse(publicId) {
     const params = new URLSearchParams(searchParams.toString());

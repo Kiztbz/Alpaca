@@ -33,13 +33,20 @@ export function AppShell({ user, children }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locationKey = `${pathname}?${searchParams.toString()}`;
   const selectedCourse = searchParams.get("course");
   const [moreOpen, setMoreOpen] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const moreRef = useRef(null);
 
   useEffect(() => {
     setMoreOpen(false);
-  }, [pathname]);
+    setNavigating(false);
+  }, [locationKey]);
+
+  useEffect(() => {
+    primaryLinks.forEach(({ href }) => router.prefetch(href));
+  }, [router]);
 
   useEffect(() => {
     function close(event) {
@@ -50,12 +57,25 @@ export function AppShell({ user, children }) {
   }, []);
 
   async function logout() {
+    setNavigating(true);
     await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/auth/logout`, { method: "POST" });
     router.push("/login");
     router.refresh();
   }
 
-  return <div className={styles.shell}>
+  function showNavigationFeedback(event) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target.closest("a[href]");
+    if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+
+    const destination = new URL(link.href, window.location.href);
+    if (destination.origin !== window.location.origin) return;
+    if (`${destination.pathname}${destination.search}` === `${window.location.pathname}${window.location.search}`) return;
+    setNavigating(true);
+  }
+
+  return <div className={styles.shell} data-navigating={navigating || undefined} onClickCapture={showNavigationFeedback}>
+    <div className={styles.navigationProgress} role="progressbar" aria-label="Loading page" />
     <aside className={styles.sidebar}>
       <Link className={styles.brand} href="/learn"><Image src="/assets/images/llama-face-v2.png" alt="Alpaca" width={1254} height={1254} priority /><span>Alpaca</span></Link>
       <nav className={styles.primaryNav} aria-label="Application navigation">
@@ -78,6 +98,6 @@ export function AppShell({ user, children }) {
         <button type="button" className={`${styles.moreButton} ${moreOpen ? styles.active : ""}`} onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}><Icon name="more"/><span>More</span></button>
       </div>
     </aside>
-    <section className={styles.content}>{children}</section>
+    <section className={styles.content} aria-busy={navigating}>{children}</section>
   </div>;
 }

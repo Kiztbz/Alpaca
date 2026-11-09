@@ -82,7 +82,7 @@ export default async function CoursePage(props) {
   const name = decodeURIComponent(params.name);
 
   const [resources, relationships, groups] = await Promise.all([
-    getPermittedResources({ userId: user?.id, takeAll: true }),
+    getPermittedResources({ userId: user?.id, userRole: user?.role, takeAll: true }),
     getRelationships(),
     user ? getGroups(user.id) : Promise.resolve([]),
   ]);

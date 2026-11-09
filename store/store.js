@@ -143,7 +143,7 @@ export const useDailyTrain = create()((set) => ({
   timesUp: false,
 
   settings: {
-    timeLimit: 60 * 15,
+    timeLimit: 45,
     tags: [],
     courses: [],
     sources: [],

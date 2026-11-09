@@ -11,11 +11,13 @@ import switcherStyles from "@/app/components/CourseContext/CourseSwitcher.module
 export const metadata = { title: "Daily train", robots: { index: false, follow: false } };
 
 export default async function DailyPage(props) {
-  const user = await getSessionUser((await cookies()).get("token")?.value);
+  const cookieStore = await cookies();
+  const user = await getSessionUser(cookieStore.get("token")?.value);
   if (!user) redirect("/login?next=/daily");
   const searchParams = await props.searchParams;
-  const { resources, relationships, courses } = await getEnrolledLearningData(user.id);
-  const activeCourse = selectEnrolledCourse(courses, searchParams.course);
+  const { resources, relationships, courses } = await getEnrolledLearningData(user.id, user.role);
+  const rememberedCourse = cookieStore.get(`alpaca-course-${user.id}`)?.value;
+  const activeCourse = selectEnrolledCourse(courses, searchParams.course || rememberedCourse);
   if (!activeCourse) return <main className={switcherStyles.empty}><div><h1>Enroll before training</h1><p>Daily Train builds a focused queue from one of your enrolled courses.</p><Link className="button primary" href="/marketplace">Browse courses</Link></div></main>;
 
   const quizIds = new Set((activeCourse.quizzes || []).map(String));
@@ -25,6 +27,6 @@ export default async function DailyPage(props) {
   return <main className={styles.screen}>
     <FillStore user={user} relationships={relationships} {...resources} quizzes={courseQuizzes} />
     <header className={switcherStyles.bar}><div><span>Spaced repetition · FSRS v5</span><h1>Daily Train</h1></div><CourseSwitcher courses={courses} activeCourse={activeCourse} label="Training course" /></header>
-    <section className={styles.content}><div className={styles.sessionPanel}><div><span>{activeCourse.name}</span><h2>{sortedQuizzes.length} questions ready</h2><p>Your queue only includes practice from this enrolled course. Mastered cards wait longer; difficult cards return sooner.</p></div><DailyTrain quizzes={sortedQuizzes} /></div></section>
+    <section className={styles.content}><div className={styles.sessionPanel}><div><span>{activeCourse.name}</span><h2>{Math.min(5, sortedQuizzes.length)} questions in this session</h2><p>Daily Train serves up to five questions from this course, with 45 seconds for each answer. Answers, skips, and timeouts each count as one question.</p></div><DailyTrain quizzes={sortedQuizzes} courseId={activeCourse.id} courseName={activeCourse.name} /></div></section>
   </main>;
 }

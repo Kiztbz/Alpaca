@@ -412,8 +412,8 @@ export function QuizDisplay({
           <InfoBox fullWidth asDiv>
             <h4>Here are some hints to help you out</h4>
             <ul className={styles.hints}>
-              {hints.map((hint) => (
-                <li key={nanoid()}>{hint}</li>
+              {hints.map((hint, index) => (
+                <li key={`${index}-${hint}`}>{hint}</li>
               ))}
             </ul>
           </InfoBox>

@@ -14,8 +14,34 @@ import styles from "./DailyTrain.module.css";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Rating, previewRatings, cardFromRow, formatInterval } from "@/lib/fsrs";
 import { correctConfetti } from "@/lib/correctConfetti";
+import { consumeDailyTrainQuestion, createDailyTrainQueue, DAILY_TRAIN_QUESTION_SECONDS, DAILY_TRAIN_SESSION_SIZE } from "@/lib/dailyTrain";
 
-export function DailyTrain({ quizzes = [] }) {
+const SESSION_SIZE = DAILY_TRAIN_SESSION_SIZE;
+const QUESTION_SECONDS = DAILY_TRAIN_QUESTION_SECONDS;
+
+function reviewAnswerText(value) {
+  const values = Array.isArray(value) ? value : value == null ? [] : [value];
+  const text = values.map((answer) => {
+    if (answer == null || answer === "") return "";
+    if (typeof answer === "object") return answer.label ?? answer.text ?? answer.value ?? JSON.stringify(answer);
+    return String(answer);
+  }).filter(Boolean);
+  return text.length ? text.join(", ") : "No answer";
+}
+
+function reviewPrompt(quiz) {
+  return String(quiz?.prompt || quiz?.title || "Quiz question").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function reviewCorrectAnswer(quiz) {
+  let answers = quiz?.answers;
+  if (typeof answers === "string") {
+    try { answers = JSON.parse(answers); } catch { answers = [answers]; }
+  }
+  return reviewAnswerText(answers);
+}
+
+export function DailyTrain({ quizzes = [], courseId, courseName }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [tags, setTags] = useState([]);
@@ -29,12 +55,17 @@ export function DailyTrain({ quizzes = [] }) {
   const [completedCount, setCompletedCount] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hasAnswersProvided, setHasAnswersProvided] = useState(false);
+  const [questionSeconds, setQuestionSeconds] = useState(QUESTION_SECONDS);
+  const [questionSerial, setQuestionSerial] = useState(0);
+  const [reviewResults, setReviewResults] = useState([]);
+  const [showReview, setShowReview] = useState(false);
+  const [assessmentHistory, setAssessmentHistory] = useState([]);
+  const [historyError, setHistoryError] = useState("");
 
   // Current card evaluation state
   const [currentGraded, setCurrentGraded] = useState(false);
   const [lastGradeResult, setLastGradeResult] = useState(null);
   const [sessionFinished, setSessionFinished] = useState(false);
-  const [mistakeSet, setMistakeSet] = useState(new Set());
 
   // Statistics
   const [ratingsCount, setRatingsCount] = useState({
@@ -52,6 +83,9 @@ export function DailyTrain({ quizzes = [] }) {
   const settings = useDailyTrain((state) => state.settings);
 
   const sessionStartTimestamp = useRef(null);
+  const currentAnswersRef = useRef([]);
+  const reviewResultsRef = useRef([]);
+  const advancingRef = useRef(false);
   const formId = "daily-train-active-form";
 
   // Metadata filter extraction
@@ -92,6 +126,22 @@ export function DailyTrain({ quizzes = [] }) {
     setNotes(presentNotes);
   }, [quizzes]);
 
+  useEffect(() => {
+    if (!courseId) return;
+    const controller = new AbortController();
+    fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/daily-train/history`, { signal: controller.signal })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || "Could not load assessment history");
+        setAssessmentHistory(Array.isArray(payload.content) ? payload.content : []);
+        setHistoryError("");
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") setHistoryError(error.message || "Could not load assessment history");
+      });
+    return () => controller.abort();
+  }, [courseId]);
+
   // Compute filtered queue
   const filteredQuizzes = quizzes.filter((quiz) => {
     if (!quiz) return false;
@@ -122,7 +172,7 @@ export function DailyTrain({ quizzes = [] }) {
 
   // Start training session
   const handleStartSession = useCallback(() => {
-    const initialQueue = [...filteredQuizzes];
+    const initialQueue = createDailyTrainQueue(filteredQuizzes);
     setQueue(initialQueue);
     setTotalQuestions(initialQueue.length);
     setCompletedCount(0);
@@ -130,14 +180,19 @@ export function DailyTrain({ quizzes = [] }) {
     setCurrentGraded(false);
     setLastGradeResult(null);
     setSessionFinished(false);
-    setMistakeSet(new Set());
     setHasAnswersProvided(false);
+    currentAnswersRef.current = [];
+    setQuestionSeconds(QUESTION_SECONDS);
+    setQuestionSerial((value) => value + 1);
     setRatingsCount({
       [Rating.Again]: 0,
       [Rating.Hard]: 0,
       [Rating.Good]: 0,
       [Rating.Easy]: 0,
     });
+    setReviewResults([]);
+    reviewResultsRef.current = [];
+    setShowReview(false);
 
     sessionStartTimestamp.current = Date.now();
     setSessionDuration(0);
@@ -173,6 +228,7 @@ export function DailyTrain({ quizzes = [] }) {
 
   // Track answer inputs to enable/disable bottom "CHECK" button
   const handleAnswerChange = useCallback((answers) => {
+    currentAnswersRef.current = answers;
     if (!answers) {
       setHasAnswersProvided(false);
       return;
@@ -186,14 +242,43 @@ export function DailyTrain({ quizzes = [] }) {
     }
   }, []);
 
+  const currentQuiz = queue[currentIndex];
+
+  const recordReviewResult = useCallback((quiz, answers, isCorrect, outcome) => {
+    if (!quiz) return;
+    if (reviewResultsRef.current.some((result) => String(result.quizId) === String(quiz.id))) return;
+    const result = {
+      quizId: quiz.id,
+      prompt: reviewPrompt(quiz),
+      userAnswer: reviewAnswerText(answers),
+      correctAnswer: reviewCorrectAnswer(quiz),
+      isCorrect: Boolean(isCorrect),
+      outcome,
+    };
+    reviewResultsRef.current = [...reviewResultsRef.current, result];
+    setReviewResults(reviewResultsRef.current);
+  }, []);
+
+  const saveAssessmentHistory = useCallback(async (results, durationSeconds) => {
+    if (!courseId || !results.length) return;
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/daily-train/history`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ courseId, courseName, durationSeconds, results }),
+      keepalive: true,
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.message || "Could not save assessment history");
+    setAssessmentHistory((history) => [payload.content, ...history].slice(0, 20));
+    setHistoryError("");
+  }, [courseId, courseName]);
+
   // Graded callback from QuizDisplay
   const handleGraded = useCallback((content) => {
     setLastGradeResult(content);
     setCurrentGraded(true);
-  }, []);
-
-  // Current active quiz
-  const currentQuiz = queue[currentIndex];
+    recordReviewResult(currentQuiz, currentAnswersRef.current, content?.isCorrect, content?.isCorrect ? "Correct" : "Incorrect");
+  }, [currentQuiz, recordReviewResult]);
 
   // Helper to extract clean answer string
   const getCorrectAnswerDisplay = (quiz) => {
@@ -214,7 +299,17 @@ export function DailyTrain({ quizzes = [] }) {
   // Commit FSRS rating & advance
   const handleRateCard = useCallback(
     async (ratingValue) => {
-      if (!queue.length || !currentQuiz) return;
+      if (!queue.length || !currentQuiz || advancingRef.current) return;
+      advancingRef.current = true;
+
+      if (!currentGraded) {
+        recordReviewResult(
+          currentQuiz,
+          currentAnswersRef.current,
+          false,
+          questionSeconds === 0 ? "Timed out" : "Skipped"
+        );
+      }
 
       // Update statistics
       setRatingsCount((prev) => ({
@@ -224,7 +319,7 @@ export function DailyTrain({ quizzes = [] }) {
 
       // Commit rating update to API if explicit
       const defaultRating = lastGradeResult?.isCorrect ? Rating.Good : Rating.Again;
-      if (ratingValue !== defaultRating) {
+      if (!currentGraded || ratingValue !== defaultRating) {
         try {
           await fetch(
             `${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/quiz/${currentQuiz.id}`,
@@ -239,39 +334,58 @@ export function DailyTrain({ quizzes = [] }) {
         }
       }
 
-      // Re-queue on Again / Wrong
-      if (ratingValue === Rating.Again) {
-        setMistakeSet((prev) => new Set(prev).add(currentQuiz.id));
+      // Every question consumes exactly one of the five session slots. Incorrect,
+      // skipped, and timed-out cards return in a future assessment, not this one.
+      const updatedQueue = consumeDailyTrainQuestion(queue, currentIndex);
+      setCompletedCount((prev) => prev + 1);
 
-        const updatedQueue = [...queue];
-        const [missed] = updatedQueue.splice(currentIndex, 1);
-        updatedQueue.push(missed);
-
+      if (updatedQueue.length === 0) {
+        const finalDuration = sessionStartTimestamp.current
+          ? Math.round((Date.now() - sessionStartTimestamp.current) / 1000)
+          : sessionDuration;
+        setSessionDuration(finalDuration);
+        try {
+          await saveAssessmentHistory(reviewResultsRef.current, finalDuration);
+        } catch (error) {
+          setHistoryError(error.message || "Could not save assessment history");
+        }
+        setQueue([]);
+        setSessionFinished(true);
+        setShowReview(true);
+        correctConfetti();
+      } else {
         setQueue(updatedQueue);
         setCurrentIndex(currentIndex < updatedQueue.length ? currentIndex : 0);
-      } else {
-        // Successful card clearance
-        const updatedQueue = queue.filter((_, idx) => idx !== currentIndex);
-        setCompletedCount((prev) => prev + 1);
-
-        if (updatedQueue.length === 0) {
-          // Completed lesson!
-          setQueue([]);
-          setSessionFinished(true);
-          correctConfetti();
-        } else {
-          setQueue(updatedQueue);
-          setCurrentIndex(currentIndex < updatedQueue.length ? currentIndex : 0);
-        }
       }
 
       // Reset state for next card
       setCurrentGraded(false);
       setLastGradeResult(null);
       setHasAnswersProvided(false);
+      currentAnswersRef.current = [];
+      setQuestionSerial((value) => value + 1);
+      advancingRef.current = false;
     },
-    [queue, currentIndex, currentQuiz, lastGradeResult]
+    [queue, currentIndex, currentQuiz, currentGraded, lastGradeResult, questionSeconds, recordReviewResult, saveAssessmentHistory, sessionDuration]
   );
+
+  useEffect(() => {
+    if (!start || sessionFinished || !currentQuiz) return;
+    setQuestionSeconds(QUESTION_SECONDS);
+  }, [currentQuiz?.id, questionSerial, start, sessionFinished]);
+
+  useEffect(() => {
+    if (!start || isPaused || sessionFinished || currentGraded || !currentQuiz) return;
+    const timer = window.setInterval(() => {
+      setQuestionSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [currentGraded, currentQuiz, isPaused, sessionFinished, start, questionSerial]);
+
+  useEffect(() => {
+    if (questionSeconds !== 0 || !start || isPaused || sessionFinished || currentGraded || !currentQuiz) return;
+    handleRateCard(Rating.Again);
+  }, [currentGraded, currentQuiz, handleRateCard, isPaused, questionSeconds, sessionFinished, start]);
 
   // Trigger form submit
   const handleTriggerCheck = useCallback(() => {
@@ -370,8 +484,6 @@ export function DailyTrain({ quizzes = [] }) {
     return `${mins}m ${secs}s`;
   }
 
-  const isMistakeRepetition = currentQuiz && mistakeSet.has(currentQuiz.id);
-
   return (
     <>
       {/* ── Main Start Bar ── */}
@@ -382,7 +494,7 @@ export function DailyTrain({ quizzes = [] }) {
           onClick={handleStartSession}
         >
           {filteredQuizzes.length > 0
-            ? `Start Daily Train (${filteredQuizzes.length})`
+            ? `Start Daily Train (${Math.min(SESSION_SIZE, filteredQuizzes.length)})`
             : "Start Training"}
         </button>
 
@@ -402,6 +514,26 @@ export function DailyTrain({ quizzes = [] }) {
           </svg>
         </button>
       </div>}
+
+      {!start && <section className={styles.historySection} aria-labelledby="assessment-history-title">
+        <header><div><span>Progress</span><h2 id="assessment-history-title">Assessment history</h2></div><small>Your latest 20 Daily Train sessions</small></header>
+        {historyError && <p className={styles.historyError}>{historyError}</p>}
+        {!assessmentHistory.length && !historyError && <p className={styles.historyEmpty}>Complete a Daily Train session and its results will appear here.</p>}
+        <div className={styles.historyList}>
+          {assessmentHistory.map((session) => <details key={session.id} className={styles.historyItem}>
+            <summary>
+              <div><strong>{session.courseName || courseName}</strong><small>{new Date(session.completedAt).toLocaleString()}</small></div>
+              <span>{session.correctAnswers} / {session.totalQuestions} correct</span>
+              <small>{formatTime(Number(session.durationSeconds || 0))}</small>
+            </summary>
+            <div className={styles.historyResults}>
+              {(Array.isArray(session.results) ? session.results : []).map((result, index) => <div key={`${session.id}-${result.quizId || index}`} className={result.isCorrect ? styles.historyCorrect : styles.historyWrong}>
+                <span>{result.isCorrect ? "✓" : "✕"}</span><div><strong>{result.prompt}</strong><small>Your answer: {result.userAnswer}</small>{!result.isCorrect && <small>Correct answer: {result.correctAnswer}</small>}</div>
+              </div>)}
+            </div>
+          </details>)}
+        </div>
+      </section>}
 
       {/* ── Settings Dialog ── */}
       <Dialog open={showSettings} onOpenChange={() => setShowSettings(false)}>
@@ -452,6 +584,11 @@ export function DailyTrain({ quizzes = [] }) {
                 {isPaused ? "▶" : "Ⅱ"}
               </button>
               {queue.length > 0 && !sessionFinished && (
+                <div className={`${styles.queueBadge} ${questionSeconds <= 10 ? styles.timerDanger : ""}`} title="Time remaining for this question" aria-live="polite">
+                  ◷ {questionSeconds}s
+                </div>
+              )}
+              {queue.length > 0 && !sessionFinished && (
                 <div className={styles.queueBadge} title="Questions remaining">
                   ⚡ {queue.length} left
                 </div>
@@ -486,7 +623,32 @@ export function DailyTrain({ quizzes = [] }) {
           {/* ── Main Canvas (Center) ── */}
           <div className={styles.trainBody}>
             {/* 1. Lesson Completed Screen */}
-            {sessionFinished && (
+            {sessionFinished && showReview && (
+              <section className={styles.reviewContainer} aria-labelledby="daily-review-title">
+                <header className={styles.reviewHeader}>
+                  <div><span>Session complete</span><h2 id="daily-review-title">Review your answers</h2></div>
+                  <strong>{reviewResults.filter((result) => result.isCorrect).length} / {reviewResults.length} correct</strong>
+                </header>
+                <div className={styles.reviewList}>
+                  {reviewResults.map((result, index) => (
+                    <article className={`${styles.reviewItem} ${result.isCorrect ? styles.reviewCorrect : styles.reviewWrong}`} key={result.quizId}>
+                      <div className={styles.reviewStatus}><span>{result.isCorrect ? "✓" : "✕"}</span><small>Question {index + 1} · {result.outcome}</small></div>
+                      <h3>{result.prompt}</h3>
+                      <dl>
+                        <div><dt>Your answer</dt><dd>{result.userAnswer}</dd></div>
+                        {!result.isCorrect && <div><dt>Correct answer</dt><dd>{result.correctAnswer}</dd></div>}
+                      </dl>
+                    </article>
+                  ))}
+                </div>
+                <div className={styles.completionActions}>
+                  <button type="button" className={styles.duoPrimaryBtn} onClick={() => setShowReview(false)}>View summary</button>
+                  <button type="button" className={styles.duoSuccessBtn} onClick={() => { setStart(false); setIsPaused(false); }}>Finish</button>
+                </div>
+              </section>
+            )}
+
+            {sessionFinished && !showReview && (
               <div className={styles.completionContainer}>
                 <div className={styles.trophyBadge}>🏆</div>
                 <h2>Daily Train Complete!</h2>
@@ -498,16 +660,12 @@ export function DailyTrain({ quizzes = [] }) {
                 <div className={styles.statsGrid}>
                   <div className={styles.statCard}>
                     <span className={styles.statValue}>{completedCount}</span>
-                    <span className={styles.statLabel}>Cards Mastered</span>
+                    <span className={styles.statLabel}>Questions attempted</span>
                   </div>
                   <div className={styles.statCard}>
                     <span className={styles.statValue}>
-                      {completedCount > 0
-                        ? `${Math.round(
-                            ((ratingsCount[Rating.Good] + ratingsCount[Rating.Easy]) /
-                              Math.max(1, completedCount + ratingsCount[Rating.Again])) *
-                              100
-                          )}%`
+                      {reviewResults.length > 0
+                        ? `${Math.round((reviewResults.filter((result) => result.isCorrect).length / reviewResults.length) * 100)}%`
                         : "100%"}
                     </span>
                     <span className={styles.statLabel}>First-Try Accuracy</span>
@@ -529,6 +687,7 @@ export function DailyTrain({ quizzes = [] }) {
                 </div>
 
                 <div className={styles.completionActions}>
+                  <button className={styles.duoPrimaryBtn} onClick={() => setShowReview(true)}>REVIEW ANSWERS</button>
                   <button
                     className={styles.duoSuccessBtn}
                     onClick={() => {
@@ -564,12 +723,6 @@ export function DailyTrain({ quizzes = [] }) {
             {/* 3. Active Question View */}
             {!sessionFinished && currentQuiz && (
               <div className={styles.cardWrapper}>
-                {isMistakeRepetition && (
-                  <div className={styles.mistakeNotice}>
-                    <span>🔄</span> Let&apos;s review this one again!
-                  </div>
-                )}
-
                 <div className={styles.quizCardSlot}>
                   <QuizDisplay
                     key={currentQuiz.id}
@@ -690,7 +843,7 @@ export function DailyTrain({ quizzes = [] }) {
                         {getCorrectAnswerDisplay(currentQuiz)}
                       </div>
                       <p className={styles.feedbackSubtext}>
-                        Don&apos;t worry — this question will reappear before you finish!
+                        This question will return in a future review.
                       </p>
                     </div>
                   </div>

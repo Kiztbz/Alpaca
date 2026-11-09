@@ -22,7 +22,7 @@ const demoFallback = {
 
 export default async function MarketplacePage() {
   const user = await getSessionUser((await cookies()).get("token")?.value);
-  const { courses = [] } = await getPermittedResources({ withCourses: true, userId: user?.id });
+  const { courses = [] } = await getPermittedResources({ withCourses: true, userId: user?.id, userRole: user?.role });
   const visibleCourses = courses.filter((course) => course.enrollment !== "private" && !course.isDeleted);
   const databaseDemo = visibleCourses.find((course) => course.publicId === "ALPD01" || course.name?.toLowerCase() === "alpaca demo");
   const demo = databaseDemo ? {

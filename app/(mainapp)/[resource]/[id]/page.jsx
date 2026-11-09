@@ -58,7 +58,7 @@ export default async function ResourceDetailPage(props) {
     if (!user) redirect(`/login?next=/${resource}/${id}`);
 
     const [resourcesObject, rawRelationships, courseAccessRows] = await Promise.all([
-        getPermittedResources({ userId: user.id, takeAll: true }),
+        getPermittedResources({ userId: user.id, userRole: user.role, takeAll: true }),
         getRelationships(),
         getCourseAccessRows(user.id),
     ]);
