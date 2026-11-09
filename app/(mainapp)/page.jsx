@@ -84,7 +84,7 @@ export default async function HomePage() {
                     <h2>Recall that feels rewarding, not repetitive.</h2>
                     <p>Choose the question style that fits the idea. Mix quick checks with deeper recall, and keep every answer grounded in your own sources and notes.</p>
                     <div className={styles.pills}>{quizTypes.map((type) => <span key={type}>{type}</span>)}</div>
-                    <Link href="/quizzes" className={styles.textLink}>See public quizzes <span>→</span></Link>
+                    <Link href="/marketplace" className={styles.textLink}>Explore the marketplace <span>→</span></Link>
                 </div>
             </section>
 

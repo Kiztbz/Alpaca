@@ -8,6 +8,7 @@ import styles from "./AppShell.module.css";
 
 const primaryLinks = [
   { name: "Learn", href: "/learn", icon: "learn" },
+  { name: "Marketplace", href: "/marketplace", icon: "marketplace" },
   { name: "Daily train", href: "/daily", icon: "train" },
   { name: "Profile", href: "/me/dashboard", icon: "profile" },
 ];
@@ -16,6 +17,7 @@ function Icon({ name }) {
   const paths = {
     learn: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5v-16Z"/></>,
     train: <path d="m13 2-7 11h5l-1 9 8-12h-5V2Z"/>,
+    marketplace: <><path d="M4 10v10h16V10"/><path d="M3 4h18l-2 6a3 3 0 0 1-4 0 3 3 0 0 1-6 0 3 3 0 0 1-4 0L3 4Z"/><path d="M9 20v-6h6v6"/></>,
     profile: <><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></>,
     more: <><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></>,
     settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9A1.7 1.7 0 0 0 21 10h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></>,
@@ -68,7 +70,7 @@ export function AppShell({ user, children }) {
           <Link href="/me/settings"><Icon name="settings"/>Settings</Link>
           <Link href="/help"><Icon name="help"/>Help</Link>
           <Link href="/privacy"><Icon name="shield"/>Privacy policy</Link>
-          <Link href="/terms"><Icon name="shield"/>Terms & conditions</Link>
+          <Link href="/terms"><Icon name="shield"/>Terms of service</Link>
           <button type="button" onClick={logout}><Icon name="logout"/>Log out</button>
         </div>}
         <button type="button" className={`${styles.moreButton} ${moreOpen ? styles.active : ""}`} onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}><Icon name="more"/><span>More</span></button>

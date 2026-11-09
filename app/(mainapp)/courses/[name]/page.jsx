@@ -132,6 +132,11 @@ export default async function CoursePage(props) {
     }
   });
 
+  const createdAt = (type, id) => new Date(resources[type].find((item) => String(item.id) === String(id))?.createdAt || 0).getTime();
+  course.notes?.sort((a, b) => createdAt("notes", a) - createdAt("notes", b));
+  course.quizzes?.sort((a, b) => createdAt("quizzes", a) - createdAt("quizzes", b));
+  course.sources?.sort((a, b) => createdAt("sources", a) - createdAt("sources", b));
+
   return <>
     <CourseStructuredData course={course} />
     {user && <FillStore user={user} groups={groups} relationships={expandedRelationships} {...resources} />}

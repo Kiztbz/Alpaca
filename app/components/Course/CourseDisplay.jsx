@@ -52,10 +52,12 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
   const completed = Number(course.notesCompleted || 0) + Number(course.quizzesCompleted || 0);
   const total = notesTotal + quizzesTotal;
   const progress = total ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+  const learnHref = `/learn?course=${encodeURIComponent(course.publicId)}`;
+  const courseHref = user && (isEnrolled || isOwned) ? learnHref : "/marketplace";
 
   async function enroll() {
     if (!user) {
-      router.push(`/login?next=${encodeURIComponent(`/courses/${course.name}`)}`);
+      router.push(`/login?next=${encodeURIComponent("/marketplace")}`);
       return;
     }
     setJoining(true);
@@ -64,6 +66,26 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
       if (!response.ok) throw new Error("Could not enroll");
       setJoined(true);
       router.refresh();
+    } finally {
+      setJoining(false);
+    }
+  }
+
+  async function checkout() {
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent("/marketplace")}`);
+      return;
+    }
+    setJoining(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/course/${course.id}/checkout`, { method: "POST" });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Could not unlock this course");
+      setJoined(true);
+      router.push(learnHref);
+      router.refresh();
+    } catch (error) {
+      addAlert({ success: false, message: error.message || "Could not unlock this course" });
     } finally {
       setJoining(false);
     }
@@ -95,7 +117,7 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
         {course.isDemo && onDemo ? <button type="button" onClick={onDemo} className={courseStyles.cardBody}>
           <h3>{course.name}</h3>
           <p>{course.description || "A focused learning path with lessons, practice, and trusted sources."}</p>
-        </button> : <Link href={`/courses/${encodeURIComponent(course.name)}`} className={courseStyles.cardBody}>
+        </button> : <Link href={courseHref} className={courseStyles.cardBody}>
           <h3>{course.name}</h3>
           <p>{course.description || "A focused learning path with lessons, practice, and trusted sources."}</p>
         </Link>}
@@ -115,11 +137,13 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
           {course.isDemo && onDemo ? (
             <button type="button" onClick={onDemo}>Try interactive demo<span>→</span></button>
           ) : isEnrolled || isOwned ? (
-            <Link href={`/courses/${encodeURIComponent(course.name)}`}>{progress === 100 && !isOwned ? "Review course" : isOwned ? "Manage course" : "Continue course"}<span>→</span></Link>
+            <Link href={learnHref}>{progress === 100 && !isOwned ? "Review course" : isOwned ? "Manage course" : "Continue course"}<span>→</span></Link>
           ) : course.enrollment === "open" ? (
             <button type="button" onClick={enroll} disabled={joining}>{joining ? "Enrolling…" : "Enroll free"}<span>→</span></button>
+          ) : course.enrollment === "paid" ? (
+            <button type="button" onClick={checkout} disabled={joining}>{joining ? "Unlocking…" : "Unlock demo · $49"}<span>→</span></button>
           ) : (
-            <Link href={`/courses/${encodeURIComponent(course.name)}`}>{course.enrollment === "paid" ? "View & enroll" : "View course"}<span>→</span></Link>
+            <Link href="/marketplace">Marketplace<span>→</span></Link>
           )}
         </div>
       </article>
@@ -131,7 +155,7 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
       fullWidth
       darker={darker}
       lighter={lighter}
-      link={`/courses/${course.name}`}
+      link={courseHref}
     >
       <header>
         <h4>{course.name}</h4>

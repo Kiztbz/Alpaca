@@ -115,37 +115,14 @@ export function Dashboard() {
           <div className={styles.courseProgress}><i style={{ width: `${progressPercent}%` }} /></div>
           <div className={styles.courseBottom}>
             <span>{courseActivityTotal ? `${courseActivityCompleted} of ${courseActivityTotal} activities` : `${completed} of ${pathLessons.length} lessons`}</span>
-            {activeCourse && <Link href={`/courses/${encodeURIComponent(activeCourse.name)}`}>Course details <Icon name="chevron" /></Link>}
+            {activeCourse && <Link href={`/learn?course=${encodeURIComponent(activeCourse.publicId)}`}>Open in Learn <Icon name="chevron" /></Link>}
           </div>
         </section>
 
-        {pathLessons.length ? <section className={styles.path} aria-label="Course lessons">
-          <div className={styles.lessonPath}>
-            {pathLessons.map((note, index) => {
-              const progress = savedProgress[note.publicId];
-              const complete = Boolean(progress?.complete);
-              const current = note.publicId === continueNote?.publicId;
-              const status = complete ? "Complete" : current ? progress?.index ? "In progress" : "Next lesson" : "Ready";
-              const query = activeCourse ? `?course=${encodeURIComponent(activeCourse.publicId)}` : "";
-              return <div className={`${styles.lessonStep} ${complete ? styles.complete : ""} ${current ? styles.current : ""}`} key={note.id}>
-                <div className={styles.stepRail}>
-                  <Link href={`/notes/${note.publicId}${query}`} aria-label={`${status}: ${note.title}`} className={styles.stepButton}>
-                    <Icon name={complete ? "check" : current ? "star" : "book"} />
-                  </Link>
-                  {index < pathLessons.length - 1 && <i />}
-                </div>
-                <Link href={`/notes/${note.publicId}${query}`} className={styles.lessonInfo}>
-                  <span>{status}</span>
-                  <h3>{note.title}</h3>
-                  <p>{note.cardCount} cards · {Math.max(2, Math.ceil(note.cardCount * .7))} min</p>
-                  {current && <strong>{progress?.index ? "Continue" : "Start lesson"}<Icon name="arrow" /></strong>}
-                </Link>
-              </div>;
-            })}
-          </div>
-          <Link href="/notes" className={styles.libraryLink}>View all notes <Icon name="arrow" /></Link>
+        {activeCourse ? <section className={styles.emptyPath}>
+          <span><Icon name="book" /></span><h2>Continue in Learn</h2><p>Lessons, practice, and course sources stay together in your selected course.</p><Link href={`/learn?course=${encodeURIComponent(activeCourse.publicId)}`}><Icon name="arrow" /> Open Learn</Link>
         </section> : <section className={styles.emptyPath}>
-          <span><Icon name="cards" /></span><h2>Create your first lesson</h2><p>Turn a note into small cards and start a focused learning path.</p><Link href="/create?type=Note"><Icon name="plus" /> Create note</Link>
+          <span><Icon name="cards" /></span><h2>Choose your first course</h2><p>Your learning materials appear in Learn after you enroll in a course.</p><Link href="/marketplace"><Icon name="plus" /> Browse courses</Link>
         </section>}
       </section>
 
@@ -159,7 +136,7 @@ export function Dashboard() {
         <section className={styles.railCard}>
           <header><span className={styles.targetIcon}><Icon name="target" /></span><div><small>Daily quests</small><h2>Today&apos;s goals</h2></div><b>{learnedToday ? 1 : 0}/3</b></header>
           <div className={styles.quests}>
-            <Link href={continueNote ? `/notes/${continueNote.publicId}` : "/create?type=Note"}><span className={learnedToday ? styles.done : ""}>{learnedToday ? <Icon name="check" /> : <Icon name="book" />}</span><div><strong>Complete a lesson</strong><small>{learnedToday ? "Finished today" : "Keep your streak alive"}</small></div></Link>
+            <Link href={activeCourse ? `/learn?course=${encodeURIComponent(activeCourse.publicId)}${continueNote ? `&view=note&item=${encodeURIComponent(continueNote.publicId)}` : ""}` : "/marketplace"}><span className={learnedToday ? styles.done : ""}>{learnedToday ? <Icon name="check" /> : <Icon name="book" />}</span><div><strong>Complete a lesson</strong><small>{learnedToday ? "Finished today" : "Keep your streak alive"}</small></div></Link>
             <Link href="/daily"><span><Icon name="bolt" /></span><div><strong>Quick review</strong><small>{dueQuizzes.length} questions available</small></div></Link>
           </div>
         </section>
@@ -185,9 +162,9 @@ export function Dashboard() {
               <div><strong>Other courses</strong><small>{sortedCourses.length > 1 ? `${sortedCourses.length - 1} more available` : "Browse learning paths"}</small></div>
               <Icon name="chevron" />
             </Link>
-            <Link href="/notes" className={styles.optionRow}>
+            <Link href={activeCourse ? `/learn?course=${encodeURIComponent(activeCourse.publicId)}` : "/marketplace"} className={styles.optionRow}>
               <span><Icon name="cards" /></span>
-              <div><strong>Notes library</strong><small>{lessons.length} note{lessons.length === 1 ? "" : "s"}</small></div>
+              <div><strong>Course learning</strong><small>{activeCourse ? "Lessons, practice, and sources" : "Choose a course"}</small></div>
               <Icon name="chevron" />
             </Link>
           </div>

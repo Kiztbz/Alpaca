@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import styles from "./GuestDock.module.css";
 
 function Icon({ name }) {
@@ -11,9 +14,14 @@ function Icon({ name }) {
 }
 
 export function GuestDock() {
+  const pathname = usePathname();
+  const links = [
+    { href: "/", label: "Landing", icon: "home", active: pathname === "/" },
+    { href: "/marketplace", label: "Marketplace", icon: "marketplace", active: pathname === "/marketplace" || pathname.startsWith("/courses/") },
+    { href: "/login", label: "Login", icon: "login", active: pathname === "/login" },
+  ];
+
   return <nav className={styles.dock} aria-label="Guest shortcuts">
-    <Link href="/"><Icon name="home"/><span>Landing</span></Link>
-    <Link href="/marketplace"><Icon name="marketplace"/><span>Marketplace</span></Link>
-    <Link href="/login"><Icon name="login"/><span>Login</span></Link>
+    {links.map((link) => <Link key={link.href} href={link.href} className={link.active ? styles.active : ""} aria-current={link.active ? "page" : undefined}><Icon name={link.icon}/><span>{link.label}</span></Link>)}
   </nav>;
 }

@@ -156,6 +156,7 @@ export default async function ResourceDetailPage(props) {
                     creator: res.creator ? { username: res.creator.username } : null,
                 }}
                 activeCourse={activeCourse ? { id: activeCourse.id, publicId: activeCourse.publicId, name: activeCourse.name } : null}
+                initialProgress={activeCourse?.noteProgress?.find((item) => String(item.noteId) === String(res.id)) || null}
                 courses={courses.map((course) => ({ id: course.id, publicId: course.publicId, name: course.name }))}
                 position={currentIndex + 1}
                 totalNotes={sequence.length}

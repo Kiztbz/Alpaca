@@ -5,26 +5,29 @@ export const config = {
     matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api)(.*)"],
 };
 
-const restrictedRoutes = [
-    {
-        start: "/me",
-        include: ["/me", "/me/dashboard", "/me/settings", "/me/groups"],
-        rewrite: "/me",
-        redirect: "/login",
-    },
-    {
-        start: "/user",
-        redirect: "/login",
-    },
-    {
-        start: "/group",
-        redirect: "/login",
-    },
-    {
-        start: "/admin",
-        redirect: "/login",
-    },
-];
+const guestPages = new Set([
+    "/",
+    "/about",
+    "/login",
+    "/marketplace",
+    "/privacy",
+    "/register",
+    "/terms",
+]);
+
+const authenticatedPages = new Set([
+    "/daily",
+    "/help",
+    "/learn",
+    "/marketplace",
+    "/me/dashboard",
+    "/me/settings",
+    "/privacy",
+    "/terms",
+]);
+
+// Generated social metadata is an asset rather than a navigable page.
+const publicAssets = new Set(["/opengraph-image"]);
 
 const isAuthenticated = async (req) => {
     const token = req.cookies.get("token")?.value;
@@ -50,24 +53,30 @@ const isAuthenticated = async (req) => {
 export async function proxy(req) {
     const { pathname } = req.nextUrl;
 
-    if (pathname.startsWith("/api")) {
+    if (pathname.startsWith("/api/") || pathname === "/api") {
         // Will need to check for Authorization header
         return NextResponse.next();
     }
 
-    for (const route of restrictedRoutes) {
-        if (pathname.startsWith(route.start)) {
-            if (!(await isAuthenticated(req))) {
-                return NextResponse.redirect(new URL(route.redirect, req.url));
-            }
-
-            if (route.include && !route.include.includes(pathname)) {
-                return NextResponse.redirect(new URL(route.rewrite, req.url));
-            }
-
-            return NextResponse.next();
-        }
+    if (publicAssets.has(pathname)) {
+        return NextResponse.next();
     }
 
-    return NextResponse.next();
+    const authenticated = await isAuthenticated(req);
+
+    if (!authenticated && guestPages.has(pathname)) {
+        return NextResponse.next();
+    }
+
+    if (!authenticated) {
+        const loginUrl = new URL("/login", req.url);
+        loginUrl.searchParams.set("next", `${pathname}${req.nextUrl.search}`);
+        return NextResponse.redirect(loginUrl);
+    }
+
+    if (authenticatedPages.has(pathname)) {
+        return NextResponse.next();
+    }
+
+    return NextResponse.redirect(new URL("/learn", req.url));
 }

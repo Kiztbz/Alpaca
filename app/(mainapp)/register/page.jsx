@@ -14,7 +14,7 @@ export const metadata = {
 
 export default async function RegisterPage() {
     const user = await useUser({ token: (await cookies()).get("token")?.value });
-    if (user) return redirect(`/me/dashboard`);
+    if (user) return redirect(`/learn`);
 
     const courses = await db.selectFrom("courses").select(["id", "name", "description", "isDemo"])
         .where("enrollment", "=", "open").where("isDeleted", "=", false).orderBy("isDemo", "desc").orderBy("name").execute();

@@ -4,7 +4,7 @@ import { CourseInput, Dialog, DialogContent, DialogDescription, DialogHeading, N
 import { noteCardCount } from "@/lib/noteCards";
 import { useAlerts, useStore } from "@/store/store";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./CourseDash.module.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASEPATH ?? "";
@@ -202,13 +202,18 @@ function ManageResourceCard({ item, type, course }) {
 
 export function NotesTabInfo({ course }) {
   const notes = useStore((state) => state.notes);
-  return <span className={styles.countPill}>{relatedItems(course.notes, notes).length} lessons</span>;
+  const courseNotes = relatedItems(course.notes, notes);
+  const noteIds = new Set(courseNotes.map((note) => String(note.id)));
+  const completedNotes = new Set((course.noteProgress || []).filter((item) => item.completedAt && noteIds.has(String(item.noteId))).map((item) => String(item.noteId))).size;
+  return <span className={styles.countPill}>{completedNotes} / {courseNotes.length} complete</span>;
 }
 
 export function NotesTabMain({ course }) {
   const notes = useStore((state) => state.notes);
   const courseNotes = useMemo(() => relatedItems(course.notes, notes), [course.notes, notes]);
   const [progress, setProgress] = useState({});
+  const pathRef = useRef(null);
+  const currentRef = useRef(null);
 
   useEffect(() => {
     const saved = {};
@@ -219,21 +224,66 @@ export function NotesTabMain({ course }) {
     setProgress(saved);
   }, [courseNotes]);
 
-  if (!courseNotes.length) return <EmptyState icon="book" title="No lessons yet" copy="Notes added to this course will appear here as short learning sessions." />;
-
-  return <div className={styles.lessonGrid}>{courseNotes.map((note, index) => {
-    const saved = progress[note.publicId];
+  const serverProgress = new Map((course.noteProgress || []).map((item) => [String(item.noteId), item]));
+  const noteStatuses = courseNotes.map((note) => {
+    const saved = progress[note.publicId] || {};
+    const server = serverProgress.get(String(note.id)) || {};
     const cards = Math.max(1, noteCardCount(note.text));
-    const complete = Boolean(saved?.complete);
-    const percent = complete ? 100 : Math.min(99, Math.round(((saved?.index || 0) / cards) * 100));
-    return <Link key={note.id} href={`/notes/${note.publicId}?course=${encodeURIComponent(course.publicId)}`} className={`${styles.appCard} ${complete ? styles.completeCard : ""}`}>
-      <div className={styles.cardTop}><span className={styles.lessonNumber}>{complete ? <Icon name="check" /> : index + 1}</span><span className={styles.cardStatus}>{complete ? "Complete" : percent ? `${percent}% done` : "Lesson"}</span></div>
-      <h3>{note.title}</h3>
-      <p>{plainText(note.text).slice(0, 120) || "Open this lesson to start learning."}</p>
-      <div className={styles.cardProgress}><i style={{ width: `${percent}%` }} /></div>
-      <footer><span>{cards} cards · {Math.max(2, Math.ceil(cards * .7))} min</span><strong>{percent ? "Continue" : "Start"}<Icon name="arrow" /></strong></footer>
-    </Link>;
-  })}</div>;
+    const complete = Boolean(server.completedAt || saved.complete);
+    const lastCardIndex = complete ? cards - 1 : Math.min(cards - 1, Math.max(Number(server.lastCardIndex || 0), Number(saved.index || 0)));
+    const started = complete || Boolean(server.updatedAt || saved.index > 0);
+    const percent = complete ? 100 : started ? Math.min(99, Math.round(((lastCardIndex + 1) / cards) * 100)) : 0;
+    return { item: note, title: note.title, cards, complete, lastCardIndex, started, percent };
+  });
+  const statuses = noteStatuses.map((item, index) => ({
+    ...item,
+    unlocked: item.complete || index === 0 || noteStatuses[index - 1].complete,
+  }));
+  const partialIndex = statuses.findIndex((item) => item.started && !item.complete && item.unlocked);
+  const unfinishedIndex = statuses.findIndex((item) => !item.complete && item.unlocked);
+  const currentIndex = partialIndex >= 0 ? partialIndex : unfinishedIndex >= 0 ? unfinishedIndex : 0;
+  const current = statuses[currentIndex];
+  const allComplete = statuses.length > 0 && statuses.every((item) => item.complete);
+  const completedLessons = statuses.filter((item) => item.complete).length;
+  const completedCards = statuses.reduce((total, item) => total + (item.complete ? item.cards : item.started ? item.lastCardIndex : 0), 0);
+  const totalCards = statuses.reduce((total, item) => total + item.cards, 0);
+  const completedActivities = statuses.filter((item) => item.complete).length;
+  const totalActivities = statuses.length;
+  const coursePercent = totalActivities ? Math.round((completedActivities / totalActivities) * 100) : 0;
+  const pathHref = (item) => `/learn?course=${encodeURIComponent(course.publicId)}&view=note&item=${encodeURIComponent(item.item.publicId)}`;
+  const currentHref = current ? pathHref(current) : "#";
+
+  useEffect(() => {
+    const target = currentRef.current;
+    if (!pathRef.current || !target || currentIndex < 3) return;
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [currentIndex, course.id]);
+
+  if (!statuses.length) return <EmptyState icon="book" title="No notes yet" copy="Notes added to this course will appear here as one learning path." />;
+
+  return <div className={styles.learningDashboard}>
+    <section className={styles.pathWorkspace}>
+      <header className={styles.pathHeader}>
+        <div><small>{allComplete ? "Course complete" : `Note ${currentIndex + 1} of ${statuses.length}`}</small><h2>{allComplete ? "Review any note" : current.title}</h2><p>{allComplete ? "Every note is complete and ready to replay." : current.started ? `Resume at card ${current.lastCardIndex + 1} of ${current.cards}.` : `${current.cards} cards · ${Math.max(2, Math.ceil(current.cards * .7))} min`}</p></div>
+        <Link href={currentHref}><Icon name="book" />{allComplete ? "Review" : current.started ? "Continue" : "Start note"}</Link>
+      </header>
+      <div className={styles.pathScroller} ref={pathRef}>
+        {statuses.map((item, index) => {
+          const isCurrent = index === currentIndex;
+          const status = item.complete ? "Completed" : !item.unlocked ? "Locked" : isCurrent ? item.started ? `Card ${item.lastCardIndex + 1} of ${item.cards}` : "Up next" : "Ready";
+          return <article ref={isCurrent ? currentRef : null} className={`${styles.pathStep} ${item.complete ? styles.pathComplete : ""} ${isCurrent ? styles.pathCurrent : ""} ${!item.unlocked ? styles.pathLocked : ""}`} key={item.item.id}>
+            {item.unlocked ? <Link className={styles.pathNode} title={`Note ${index + 1}: ${item.title}`} href={pathHref(item)} aria-label={`Note ${index + 1} · ${status}: ${item.title}`}>{item.complete ? <Icon name="check" /> : isCurrent ? <Icon name="book" /> : index + 1}</Link> : <span className={styles.pathNode} aria-label={`Note ${index + 1} locked`}><Icon name="lock" /></span>}
+            {item.unlocked ? <Link className={styles.pathBubble} href={pathHref(item)}><small>Note {index + 1} · {status}</small><strong>{item.title}</strong><span>{item.started ? "Continue note" : "Open note"}<Icon name="arrow" /></span></Link> : <div className={styles.pathBubble}><small>Note {index + 1} · Locked</small><strong>{item.title}</strong><span>Complete note {index} to unlock</span></div>}
+          </article>;
+        })}
+      </div>
+    </section>
+
+    <aside className={styles.learningRail}>
+      <section className={styles.railProgress}><span>Course progress</span><strong>{coursePercent}%</strong><div><i style={{ width: `${coursePercent}%` }} /></div><p>{completedActivities} of {totalActivities} notes complete</p></section>
+      <section className={styles.railCard}><header><span className={styles.typeIcon}><Icon name="book" /></span><div><small>Notes</small><h3>{completedLessons} of {statuses.length}</h3></div></header><p>{completedCards} of {totalCards} cards completed</p><Link href={currentHref}>{allComplete ? "Review notes" : "Continue notes"}<Icon name="arrow" /></Link></section>
+    </aside>
+  </div>;
 }
 
 function getQuizStats(ids, quizzes) {
@@ -256,7 +306,7 @@ export function QuizzesTabMain({ course }) {
 
   return <><div className={styles.practiceSummary}><div><span>Ready now</span><strong>{available}</strong></div><div><span>Average level</span><strong>{average.toFixed(1)}</strong></div><div><span>Total practice</span><strong>{items.length}</strong></div></div><div className={styles.cardGrid}>{items.map((quiz) => {
     const availableNow = !quiz.hiddenUntil || new Date(quiz.hiddenUntil) <= new Date();
-    return <Link key={quiz.id} href={`/quizzes/${quiz.publicId}?course=${encodeURIComponent(course.publicId)}`} className={`${styles.appCard} ${!availableNow ? styles.lockedCard : ""}`}>
+    return <Link key={quiz.id} href={`/learn?course=${encodeURIComponent(course.publicId)}&view=quiz&item=${encodeURIComponent(quiz.publicId)}`} className={`${styles.appCard} ${!availableNow ? styles.lockedCard : ""}`}>
       <div className={styles.cardTop}><span className={styles.typeIcon}><Icon name={availableNow ? "bolt" : "lock"} /></span><span className={styles.cardStatus}>{availableNow ? "Ready" : "Review later"}</span></div>
       <h3>{quizLabel(quiz)}</h3>
       <p>{availableNow ? "Test what you remember and strengthen this skill." : "This practice will unlock again after its review interval."}</p>
@@ -275,7 +325,7 @@ export function SourcesMainTab({ course }) {
   const courseSources = relatedItems(course.sources, sources);
   if (!courseSources.length) return <EmptyState icon="file" title="No sources yet" copy="Course references and supporting material will appear here." />;
 
-  return <div className={styles.cardGrid}>{courseSources.map((source) => <Link key={source.id} href={`/sources/${source.publicId}?course=${encodeURIComponent(course.publicId)}`} className={styles.appCard}>
+  return <div className={styles.cardGrid}>{courseSources.map((source) => <Link key={source.id} href={`/learn?course=${encodeURIComponent(course.publicId)}&view=source&item=${encodeURIComponent(source.publicId)}`} className={styles.appCard}>
     <div className={styles.cardTop}><span className={styles.typeIcon}><Icon name="file" /></span><span className={styles.cardStatus}>{source.medium || "Source"}</span></div>
     <h3>{source.title}</h3>
     <p>{source.credits?.length ? `Credited to ${source.credits.map((credit) => typeof credit === "string" ? credit : credit?.name).filter(Boolean).slice(0, 2).join(", ")}.` : "Supporting material for this course."}</p>
