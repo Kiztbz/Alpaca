@@ -5,6 +5,8 @@
     background-color: var(--bg-2);
     border-radius: var(--radius-medium);
     border: 1px solid var(--border-color);
+    transform-origin: top right;
+    animation: menuIn var(--motion-fast) var(--motion-spring) both;
 }
 
 .container > hr {
@@ -25,6 +27,7 @@
     color: var(--fg-2);
     border-radius: 3px;
     align-items: center;
+    transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, transform var(--motion-fast) var(--motion-ease);
 }
 
 .container > li.disabled {
@@ -52,6 +55,7 @@
 
 .container > li:not(.disabled):active {
     filter: brightness(1.3);
+    transform: scale(.98);
 }
 
 .container > li > svg {
@@ -79,4 +83,8 @@
     font-weight: 600;
     color: var(--fg-4);
     font-family: var(--font-mono);
+}
+
+@keyframes menuIn {
+    from { opacity: 0; transform: translateY(-5px) scale(.97); }
 }

@@ -11,7 +11,15 @@
     display: inline-block;
     margin: 0 0 24px;
     width: 100%;
+    animation: grid-item-in var(--motion-slow) var(--motion-spring) both;
 }
+
+.grid > :nth-child(2) { animation-delay: 45ms; }
+.grid > :nth-child(3) { animation-delay: 90ms; }
+.grid > :nth-child(4) { animation-delay: 135ms; }
+.grid > :nth-child(n + 5) { animation-delay: 180ms; }
+
+@keyframes grid-item-in { from { opacity: 0; transform: translateY(14px); } }
 
 .dash {
     column-width: 476px;
@@ -28,3 +36,5 @@
         column-count: 1;
     }
 }
+
+@media (prefers-reduced-motion: reduce) { .grid > * { animation: none; } }

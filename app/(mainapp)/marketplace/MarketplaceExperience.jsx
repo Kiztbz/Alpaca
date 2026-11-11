@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CourseDisplay } from "@/app/components/Course/CourseDisplay";
 import styles from "./Marketplace.module.css";
@@ -104,33 +103,23 @@ function DemoDialog({ onClose }) {
   </div>;
 }
 
-export function MarketplaceExperience({ courses, isLoggedIn }) {
+export function MarketplaceExperience({ courses }) {
   const [query, setQuery] = useState("");
   const [demoOpen, setDemoOpen] = useState(false);
   const filteredCourses = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return courses.filter((course) => !normalized || `${course.name} ${course.description || ""}`.toLowerCase().includes(normalized));
   }, [courses, query]);
-  const demo = courses.find((course) => course.isDemo) || courses[0];
-
   return <main className={styles.marketplace}>
     <section className={styles.hero}>
-      <div className={styles.heroCopy}><span className={styles.eyebrow}>Course library</span><h1>Marketplace</h1><p>Find a course, preview what you will learn, and enroll when you are ready.</p></div>
+      <div className={styles.heroCopy}><span className={styles.eyebrow}>Course library</span><h1>Marketplace</h1><p>Choose a learning path and begin when you are ready.</p></div>
       <label className={styles.search}><Icon name="search"/><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search courses"/><span>{filteredCourses.length} courses</span></label>
     </section>
 
-    {demo && <section className={styles.featured}>
-      <span className={styles.featureIcon}><Icon name="play"/></span>
-      <div className={styles.featureCopy}><span className={styles.eyebrow}>Interactive preview</span><h2>Try Alpaca demo</h2><p>Complete a short lesson, answer a Daily Train question, and see how course progress works before creating an account.</p><div className={styles.featurePoints}><span>Lesson</span><span>Daily Train</span><span>Progress</span></div></div>
-      <button type="button" className={styles.tryButton} onClick={() => setDemoOpen(true)}>Open demo <Icon name="arrow"/></button>
-    </section>}
-
     <section className={styles.catalog}>
-      <header className={styles.sectionHeader}><span className={styles.sectionIcon}><Icon name="learn"/></span><div><small>Available courses</small><h2>Browse courses</h2></div><span className={styles.countPill}>{query ? `${filteredCourses.length} results` : `${filteredCourses.length} total`}</span></header>
       <div className={styles.contentBody}>{filteredCourses.length ? <div className={styles.courseGrid}>{filteredCourses.map((course) => <div className={styles.courseSlot} key={course.publicId || course.id}><CourseDisplay course={course} compact presentation="marketplace" onDemo={course.isDemo ? () => setDemoOpen(true) : undefined} /></div>)}</div> : <div className={styles.empty}><strong>No courses match “{query}”</strong><p>Try another search or view the complete marketplace.</p><button type="button" onClick={() => setQuery("")}>Clear search</button></div>}</div>
     </section>
 
-    <section className={styles.bottomCta}><div><span className={styles.eyebrow}>Next step</span><h2>{isLoggedIn ? "Continue with your enrolled courses" : "Ready to start learning?"}</h2></div><Link href={isLoggedIn ? "/learn" : "/register"}>{isLoggedIn ? "Go to Learn" : "Create account"}<Icon name="arrow"/></Link></section>
     {demoOpen && <DemoDialog onClose={() => setDemoOpen(false)} />}
   </main>;
 }

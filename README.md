@@ -12,6 +12,10 @@ Aplaca is an open-source project, and we're calling all passionate learners and 
 
 Need a place to discuss ideas and get involved? Visit our vibrant [Discord server](https://discord.gg/JUc27txA95).
 
+## Course Authoring
+
+Building content for Alpaca? Start with the [Course Creation Blueprint](docs/COURSE_CREATION_BLUEPRINT.md), then copy the [Course Planning Template](docs/templates/COURSE_PLANNING_TEMPLATE.md) for each new course. The guide covers unit sequencing, short notes, source quality, all supported quiz formats, content relationships, and pre-publish checks.
+
 ## Get Started with Alpaca 🏁
 
 Ready to dive in? Setting up Mneme from the Git repository is a breeze:

@@ -13,9 +13,12 @@
     background-color: var(--bg-3);
     border-radius: var(--radius-medium);
     transition:
-        transform 0.1s ease-in-out,
-        box-shadow 0.1s ease-in-out;
+        transform var(--motion-medium) var(--motion-ease),
+        box-shadow var(--motion-medium) ease;
+    animation: user-card-in var(--motion-slow) var(--motion-spring) both;
 }
+
+@keyframes user-card-in { from { opacity: 0; transform: translateX(-10px); } }
 
 .container:hover,
 .container:focus-visible,

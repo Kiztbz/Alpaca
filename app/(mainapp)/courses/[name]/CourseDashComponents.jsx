@@ -303,6 +303,12 @@ export function NotesTabMain({ course, courses = [], initialNotes, initialRelati
             style={{ "--path-shift": `${pathShift}px`, "--path-shift-mobile": `${Math.round(pathShift * .52)}px`, "--step-delay": `${index * -.37}s` }}
             key={item.item.id}
           >
+            <div className={`${styles.pathScenery} ${index % 2 ? styles.sceneryRight : styles.sceneryLeft}`} aria-hidden="true">
+              <span className={styles.pathTree} style={{ "--tree-x": `${12 + (index * 19) % 43}%`, "--tree-scale": .78 + (index % 3) * .12 }}><i /></span>
+              {index % 3 !== 1 && index !== statuses.length - 1 && <span className={`${styles.pathTree} ${styles.pathTreeSmall}`} style={{ "--tree-x": `${62 + (index * 11) % 20}%`, "--tree-scale": .58 + (index % 2) * .1 }}><i /></span>}
+              <span className={styles.pathCloud} style={{ "--cloud-x": `${9 + (index * 23) % 58}%`, "--cloud-delay": `${index * -.83}s` }}><i /><i /></span>
+              {index === statuses.length - 1 && <span className={styles.highlandRuin}><i /><i /><i /><i /></span>}
+            </div>
             <div className={styles.pathNodeWrap}>
               {isCurrent && <span className={styles.pathFlag}>{item.started ? "Continue" : "Start"}</span>}
               {isCurrent && <Image className={styles.pathMascot} src="/assets/images/llama-mascot.png" width={118} height={182} alt="Alpaca at your current unit" priority />}

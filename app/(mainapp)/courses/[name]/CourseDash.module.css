@@ -91,6 +91,27 @@
 .embedded .pathScroller { height: calc(100dvh - 190px); max-height: none; }
 .pathScroller::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .pathStep { position: relative; z-index: 1; min-height: 112px; display: grid; place-items: center; animation: path-step-idle 4.2s ease-in-out var(--step-delay) infinite; }
+.pathStep::before { position: absolute; z-index: -1; bottom: 8px; left: 50%; width: 290px; height: 56px; content: ""; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(88, 204, 2, .09), transparent 68%); transform: translateX(-50%); }
+.pathScenery { position: absolute; z-index: 0; top: 50%; width: min(34%, 240px); height: 96px; pointer-events: none; transform: translateY(-50%); }
+.sceneryLeft { right: calc(50% + 100px); }
+.sceneryRight { left: calc(50% + 100px); }
+.pathTree { position: absolute; bottom: 9px; left: var(--tree-x); width: 44px; height: 76px; scale: var(--tree-scale); transform-origin: 50% 100%; animation: tree-sway 5.8s ease-in-out var(--step-delay) infinite; }
+.pathTree::before, .pathTree::after { position: absolute; left: 50%; content: ""; border-radius: 48% 52% 45% 55%; background: #315e52; box-shadow: inset -8px -4px 0 rgba(0, 0, 0, .12); transform: translateX(-50%); }
+.pathTree::before { bottom: 25px; width: 44px; height: 48px; }
+.pathTree::after { bottom: 42px; width: 32px; height: 35px; background: #3f7866; }
+.pathTree i { position: absolute; bottom: 0; left: 50%; width: 9px; height: 31px; border-radius: 5px 5px 2px 2px; background: #745542; transform: translateX(-50%); }
+.pathTreeSmall { bottom: 3px; filter: brightness(.88); }
+.pathCloud { position: absolute; top: 3px; left: var(--cloud-x); width: 48px; height: 17px; border-radius: 99px; background: rgba(207, 224, 229, .14); animation: cloud-drift 7s ease-in-out var(--cloud-delay) infinite; }
+.pathCloud i { position: absolute; bottom: 4px; width: 22px; height: 22px; border-radius: 50%; background: inherit; }
+.pathCloud i:first-child { left: 8px; }.pathCloud i:last-child { right: 7px; width: 17px; height: 17px; }
+.highlandRuin { position: absolute; right: 3%; bottom: 5px; width: 88px; height: 66px; filter: drop-shadow(0 5px 0 rgba(11, 20, 24, .28)); animation: ruin-settle 5.6s ease-in-out var(--step-delay) infinite; }
+.highlandRuin::before, .highlandRuin::after, .highlandRuin i { position: absolute; left: 50%; content: ""; border: 1px solid #61716f; background: #4f5f5d; box-shadow: inset -6px -3px 0 rgba(15, 28, 30, .15); transform: translateX(-50%); }
+.highlandRuin::before { bottom: 0; width: 86px; height: 15px; clip-path: polygon(8% 0,92% 0,100% 100%,0 100%); }
+.highlandRuin::after { bottom: 15px; width: 68px; height: 14px; clip-path: polygon(9% 0,91% 0,100% 100%,0 100%); }
+.highlandRuin i:nth-child(1) { bottom: 29px; width: 50px; height: 13px; clip-path: polygon(10% 0,90% 0,100% 100%,0 100%); }
+.highlandRuin i:nth-child(2) { bottom: 42px; width: 33px; height: 20px; border-radius: 3px 3px 0 0; }
+.highlandRuin i:nth-child(3) { z-index: 1; bottom: 42px; width: 9px; height: 13px; border: 0; border-radius: 5px 5px 0 0; background: #26383b; box-shadow: none; }
+.highlandRuin i:nth-child(4) { bottom: 7px; width: 4px; height: 49px; border: 0; background: rgba(196, 166, 99, .34); box-shadow: 18px 7px 0 rgba(196, 166, 99, .24), -18px 7px 0 rgba(196, 166, 99, .24); }
 .pathNodeWrap { position: relative; width: 82px; height: 76px; display: grid; place-items: center; transform: translateX(var(--path-shift)); transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
 .pathNode { position: relative; z-index: 3; width: 78px; height: 70px; display: grid; place-items: center; color: #718892; border: 0; border-radius: 50%; background: #374951; box-shadow: 0 8px 0 #26373e, inset 0 2px 0 rgba(255, 255, 255, .04); transition: transform .16s ease, filter .16s ease, box-shadow .16s ease; }
 .pathNode:hover, .pathNode:focus-visible { filter: brightness(1.13); transform: translateY(-3px); }
@@ -127,6 +148,9 @@
 .unitPractice svg { width: 12px; height: 12px; }
 @keyframes path-step-idle { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
 @keyframes mascot-idle { 0%, 100% { transform: translateY(0) rotate(-1deg); } 45% { transform: translateY(-7px) rotate(1.5deg); } 55% { transform: translateY(-7px) rotate(1deg); } }
+@keyframes tree-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.8deg); } }
+@keyframes cloud-drift { 0%, 100% { translate: -5px 0; opacity: .55; } 50% { translate: 7px -2px; opacity: .9; } }
+@keyframes ruin-settle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 .lockedWorkspace { max-width: 760px; min-height: 310px; display: flex; align-items: center; justify-content: center; flex-direction: column; margin: 0 auto; padding: 42px; border: 1px solid var(--bg-4); border-radius: 16px; text-align: center; background: var(--bg-2); }
 .lockedIcon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 16px; border-radius: 18px; color: var(--accent); background: var(--accent-08); }
 .lockedIcon svg { width: 25px; height: 25px; }
@@ -217,6 +241,10 @@
   .pathNode { width: 80px; height: 72px; }
   .pathNode svg { width: 32px; height: 32px; }
   .pathMascot { right: calc(100% + 24px); bottom: -17px; width: 74px; }
+  .pathScenery { width: 28%; opacity: .8; }
+  .sceneryLeft { right: calc(50% + 78px); }
+  .sceneryRight { left: calc(50% + 78px); }
+  .pathTree { scale: .72; }.pathCloud { scale: .8; }.highlandRuin { right: -8px; scale: .8; }
   .pathUnitTag { top: calc(100% + 12px); padding: 5px 9px; font-size: 8px; }
   .pathBubble { display: none; }
   .pathFlag { bottom: calc(100% + 10px); padding: 7px 10px; font-size: 8px; }
@@ -238,5 +266,5 @@
 @media (prefers-reduced-motion: reduce) {
   .appCard, .pathNodeWrap, .pathNode, .pathBubble { transition: none; }
   .pathStep { animation: none; }
-  .pathMascot { animation: none; }
+  .pathMascot, .pathTree, .pathCloud, .highlandRuin { animation: none; }
 }

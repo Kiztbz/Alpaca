@@ -54,6 +54,8 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
   const progress = total ? Math.min(100, Math.round((completed / total) * 100)) : 0;
   const learnHref = `/learn?course=${encodeURIComponent(course.publicId)}`;
   const courseHref = user && (isEnrolled || isOwned) ? learnHref : "/marketplace";
+  const courseInitials = course.name.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join("").toUpperCase();
+  const courseHue = ((Number(course.id) * 47) || course.name.length * 37) % 360;
 
   async function enroll() {
     if (!user) {
@@ -108,6 +110,41 @@ export function CourseDisplay({ lighter = false, darker = false, course, compact
   }
 
   if (compact) {
+    if (presentation === "marketplace") {
+      const stateLabel = course.isDemo ? "Demo" : isOwned ? "Yours" : isEnrolled ? progress === 100 ? "Complete" : `${progress}%` : course.enrollment === "paid" ? "$49" : "Free";
+      return (
+        <article className={courseStyles.marketplaceTile} style={{ "--course-hue": courseHue }}>
+          <span className={courseStyles.tileState}>{stateLabel}</span>
+          {course.isDemo && onDemo ? <button type="button" onClick={onDemo} className={courseStyles.tileMain}>
+            <span className={courseStyles.tileIcon} aria-hidden="true">{courseInitials || "A"}</span>
+            <h3>{course.name}</h3>
+            <span className={courseStyles.tileMeta}>{notesTotal} lessons · {quizzesTotal} quizzes</span>
+          </button> : isEnrolled || isOwned ? <Link href={learnHref} className={courseStyles.tileMain}>
+            <span className={courseStyles.tileIcon} aria-hidden="true">{courseInitials || "A"}</span>
+            <h3>{course.name}</h3>
+            <span className={courseStyles.tileMeta}>{notesTotal} lessons · {quizzesTotal} quizzes</span>
+          </Link> : <div className={courseStyles.tileMain}>
+            <span className={courseStyles.tileIcon} aria-hidden="true">{courseInitials || "A"}</span>
+            <h3>{course.name}</h3>
+            <span className={courseStyles.tileMeta}>{notesTotal} lessons · {quizzesTotal} quizzes</span>
+          </div>}
+          <div className={courseStyles.tileAction}>
+            {course.isDemo && onDemo ? (
+              <button type="button" onClick={onDemo}>Try demo <span>→</span></button>
+            ) : isEnrolled || isOwned ? (
+              <Link href={learnHref}>{progress === 100 && !isOwned ? "Review" : isOwned ? "Manage" : "Continue"}<span>→</span></Link>
+            ) : course.enrollment === "open" ? (
+              <button type="button" onClick={enroll} disabled={joining}>{joining ? "Enrolling…" : "Enroll free"}<span>→</span></button>
+            ) : course.enrollment === "paid" ? (
+              <button type="button" onClick={checkout} disabled={joining}>{joining ? "Unlocking…" : "Unlock"}<span>→</span></button>
+            ) : (
+              <span>Private course</span>
+            )}
+          </div>
+        </article>
+      );
+    }
+
     return (
       <article className={`${courseStyles.compactCard} ${isEnrolled || isOwned ? courseStyles.learningCard : courseStyles.marketCard} ${presentation === "marketplace" ? courseStyles.marketplaceCard : ""}`}>
         <div className={courseStyles.cardTopline}>

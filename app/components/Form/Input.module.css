@@ -53,7 +53,7 @@
     background-color: var(--bg-3);
     border-radius: var(--radius-medium);
     border: 1px solid var(--border-color);
-    transition: border 0.1s ease, box-shadow 0.1s ease;
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, background-color var(--motion-fast) ease, transform var(--motion-fast) var(--motion-ease);
 }
 
 .wrapper.select {
@@ -84,6 +84,7 @@
     border: 1px solid var(--accent-50);
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03), 0 3px 6px rgba(0, 0, 0, 0.02), 0 0 0 3px var(--bs-1),
         0 1px 1px 0 var(--bs-2);
+    transform: translateY(-1px);
 }
 
 .input {
@@ -222,6 +223,8 @@
     background-color: var(--bg-2);
     border-radius: var(--radius-medium);
     border: 1px solid var(--border-color);
+    transform-origin: top center;
+    animation: input-options-in var(--motion-medium) var(--motion-spring) both;
 }
 
 .option {
@@ -239,6 +242,7 @@
     background-color: transparent;
     justify-content: space-between;
     border-radius: var(--radius-small);
+    transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, transform var(--motion-fast) var(--motion-ease);
 }
 
 .option > p {
@@ -260,6 +264,8 @@
     color: var(--fg-2);
     background-color: var(--bg-3);
 }
+
+.option:not(.empty):active { transform: scale(.99); }
 
 .option:focus,
 .option:focus-visible {
@@ -386,6 +392,8 @@
         transform: rotate(360deg);
     }
 }
+
+@keyframes input-options-in { from { opacity: 0; transform: translateY(-6px) scale(.985); } }
 
 .reveal {
     top: 2px;

@@ -10,7 +10,8 @@
   border-radius: 16px;
   background: var(--bg-2);
   box-shadow: 0 3px 0 var(--bg-3);
-  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  transition: transform var(--motion-medium) var(--motion-ease), border-color var(--motion-medium) ease, box-shadow var(--motion-medium) ease;
+  animation: course-card-in var(--motion-slow) var(--motion-spring) both;
 }
 
 .compactCard::before {
@@ -24,10 +25,12 @@
 }
 
 .compactCard:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   border-color: var(--accent-50);
   box-shadow: 0 7px 24px rgba(0, 5, 17, .22);
 }
+
+@keyframes course-card-in { from { opacity: 0; transform: translateY(16px) scale(.985); } }
 
 .marketCard::before { background: color-mix(in srgb, var(--fg-4) 45%, transparent); }
 
@@ -178,14 +181,31 @@
 .cardActions button:disabled { cursor: wait; opacity: .65; }
 .cardActions span { font-size: 14px; }
 
-.marketplaceCard {
-  min-height: 292px;
-}
+.marketplaceTile { position: relative; min-width: 0; height: 100%; min-height: 0; display: flex; padding: 18px; overflow: hidden; flex-direction: column; border: 2px solid #344851; border-radius: 16px; background: #132126; box-shadow: 0 3px 0 #263940; transition: border-color var(--motion-fast) ease, transform var(--motion-fast) var(--motion-ease); animation: course-card-in var(--motion-slow) var(--motion-spring) both; }
+.marketplaceTile:hover { border-color: #c979ed; transform: translateY(-2px); }
+.tileState { position: absolute; z-index: 2; top: 12px; right: 12px; padding: 5px 7px; color: #d98df8; font-size: 8px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; border: 1px solid rgba(201,121,237,.24); border-radius: 7px; background: rgba(201,121,237,.08); }
+.tileMain { min-width: 0; display: grid; padding: 14px 6px 10px; cursor: pointer; justify-items: center; color: inherit; text-align: center; border: 0; background: transparent; }
+.tileIcon { width: 72px; height: 72px; display: grid; margin-top: 5px; place-items: center; color: #fff; font-size: 23px; font-weight: 950; letter-spacing: -.04em; border: 5px solid #f3f5f7; border-radius: 20px; background: linear-gradient(145deg, hsl(var(--course-hue) 72% 58%), hsl(calc(var(--course-hue) + 34) 76% 46%)); box-shadow: inset 0 -7px 0 rgba(0,0,0,.12); }
+.tileMain h3 { display: -webkit-box; max-width: 100%; margin-top: 20px; overflow: hidden; color: #f7f9ff; font-size: 17px; line-height: 1.22; letter-spacing: -.02em; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.tileMeta { margin-top: 8px; color: #bdcbd4; font-size: 11px; font-weight: 750; }
+.tileAction { margin-top: auto; padding-top: 10px; }
+.tileAction a, .tileAction button { width: 100%; min-height: 34px; display: flex; padding: 0 4px; cursor: pointer; align-items: center; justify-content: center; gap: 8px; color: #d98df8; font-size: 10px; font-weight: 900; border: 0; background: transparent; }
+.tileAction a:hover, .tileAction button:hover { color: #f2c8ff; }
+.tileAction button:disabled { cursor: wait; opacity: .6; }
+.tileAction > span { display: block; padding: 9px 4px; color: var(--fg-4); font-size: 10px; text-align: center; }
 
 @media (max-width: 520px) {
   .compactCard { min-height: 280px; padding: 16px; }
+  .marketplaceTile { padding: 11px; border-radius: 14px; }
+  .tileState { top: 9px; right: 9px; padding: 4px 6px; font-size: 7px; }
+  .tileMain { padding: 15px 2px 7px; }
+  .tileIcon { width: 58px; height: 58px; margin-top: 4px; font-size: 19px; border-width: 4px; border-radius: 16px; }
+  .tileMain h3 { margin-top: 15px; font-size: 15px; -webkit-line-clamp: 3; }
+  .tileMeta { margin-top: 6px; font-size: 9px; }
+  .tileAction { padding-top: 5px; }
+  .tileAction a, .tileAction button { min-height: 32px; font-size: 9px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .compactCard { transition: none; }
+  .compactCard { transition: none; animation: none; }
 }
