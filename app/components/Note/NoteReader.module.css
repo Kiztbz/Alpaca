@@ -123,9 +123,6 @@
 @media (max-width: 980px) {
   .workspace { width: min(900px, 100%); }
 }
-@media (max-width: 860px) {
-  .reader { left: 82px; }
-}
 @media (max-width: 720px) {
   .topbar { height: 58px; padding: 0 12px; gap: 7px; grid-template-columns: 42px minmax(0, 1fr) 34px 52px; }
   .close { width: 36px; padding: 0; justify-content: center; }

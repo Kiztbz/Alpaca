@@ -29,6 +29,17 @@ function Icon({ name }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
 
+function NavGlyph({ name }) {
+  const glyphs = {
+    learn: <svg viewBox="0 0 40 40"><path fill="#ff5b5f" d="M5 17 20 6l15 11-3.7 5L20 14 8.7 22Z"/><path fill="#ffc928" d="M9 18.5 20 11l11 7.5V33a3 3 0 0 1-3 3H12a3 3 0 0 1-3-3Z"/><circle cx="20" cy="23" r="4" fill="#f29b16"/><path fill="#e98c13" d="M17 29h6v7h-6z"/></svg>,
+    marketplace: <svg viewBox="0 0 40 40"><path fill="#77c8ea" d="M7 17h26v19H7z"/><path fill="#ff5a59" d="M5 10h30v8H5z"/><path fill="#fff4df" d="M11 10h6v8h-6zm12 0h6v8h-6z"/><path fill="#486d86" d="M11 24h7v12h-7zm11 0h7v7h-7z"/><path fill="#cf4548" d="M5 18c0 3 6 3 6 0 0 3 6 3 6 0 0 3 6 3 6 0 0 3 6 3 6 0 0 3 6 3 6 0Z"/></svg>,
+    train: <svg viewBox="0 0 40 40"><g transform="rotate(-27 20 20)"><rect x="8" y="17" width="24" height="6" rx="3" fill="#38c8f4"/><rect x="4" y="12" width="7" height="16" rx="3.5" fill="#20aee9"/><rect x="10" y="14" width="5" height="12" rx="2.5" fill="#68ddff"/><rect x="29" y="12" width="7" height="16" rx="3.5" fill="#20aee9"/><rect x="25" y="14" width="5" height="12" rx="2.5" fill="#68ddff"/></g></svg>,
+    profile: <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#f4c6b8"/><path fill="#34495e" d="M8 20C8 9 14 4 21 4c8 0 13 6 12 17-3-6-7-8-13-8-5 0-9 2-12 7Z"/><circle cx="20" cy="21" r="10" fill="#c77b55"/><path fill="#1f3445" d="M11 17c2-7 14-8 18 0-5-2-12-2-18 0Z"/><rect x="11" y="19" width="8" height="6" rx="2" fill="#263a4b"/><rect x="21" y="19" width="8" height="6" rx="2" fill="#263a4b"/><path stroke="#263a4b" strokeWidth="2" d="M19 21h2"/><path stroke="#fff" strokeWidth="1.5" strokeLinecap="round" d="M17 29c2 2 5 2 7 0"/></svg>,
+    more: <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#c86df0"/><circle cx="12" cy="20" r="2" fill="#fff"/><circle cx="20" cy="20" r="2" fill="#fff"/><circle cx="28" cy="20" r="2" fill="#fff"/></svg>,
+  };
+  return <span className={styles.navGlyph} data-glyph={name} aria-hidden="true">{glyphs[name]}</span>;
+}
+
 export function AppShell({ user, children }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -82,7 +93,7 @@ export function AppShell({ user, children }) {
         {primaryLinks.map((item) => {
           const active = pathname === item.href || (item.href === "/learn" && pathname.startsWith("/courses/"));
           const href = selectedCourse && ["/learn", "/daily"].includes(item.href) ? `${item.href}?course=${encodeURIComponent(selectedCourse)}` : item.href;
-          return <Link key={item.name} href={href} className={active ? styles.active : ""} aria-current={active ? "page" : undefined}><Icon name={item.icon}/><span>{item.name}</span></Link>;
+          return <Link key={item.name} href={href} data-tone={item.icon} className={active ? styles.active : ""} aria-current={active ? "page" : undefined}><span className={styles.navIcon}><NavGlyph name={item.icon}/></span><span className={styles.navLabel}>{item.name}</span></Link>;
         })}
       </nav>
       <div className={styles.account}><div><strong>{user.displayName || user.username}</strong><small>@{user.username}</small></div></div>
@@ -95,7 +106,7 @@ export function AppShell({ user, children }) {
           <Link href="/terms"><Icon name="shield"/>Terms of service</Link>
           <button type="button" onClick={logout}><Icon name="logout"/>Log out</button>
         </div>}
-        <button type="button" className={`${styles.moreButton} ${moreOpen ? styles.active : ""}`} onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}><Icon name="more"/><span>More</span></button>
+        <button type="button" className={`${styles.moreButton} ${moreOpen ? styles.active : ""}`} onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}><span className={`${styles.navIcon} ${styles.moreIcon}`}><NavGlyph name="more"/></span><span className={styles.navLabel}>More</span></button>
       </div>
     </aside>
     <section className={styles.content} aria-busy={navigating}>{children}</section>

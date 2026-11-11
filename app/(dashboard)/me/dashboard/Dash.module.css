@@ -28,8 +28,8 @@
   overflow: hidden;
   border-radius: 16px;
   color: var(--accent-fg);
-  background: var(--accent);
-  box-shadow: inset 0 -4px 0 #1d4ed8;
+  background: #c979ed;
+  box-shadow: inset 0 -5px 0 #9652b5;
 }
 .courseTopline,
 .courseBottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -45,9 +45,10 @@
 .path {
   margin-top: 18px;
   padding: 27px;
-  border: 1px solid var(--bg-3);
-  border-radius: 16px;
-  background: var(--bg-2);
+  border: 2px solid #2e4149;
+  border-bottom-width: 5px;
+  border-radius: 19px;
+  background: #0e1d27;
 }
 .lessonPath { margin-top: 0; }
 .lessonStep { display: grid; grid-template-columns: 62px minmax(0, 1fr); min-height: 116px; }
@@ -91,7 +92,7 @@
 
 .progressRail { position: sticky; top: 104px; display: flex; flex-direction: column; gap: 14px; }
 .statStrip,
-.railCard { border: 1px solid var(--bg-4); border-radius: 14px; background: var(--bg-2); }
+.railCard { border: 2px solid #2e4149; border-bottom-width: 4px; border-radius: 17px; background: #0e1d27; }
 .statStrip { display: grid; grid-template-columns: repeat(3, 1fr); padding: 14px 10px; }
 .statStrip > div { display: grid; grid-template-columns: 24px auto; grid-template-rows: auto auto; align-items: center; justify-content: center; column-gap: 4px; }
 .statStrip > div:not(:last-child) { border-right: 1px solid var(--bg-3); }

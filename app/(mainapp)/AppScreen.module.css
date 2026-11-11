@@ -5,7 +5,7 @@
 .screenHeader p { max-width: 650px; margin-top: 10px; color: var(--fg-4); font-size: 14px; line-height: 1.55; }
 .headerControls { flex: none; }
 .content { margin-top: 28px; }
-.sessionPanel { display: grid; padding: clamp(24px, 4vw, 42px); overflow: hidden; border-radius: 16px; background: var(--bg-2); border: 1px solid var(--bg-4); grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 28px; }
+.sessionPanel { display: grid; padding: clamp(24px, 4vw, 42px); overflow: hidden; border-radius: 20px; background: #102129; border: 2px solid #31444c; border-bottom-width: 5px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 28px; }
 .sessionPanel span { color: var(--accent); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em; }
 .sessionPanel h2 { margin-top: 8px; color: var(--fg-1); font-size: clamp(25px, 4vw, 38px); letter-spacing: -.035em; }
 .sessionPanel p { max-width: 650px; margin-top: 10px; color: var(--fg-4); font-size: 14px; line-height: 1.6; }
