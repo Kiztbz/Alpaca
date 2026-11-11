@@ -149,8 +149,20 @@ body {
     }
 
     ::view-transition-group(alpaca-page) {
+        z-index: 1;
         animation-duration: 180ms;
         animation-timing-function: var(--motion-ease);
+    }
+
+    ::view-transition-group(alpaca-navigation) {
+        z-index: 2;
+        animation: none;
+    }
+
+    ::view-transition-old(alpaca-navigation),
+    ::view-transition-new(alpaca-navigation) {
+        animation: none;
+        opacity: 1;
     }
 
     ::view-transition-old(alpaca-page) {

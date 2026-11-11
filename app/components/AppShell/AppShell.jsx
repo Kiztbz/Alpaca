@@ -14,6 +14,15 @@ const primaryLinks = [
 ];
 
 const secondaryRoutes = ["/me/settings", "/help", "/privacy", "/terms"];
+const authenticatedRoutes = [
+  ...primaryLinks.map(({ href }) => href),
+  ...secondaryRoutes,
+  "/groups",
+  "/groups/new",
+  "/create",
+  "/input",
+  "/about",
+];
 
 function Icon({ name }) {
   const paths = {
@@ -50,29 +59,49 @@ export function AppShell({ user, children }) {
   const selectedCourse = searchParams.get("course");
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef(null);
-  const navigationResolveRef = useRef(null);
-  const viewTransitionRef = useRef(null);
+  const prefetchedRoutesRef = useRef(new Set());
 
   useEffect(() => {
-    navigationResolveRef.current?.();
-    navigationResolveRef.current = null;
-  }, [locationKey]);
-
-  useEffect(() => {
-    const targets = new Set(primaryLinks.map(({ href }) => href));
+    const targets = new Set(authenticatedRoutes);
+    if (user.role === "superadmin") targets.add("/admin");
     if (selectedCourse) {
       targets.add(`/learn?course=${encodeURIComponent(selectedCourse)}`);
       targets.add(`/daily?course=${encodeURIComponent(selectedCourse)}`);
     }
-    targets.forEach((href) => router.prefetch(href));
-    const warmSecondary = () => secondaryRoutes.forEach((href) => router.prefetch(href));
-    const idleId = window.requestIdleCallback?.(warmSecondary, { timeout: 1800 });
-    const fallbackId = idleId === undefined ? window.setTimeout(warmSecondary, 900) : null;
-    return () => {
-      if (idleId !== undefined) window.cancelIdleCallback?.(idleId);
-      if (fallbackId !== null) window.clearTimeout(fallbackId);
+
+    document.querySelectorAll("a[href]").forEach((link) => {
+      const destination = new URL(link.href, window.location.href);
+      if (destination.origin === window.location.origin) {
+        targets.add(`${destination.pathname}${destination.search}`);
+      }
+    });
+
+    const queue = [...targets].filter((href) => !prefetchedRoutesRef.current.has(href));
+    let cancelled = false;
+    let idleId;
+    let fallbackId;
+    const preloadBatch = (deadline) => {
+      if (cancelled) return;
+      let loaded = 0;
+      while (queue.length && loaded < 4 && (deadline?.didTimeout || deadline?.timeRemaining?.() > 2 || !deadline)) {
+        const href = queue.shift();
+        prefetchedRoutesRef.current.add(href);
+        router.prefetch(href);
+        loaded += 1;
+      }
+      if (!queue.length) return;
+      if (window.requestIdleCallback) idleId = window.requestIdleCallback(preloadBatch, { timeout: 600 });
+      else fallbackId = window.setTimeout(() => preloadBatch(), 120);
     };
-  }, [router, selectedCourse]);
+
+    if (window.requestIdleCallback) idleId = window.requestIdleCallback(preloadBatch, { timeout: 300 });
+    else fallbackId = window.setTimeout(() => preloadBatch(), 0);
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined) window.cancelIdleCallback?.(idleId);
+      if (fallbackId !== undefined) window.clearTimeout(fallbackId);
+    };
+  }, [locationKey, router, selectedCourse, user.role]);
 
   useEffect(() => {
     function close(event) {
@@ -101,53 +130,20 @@ export function AppShell({ user, children }) {
     router.refresh();
   }
 
-  function navigate(event) {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const link = event.target.closest("a[href]");
-    if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
-
-    const destination = new URL(link.href, window.location.href);
-    if (destination.origin !== window.location.origin) return;
-    if (`${destination.pathname}${destination.search}` === `${window.location.pathname}${window.location.search}`) return;
-
-    event.preventDefault();
-    setMoreOpen(false);
-    const href = `${destination.pathname}${destination.search}${destination.hash}`;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!document.startViewTransition || reduceMotion) {
-      router.push(href);
-      return;
-    }
-
-    navigationResolveRef.current?.();
-    viewTransitionRef.current?.skipTransition?.();
-    const routeReady = new Promise((resolve) => {
-      let timeoutId;
-      const finish = () => {
-        window.clearTimeout(timeoutId);
-        resolve();
-      };
-      timeoutId = window.setTimeout(finish, 1800);
-      navigationResolveRef.current = finish;
-    });
-
-    viewTransitionRef.current = document.startViewTransition(async () => {
-      router.push(href);
-      await routeReady;
-    });
-    viewTransitionRef.current.finished.catch(() => {}).finally(() => {
-      viewTransitionRef.current = null;
-    });
-  }
-
   function warmNavigation(event) {
     const link = event.target.closest("a[href]");
     if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
     const destination = new URL(link.href, window.location.href);
-    if (destination.origin === window.location.origin) router.prefetch(`${destination.pathname}${destination.search}`);
+    if (destination.origin === window.location.origin) {
+      const href = `${destination.pathname}${destination.search}`;
+      if (!prefetchedRoutesRef.current.has(href)) {
+        prefetchedRoutesRef.current.add(href);
+        router.prefetch(href);
+      }
+    }
   }
 
-  return <div className={styles.shell} onClickCapture={navigate} onPointerOverCapture={warmNavigation} onFocusCapture={warmNavigation} onTouchStartCapture={warmNavigation}>
+  return <div className={styles.shell} onPointerOverCapture={warmNavigation} onFocusCapture={warmNavigation} onTouchStartCapture={warmNavigation}>
     <aside className={styles.sidebar}>
       <Link className={styles.brand} href="/learn" prefetch><Image src="/assets/images/llama-face-v2.png" alt="Alpaca" width={1254} height={1254} priority /><span>Alpaca</span></Link>
       <nav className={styles.primaryNav} aria-label="Application navigation">
@@ -160,11 +156,11 @@ export function AppShell({ user, children }) {
       <div className={styles.account}><div><strong>{user.displayName || user.username}</strong><small>@{user.username}</small></div></div>
       <div className={styles.moreWrap} ref={moreRef}>
         {moreOpen && <div className={styles.moreMenu} role="dialog" aria-label="More options">
-          {user.role === "superadmin" && <Link href="/admin" prefetch><Icon name="admin"/>Admin analytics</Link>}
-          <Link href="/me/settings" prefetch><Icon name="settings"/>Settings</Link>
-          <Link href="/help" prefetch><Icon name="help"/>Help</Link>
-          <Link href="/privacy" prefetch><Icon name="shield"/>Privacy policy</Link>
-          <Link href="/terms" prefetch><Icon name="shield"/>Terms of service</Link>
+          {user.role === "superadmin" && <Link href="/admin" prefetch onClick={() => setMoreOpen(false)}><Icon name="admin"/>Admin analytics</Link>}
+          <Link href="/me/settings" prefetch onClick={() => setMoreOpen(false)}><Icon name="settings"/>Settings</Link>
+          <Link href="/help" prefetch onClick={() => setMoreOpen(false)}><Icon name="help"/>Help</Link>
+          <Link href="/privacy" prefetch onClick={() => setMoreOpen(false)}><Icon name="shield"/>Privacy policy</Link>
+          <Link href="/terms" prefetch onClick={() => setMoreOpen(false)}><Icon name="shield"/>Terms of service</Link>
           <button type="button" onClick={logout}><Icon name="logout"/>Log out</button>
         </div>}
         <button type="button" className={`${styles.moreButton} ${moreOpen ? styles.active : ""}`} onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}><span className={`${styles.navIcon} ${styles.moreIcon}`}><NavGlyph name="more"/></span><span className={styles.navLabel}>More</span></button>
