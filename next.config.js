@@ -1,5 +1,11 @@
 const nextConfig = {
     reactStrictMode: false,
+    experimental: {
+        staleTimes: {
+            dynamic: 300,
+            static: 300,
+        },
+    },
     basePath: process.env.NEXT_PUBLIC_BASEPATH || "",
     assetPrefix: process.env.NEXT_PUBLIC_BASEPATH || "",
     images: {

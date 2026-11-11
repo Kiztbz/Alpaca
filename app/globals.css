@@ -51,9 +51,9 @@
     --radius-xlarge: 16px;
     --radius-full: 1000px;
 
-    --motion-fast: 140ms;
-    --motion-medium: 260ms;
-    --motion-slow: 420ms;
+    --motion-fast: 110ms;
+    --motion-medium: 190ms;
+    --motion-slow: 280ms;
     --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
     --motion-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -123,7 +123,7 @@ body {
 .route-transition {
     min-width: 0;
     min-height: 100%;
-    animation: route-enter var(--motion-slow) var(--motion-ease) both;
+    animation: route-enter 150ms var(--motion-ease) both;
 }
 
 .route-transition > main,
@@ -134,11 +134,57 @@ body {
 
 @keyframes route-enter {
     from {
-        opacity: 0;
+        opacity: .96;
+        transform: translateY(3px);
     }
     to {
         opacity: 1;
+        transform: translateY(0);
     }
+}
+
+@supports (view-transition-name: alpaca-page) {
+    .route-transition {
+        animation: none;
+    }
+
+    ::view-transition-group(alpaca-page) {
+        animation-duration: 180ms;
+        animation-timing-function: var(--motion-ease);
+    }
+
+    ::view-transition-old(alpaca-page) {
+        animation: alpaca-page-out 90ms ease-out both;
+    }
+
+    ::view-transition-new(alpaca-page) {
+        animation: alpaca-page-in 180ms var(--motion-ease) both;
+    }
+}
+
+@keyframes alpaca-page-out {
+    to { opacity: .82; transform: translateY(-2px); }
+}
+
+@keyframes alpaca-page-in {
+    from { opacity: .72; transform: translateY(5px); }
+}
+
+button:not(:disabled),
+a[href],
+[role="button"] {
+    transition-property: transform, filter, color, background-color, border-color, box-shadow;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--motion-ease);
+}
+
+button:not(:disabled):active,
+a[href]:active,
+[role="button"]:active,
+[data-press-feedback="true"] {
+    transform: translateY(1px) scale(.985);
+    filter: brightness(1.04);
+    transition-duration: 60ms;
 }
 
 body {

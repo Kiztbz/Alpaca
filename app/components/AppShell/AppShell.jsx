@@ -13,6 +13,8 @@ const primaryLinks = [
   { name: "Profile", href: "/me/dashboard", icon: "profile" },
 ];
 
+const secondaryRoutes = ["/me/settings", "/help", "/privacy", "/terms"];
+
 function Icon({ name }) {
   const paths = {
     learn: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5v-16Z"/></>,
@@ -47,34 +49,59 @@ export function AppShell({ user, children }) {
   const locationKey = `${pathname}?${searchParams.toString()}`;
   const selectedCourse = searchParams.get("course");
   const [moreOpen, setMoreOpen] = useState(false);
-  const [navigating, setNavigating] = useState(false);
   const moreRef = useRef(null);
+  const navigationResolveRef = useRef(null);
+  const viewTransitionRef = useRef(null);
 
   useEffect(() => {
-    setMoreOpen(false);
-    setNavigating(false);
+    navigationResolveRef.current?.();
+    navigationResolveRef.current = null;
   }, [locationKey]);
 
   useEffect(() => {
-    primaryLinks.forEach(({ href }) => router.prefetch(href));
-  }, [router]);
+    const targets = new Set(primaryLinks.map(({ href }) => href));
+    if (selectedCourse) {
+      targets.add(`/learn?course=${encodeURIComponent(selectedCourse)}`);
+      targets.add(`/daily?course=${encodeURIComponent(selectedCourse)}`);
+    }
+    targets.forEach((href) => router.prefetch(href));
+    const warmSecondary = () => secondaryRoutes.forEach((href) => router.prefetch(href));
+    const idleId = window.requestIdleCallback?.(warmSecondary, { timeout: 1800 });
+    const fallbackId = idleId === undefined ? window.setTimeout(warmSecondary, 900) : null;
+    return () => {
+      if (idleId !== undefined) window.cancelIdleCallback?.(idleId);
+      if (fallbackId !== null) window.clearTimeout(fallbackId);
+    };
+  }, [router, selectedCourse]);
 
   useEffect(() => {
     function close(event) {
       if (moreRef.current && !moreRef.current.contains(event.target)) setMoreOpen(false);
     }
+    function press(event) {
+      if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+      const interactive = event.target.closest?.("button:not(:disabled), a[href], [role='button']");
+      if (!interactive) return;
+      interactive.dataset.pressFeedback = "true";
+      window.setTimeout(() => delete interactive.dataset.pressFeedback, 120);
+    }
     document.addEventListener("pointerdown", close);
-    return () => document.removeEventListener("pointerdown", close);
+    document.addEventListener("pointerdown", press, { passive: true });
+    document.addEventListener("keydown", press);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("pointerdown", press);
+      document.removeEventListener("keydown", press);
+    };
   }, []);
 
   async function logout() {
-    setNavigating(true);
     await fetch(`${process.env.NEXT_PUBLIC_BASEPATH ?? ""}/api/auth/logout`, { method: "POST" });
     router.push("/login");
     router.refresh();
   }
 
-  function showNavigationFeedback(event) {
+  function navigate(event) {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const link = event.target.closest("a[href]");
     if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
@@ -82,33 +109,67 @@ export function AppShell({ user, children }) {
     const destination = new URL(link.href, window.location.href);
     if (destination.origin !== window.location.origin) return;
     if (`${destination.pathname}${destination.search}` === `${window.location.pathname}${window.location.search}`) return;
-    setNavigating(true);
+
+    event.preventDefault();
+    setMoreOpen(false);
+    const href = `${destination.pathname}${destination.search}${destination.hash}`;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!document.startViewTransition || reduceMotion) {
+      router.push(href);
+      return;
+    }
+
+    navigationResolveRef.current?.();
+    viewTransitionRef.current?.skipTransition?.();
+    const routeReady = new Promise((resolve) => {
+      let timeoutId;
+      const finish = () => {
+        window.clearTimeout(timeoutId);
+        resolve();
+      };
+      timeoutId = window.setTimeout(finish, 1800);
+      navigationResolveRef.current = finish;
+    });
+
+    viewTransitionRef.current = document.startViewTransition(async () => {
+      router.push(href);
+      await routeReady;
+    });
+    viewTransitionRef.current.finished.catch(() => {}).finally(() => {
+      viewTransitionRef.current = null;
+    });
   }
 
-  return <div className={styles.shell} data-navigating={navigating || undefined} onClickCapture={showNavigationFeedback}>
-    <div className={styles.navigationProgress} role="progressbar" aria-label="Loading page" />
+  function warmNavigation(event) {
+    const link = event.target.closest("a[href]");
+    if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+    const destination = new URL(link.href, window.location.href);
+    if (destination.origin === window.location.origin) router.prefetch(`${destination.pathname}${destination.search}`);
+  }
+
+  return <div className={styles.shell} onClickCapture={navigate} onPointerOverCapture={warmNavigation} onFocusCapture={warmNavigation} onTouchStartCapture={warmNavigation}>
     <aside className={styles.sidebar}>
-      <Link className={styles.brand} href="/learn"><Image src="/assets/images/llama-face-v2.png" alt="Alpaca" width={1254} height={1254} priority /><span>Alpaca</span></Link>
+      <Link className={styles.brand} href="/learn" prefetch><Image src="/assets/images/llama-face-v2.png" alt="Alpaca" width={1254} height={1254} priority /><span>Alpaca</span></Link>
       <nav className={styles.primaryNav} aria-label="Application navigation">
         {primaryLinks.map((item) => {
           const active = pathname === item.href || (item.href === "/learn" && pathname.startsWith("/courses/"));
           const href = selectedCourse && ["/learn", "/daily"].includes(item.href) ? `${item.href}?course=${encodeURIComponent(selectedCourse)}` : item.href;
-          return <Link key={item.name} href={href} data-tone={item.icon} className={active ? styles.active : ""} aria-current={active ? "page" : undefined}><span className={styles.navIcon}><NavGlyph name={item.icon}/></span><span className={styles.navLabel}>{item.name}</span></Link>;
+          return <Link key={item.name} href={href} prefetch data-tone={item.icon} className={active ? styles.active : ""} aria-current={active ? "page" : undefined}><span className={styles.navIcon}><NavGlyph name={item.icon}/></span><span className={styles.navLabel}>{item.name}</span></Link>;
         })}
       </nav>
       <div className={styles.account}><div><strong>{user.displayName || user.username}</strong><small>@{user.username}</small></div></div>
       <div className={styles.moreWrap} ref={moreRef}>
         {moreOpen && <div className={styles.moreMenu} role="dialog" aria-label="More options">
-          {user.role === "superadmin" && <Link href="/admin"><Icon name="admin"/>Admin analytics</Link>}
-          <Link href="/me/settings"><Icon name="settings"/>Settings</Link>
-          <Link href="/help"><Icon name="help"/>Help</Link>
-          <Link href="/privacy"><Icon name="shield"/>Privacy policy</Link>
-          <Link href="/terms"><Icon name="shield"/>Terms of service</Link>
+          {user.role === "superadmin" && <Link href="/admin" prefetch><Icon name="admin"/>Admin analytics</Link>}
+          <Link href="/me/settings" prefetch><Icon name="settings"/>Settings</Link>
+          <Link href="/help" prefetch><Icon name="help"/>Help</Link>
+          <Link href="/privacy" prefetch><Icon name="shield"/>Privacy policy</Link>
+          <Link href="/terms" prefetch><Icon name="shield"/>Terms of service</Link>
           <button type="button" onClick={logout}><Icon name="logout"/>Log out</button>
         </div>}
         <button type="button" className={`${styles.moreButton} ${moreOpen ? styles.active : ""}`} onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}><span className={`${styles.navIcon} ${styles.moreIcon}`}><NavGlyph name="more"/></span><span className={styles.navLabel}>More</span></button>
       </div>
     </aside>
-    <section className={styles.content} aria-busy={navigating}>{children}</section>
+    <section className={styles.content}>{children}</section>
   </div>;
 }
