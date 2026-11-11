@@ -42,9 +42,11 @@
 .popup {
   position: fixed;
   top: 0;
-  left: 0;
-  width: 100vw;
-  width: 100dvw;
+  right: 0;
+  bottom: 0;
+  left: 232px;
+  width: auto;
+  max-width: 100%;
   height: 100vh;
   height: 100dvh;
   background-color: var(--bg-0);
@@ -52,6 +54,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* ── Top Bar ── */
@@ -224,12 +227,14 @@
 }
 
 .quizCardSlot > div {
+  --accent: #c979ed;
   max-width: 100% !important;
   width: 100% !important;
   padding: clamp(28px, 4.5vw, 40px) !important;
   border-radius: var(--radius-xlarge) !important;
   background: var(--bg-2) !important;
-  border: 1px solid var(--border-color) !important;
+  border: 1px solid rgba(201, 121, 237, 0.22) !important;
+  border-top: 3px solid #c979ed !important;
   box-shadow: 0 10px 36px rgba(0, 0, 0, 0.28) !important;
   box-sizing: border-box;
 }
@@ -309,7 +314,7 @@
 /* Duolingo 3D Tactile Buttons */
 
 .duoPrimaryBtn {
-  background: var(--accent);
+  background: #c979ed;
   color: #ffffff;
   border: none;
   font-size: 15px;
@@ -319,7 +324,7 @@
   padding: 14px 32px;
   border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 4px 0 #1d4ed8;
+  box-shadow: 0 4px 0 #9250b3;
   transition: all 0.12s ease;
   display: inline-flex;
   align-items: center;
@@ -328,14 +333,14 @@
 }
 
 .duoPrimaryBtn:hover:not(:disabled) {
-  background: #3b82f6;
+  background: #d58bf3;
   transform: translateY(-1px);
-  box-shadow: 0 5px 0 #1d4ed8;
+  box-shadow: 0 5px 0 #9250b3;
 }
 
 .duoPrimaryBtn:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #1d4ed8;
+  box-shadow: 0 1px 0 #9250b3;
 }
 
 .duoPrimaryBtn:disabled {
@@ -835,13 +840,54 @@
 /* ── Mobile responsiveness ── */
 @media (max-width: 640px) {
   .trainHeader {
-    padding: 0 16px;
+    height: 62px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+  .headerLeft,
+  .headerRight {
+    gap: 7px;
+  }
+  .progressTrack {
+    min-width: 32px;
+    height: 9px;
+  }
+  .queueBadge {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .headerIconBtn {
+    width: 34px;
+    height: 34px;
+  }
+  .trainBody {
+    padding: 14px 12px;
+  }
+  .cardWrapper {
+    margin: 0 auto;
+    min-height: 0;
+  }
+  .quizCardSlot > div {
+    padding: 22px 18px !important;
+    border-radius: 18px !important;
   }
   .duoFooter {
-    padding: 14px 18px;
+    min-height: 0;
+    padding: 10px 12px 13px;
     flex-direction: column;
     align-items: stretch;
-    gap: 14px;
+    gap: 10px;
+    max-height: 42dvh;
+    overflow-y: auto;
+  }
+  .footerLeftNeutral,
+  .footerActions {
+    width: 100%;
+  }
+  .skipBtn {
+    width: 100%;
+    padding: 11px 12px;
+    font-size: 11px;
   }
   .feedbackBanner {
     gap: 12px;
@@ -862,5 +908,18 @@
   }
   .statsGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .popup { left: 82px; }
+}
+
+@media (max-width: 560px) {
+  .popup {
+    right: 0;
+    bottom: auto;
+    left: 0;
+    height: calc(100dvh - 88px);
   }
 }

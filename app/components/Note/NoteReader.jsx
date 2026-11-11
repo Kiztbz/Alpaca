@@ -53,11 +53,10 @@ export function NoteReader({
   const [complete, setComplete] = useState(false);
   const [completedBefore, setCompletedBefore] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [closing, setClosing] = useState(false);
   const [ready, setReady] = useState(false);
-  const [transitionReady, setTransitionReady] = useState(false);
+  const [saveState, setSaveState] = useState("idle");
   const touchStart = useRef(null);
-  const transitionTimer = useRef(null);
+  const savingRef = useRef(false);
   const router = useRouter();
   const storageKey = `alpaca-note-progress:${userId || "anonymous"}:${note.publicId}`;
   const progress = complete ? 100 : Math.round(((index + 1) / cards.length) * 100);
@@ -89,8 +88,8 @@ export function NoteReader({
     setIndex(wasCompleted ? 0 : Math.min(savedIndex, cards.length - 1));
     setCompletedBefore(wasCompleted);
     setComplete(false);
-    setClosing(false);
-    setTransitionReady(false);
+    setSaveState("idle");
+    savingRef.current = false;
     setDirection("next");
     setReady(true);
   }, [cards.length, initialProgress?.completedAt, initialProgress?.lastCardIndex, storageKey]);
@@ -122,18 +121,12 @@ export function NoteReader({
     setComplete(false);
   }, [cards.length, index]);
 
-  useEffect(() => () => {
-    if (transitionTimer.current) window.clearTimeout(transitionTimer.current);
-  }, []);
-
-  const finish = useCallback(async () => {
-    if (complete) return;
-    setComplete(true);
-    setCompletedBefore(true);
-    updateStreak(userId || "anonymous");
-
+  const persistCompletion = useCallback(async () => {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaveState("saving");
     let saved = completedBefore || !activeCourse?.id;
-    const minimumTransition = new Promise((resolve) => window.setTimeout(resolve, 900));
+    const minimumDisplay = new Promise((resolve) => window.setTimeout(resolve, 420));
     if (activeCourse?.id && !completedBefore) {
       const controller = new AbortController();
       const saveTimeout = window.setTimeout(() => controller.abort(), 6000);
@@ -146,15 +139,18 @@ export function NoteReader({
       }).then((response) => response.ok).catch(() => false);
       window.clearTimeout(saveTimeout);
     }
+    await minimumDisplay;
+    if (saved) setCompletedBefore(true);
+    setSaveState(saved ? "saved" : "error");
+    savingRef.current = false;
+  }, [activeCourse, cards.length, completedBefore, note.id]);
 
-    await minimumTransition;
-    setTransitionReady(true);
-    const destination = saved ? nextDestination : courseHref;
-    transitionTimer.current = window.setTimeout(() => {
-      setClosing(true);
-      transitionTimer.current = window.setTimeout(() => router.push(destination), 180);
-    }, 320);
-  }, [activeCourse?.id, cards.length, complete, completedBefore, courseHref, nextDestination, note.id, router, userId]);
+  const finish = useCallback(() => {
+    if (complete) return;
+    setComplete(true);
+    updateStreak(userId || "anonymous");
+    void persistCompletion();
+  }, [complete, persistCompletion, userId]);
 
   const advance = useCallback(() => {
     if (index === cards.length - 1) return finish();
@@ -164,7 +160,7 @@ export function NoteReader({
   useEffect(() => {
     function onKeyDown(event) {
       const target = event.target;
-      if (infoOpen || event.metaKey || event.ctrlKey || event.altKey || target?.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target?.tagName)) return;
+      if (complete || infoOpen || event.metaKey || event.ctrlKey || event.altKey || target?.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target?.tagName)) return;
       if (["ArrowDown", " "].includes(event.key)) {
         event.preventDefault();
         advance();
@@ -177,12 +173,10 @@ export function NoteReader({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [advance, goTo, index, infoOpen]);
+  }, [advance, complete, goTo, index, infoOpen]);
 
   function requestClose() {
-    if (closing) return;
-    setClosing(true);
-    window.setTimeout(() => router.push(courseHref), 160);
+    router.push(courseHref);
   }
 
   function handleTouchEnd(event) {
@@ -195,13 +189,14 @@ export function NoteReader({
   }
 
   return (
-    <main className={`${styles.reader} ${closing ? styles.closing : ""}`}>
+    <main className={styles.reader}>
       <header className={styles.topbar}>
         <button type="button" className={styles.close} onClick={requestClose} aria-label="Close note"><span>×</span><strong>Close</strong></button>
         <div className={styles.titleBlock}>
           <span>{activeCourse?.name || "Quick lesson"}</span>
           <h1>{note.title}</h1>
         </div>
+        <button type="button" className={styles.infoButton} aria-label="Open note information" onClick={() => setInfoOpen(true)}>i</button>
         <div className={styles.headerStatus}>
           <span>{activeCourse ? `${position} of ${totalNotes} notes` : "Note"}</span>
           <div className={styles.headerProgress} aria-label={`${progress}% complete`}>
@@ -228,19 +223,24 @@ export function NoteReader({
               <div className={styles.swipeHint}>Use <kbd>↓</kbd> or <kbd>Space</kbd> to continue</div>
             </div>
           ) : (
-            <div className={`${styles.completionCard} ${transitionReady ? styles.transitionReady : ""}`}>
+            <div className={`${styles.completionCard} ${saveState === "saved" ? styles.completionSaved : ""}`}>
               <div className={styles.completionVisual} aria-hidden="true">
-                <span className={styles.loaderOrbit}><i /><i /><i /></span>
+                <span className={styles.completionGlow} />
+                <span className={styles.completionSparkles}><i /><i /><i /></span>
                 <Image src="/assets/images/llama-mascot.png" width={92} height={142} alt="" priority />
                 <span className={styles.completionMark}>✓</span>
               </div>
-              <span>Unit {position} complete</span>
-              <h2>{nextNote ? nextNote.title : "You completed every unit."}</h2>
-              <p>{transitionReady ? nextNote ? "Opening your next unit…" : "Returning to your course…" : "Saving your progress and preparing what’s next…"}</p>
-              <div className={styles.unitTransition} aria-label={transitionReady ? "Ready to continue" : "Preparing next unit"}>
+              <span>Note {position} complete</span>
+              <h2>{nextNote ? "Ready for the next note?" : "You completed every note."}</h2>
+              <p>{saveState === "saving" ? "Saving your progress…" : saveState === "error" ? "We couldn't save your progress. Try again before continuing." : nextNote ? nextNote.title : "Return to Learn to review this course."}</p>
+              <div className={styles.unitTransition} aria-label={nextNote ? "Next note available" : "Course notes complete"}>
                 <strong>Unit {position}<b>✓</b></strong>
                 <i><span /></i>
-                <strong>{nextNote ? `Unit ${position + 1}` : "Course"}</strong>
+                <strong>{nextNote ? `Unit ${position + 1}` : "Learn"}</strong>
+              </div>
+              <div className={styles.completionActions}>
+                <button type="button" className={styles.secondaryCompletionAction} onClick={() => router.push(courseHref)}>Back to Learn</button>
+                {saveState === "error" ? <button type="button" className={styles.primaryCompletionAction} onClick={() => void persistCompletion()}>Try saving again</button> : nextNote ? <button type="button" className={styles.primaryCompletionAction} disabled={saveState === "saving"} onClick={() => router.push(nextDestination)}>{saveState === "saving" ? "Saving…" : "Study next note →"}</button> : null}
               </div>
             </div>
           )}
@@ -254,7 +254,6 @@ export function NoteReader({
 
       </div>
 
-      <button type="button" className={styles.infoButton} aria-label="Open note information" onClick={() => setInfoOpen(true)}>i</button>
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
         <DialogContent>
           <DialogHeading>About this note</DialogHeading>

@@ -13,7 +13,7 @@ export function Blankable({
   setIncorrectIndexes,
   lighter,
 }) {
-  const texts = (quiz.prompt || "").split(/<blank \/>/);
+  const texts = (quiz.prompt || "").split(/<blank\s*\/>|_{3,}/gi);
   const numBlanks = Math.max(0, texts.length - 1);
 
   const [uAns, setUAns] = useState(new Array(numBlanks).fill(""));
@@ -45,7 +45,7 @@ export function Blankable({
       {texts.map((text, index) => {
         const hasError = incorrectIndexes.includes(index);
         const textLength = uAns[index]?.length || 0;
-        const dynamicWidth = `min(340px, max(130px, calc(${Math.max(textLength, 8)}ch + 36px)))`;
+        const dynamicWidth = `min(100%, 340px, max(130px, calc(${Math.max(textLength, 8)}ch + 36px)))`;
 
         let borderColor = "var(--border-color)";
         let bgColor = "var(--bg-3)";
