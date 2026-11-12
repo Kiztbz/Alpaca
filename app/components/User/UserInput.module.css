@@ -111,7 +111,7 @@ a.forgotPassword {
     width: fit-content;
     height: fit-content;
 }
-.courseChoice{display:grid;gap:7px}.courseChoice>span{font-size:13px;font-weight:800;color:var(--fg-2)}.courseChoice select{width:100%;padding:12px;color:var(--fg-1);border:1px solid var(--border-color);border-radius:10px;background:var(--bg-1)}.courseChoice small{color:var(--fg-4);font-size:10px}.courseChoice select:disabled{opacity:.55}
+.courseChoice{display:grid;gap:7px}.courseChoice>span{font-size:12px;font-weight:800;color:#dce7ea}.courseChoice select{width:100%;min-height:48px;padding:0 13px;color:#eef6f8;border:2px solid #344b54;border-radius:12px;background:#102127;outline:none}.courseChoice select:focus{border-color:#327fdf;box-shadow:0 0 0 3px rgba(50,127,223,.15)}.courseChoice small{color:#8298a1;font-size:10px}.courseChoice select:disabled{opacity:.55}
 
 @keyframes popIn {
     0% {

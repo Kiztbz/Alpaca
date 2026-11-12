@@ -183,7 +183,7 @@ export function Profile({ user }) {
                         <FormButtons>
                             <button
                                 type="submit"
-                                className="button green primary"
+                                className="button primary"
                                 disabled={isLoading || imageLoading}
                             >
                                 Save Changes

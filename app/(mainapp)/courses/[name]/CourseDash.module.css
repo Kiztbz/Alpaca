@@ -143,7 +143,7 @@
 .pathLocked:hover .pathBubble, .pathLocked:focus-within .pathBubble { opacity: .9; }
 .unitPractice { padding-top: 7px; border-top: 1px solid var(--bg-3); }
 .unitPractice a, .unitPractice span { display: inline-flex; gap: 6px; align-items: center; color: var(--fg-4); font-size: 8px; font-weight: 850; }
-.unitPractice a { color: #58cc02; }
+.unitPractice a { color: #60a5fa; }
 .unitPractice a:hover { filter: brightness(1.15); }
 .unitPractice svg { width: 12px; height: 12px; }
 @keyframes path-step-idle { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }

@@ -6,13 +6,14 @@ import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
-const steps = [
-    ["↗", "Bring your sources", "Keep books, articles, videos, and websites together so every idea has context."],
-    ["✦", "Make knowledge yours", "Turn what matters into connected notes that are easy to revisit and build on."],
-    ["✓", "Practice until it sticks", "Create flexible quizzes and use active recall to strengthen what you remember."],
+const learningSteps = [
+    { icon: "📚", tone: "blue", title: "Choose a path", text: "Start with a focused course instead of a pile of disconnected resources." },
+    { icon: "🦙", tone: "purple", title: "Learn in small steps", text: "Move through friendly notes that keep one clear idea in focus at a time." },
+    { icon: "⚡", tone: "yellow", title: "Train your memory", text: "Use Daily Train to bring important ideas back before they fade." },
+    { icon: "🔥", tone: "orange", title: "Build momentum", text: "Keep your streak alive and see exactly where to continue next." },
 ];
 
-const quizTypes = ["Flashcards", "Multiple choice", "Fill in the blank", "Ordered lists", "Verbatim recall"];
+const practiceTypes = ["Quick recall", "Multiple choice", "Fill the blank", "Ordered answers"];
 
 export default async function HomePage() {
     const user = await getSessionUser((await cookies()).get("token")?.value);
@@ -47,58 +48,81 @@ export default async function HomePage() {
     };
 
     return (
-        <main className={styles.landing}>
+        <main className={styles.landingV2}>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
-            <section className={styles.hero}>
-                <div className={styles.heroContent}>
-                    <h1>Turn what you learn into what you <em>remember.</em></h1>
-                    <p>Alpaca connects your sources, notes, and quizzes in one calm place—so studying feels less scattered and progress feels natural.</p>
-                    <div className={styles.actions}>
-                        <Link href="/login" className={styles.primary}>Log in <span>→</span></Link>
-                        <Link href="/marketplace" className={styles.secondary}>Explore courses</Link>
+            <section className={styles.landingHero}>
+                <div className={styles.heroCopy}>
+                    <span className={styles.eyebrow}><b>NEW</b> A friendlier way to learn</span>
+                    <h1>Learn it.<br />Practice it.<br /><em>Keep it.</em></h1>
+                    <p>Alpaca turns useful ideas into a clear daily path—so you always know what to learn, what to practice, and where to continue.</p>
+                    <div className={styles.heroActions}>
+                        <Link href="/register" className={styles.startButton}>Start learning — it&apos;s free</Link>
+                        <Link href="/marketplace" className={styles.outlineButton}>Explore courses</Link>
                     </div>
-                    <div className={styles.proof}>
-                        <span className={styles.proofLine} />
-                        <p>Built for curious people who want learning to last.</p>
+                    <small>No clutter. No pressure. Just steady progress.</small>
+                </div>
+
+                <div className={styles.heroScene} aria-label="Alpaca learning path illustration">
+                    <span className={styles.cloudOne} /><span className={styles.cloudTwo} />
+                    <div className={styles.speech}>Ready for a quick win?</div>
+                    <div className={styles.heroHalo} />
+                    <Image src="/assets/images/llama-mascot-white-v2.png" alt="Friendly white Alpaca mascot" width={1064} height={1478} priority />
+                    <div className={styles.pathDots}><i /><i /><i /><i /></div>
+                    <span className={styles.streakChip}>🔥 4 day streak</span>
+                    <span className={styles.lessonChip}>✓ Lesson complete</span>
+                </div>
+            </section>
+
+            <section className={styles.loopSection} id="how-it-works">
+                <header><span>HOW ALPACA WORKS</span><h2>A simple loop that makes learning stick</h2><p>Each part has one job. Together, they turn a good intention into a habit.</p></header>
+                <div className={styles.loopGrid}>
+                    {learningSteps.map((step, index) => <article key={step.title} data-tone={step.tone}>
+                        <div className={styles.stepIcon}>{step.icon}</div><b>STEP {index + 1}</b><h3>{step.title}</h3><p>{step.text}</p>
+                    </article>)}
+                </div>
+            </section>
+
+            <section className={styles.productStory}>
+                <div className={styles.storyCopy}>
+                    <span className={styles.sectionKicker}>YOUR DAILY PATH</span>
+                    <h2>Small lessons.<br />Visible progress.</h2>
+                    <p>Open Alpaca and your next step is already waiting. Finish one useful idea, take a quick practice round, and leave with momentum.</p>
+                    <ul><li><span>✓</span> A clear place to continue</li><li><span>✓</span> Notes and practice stay connected</li><li><span>✓</span> Progress without noisy dashboards</li></ul>
+                    <Link href="/marketplace" className={styles.textAction}>See available courses <span>→</span></Link>
+                </div>
+                <div className={styles.pathPreview}>
+                    <div className={styles.previewTop}><span>STARTUP STRATEGY</span><b>3 / 6</b></div>
+                    <div className={styles.previewTrail}>
+                        <div className={styles.previewNode} data-state="done"><span>✓</span><div><b>Choose your beachhead</b><small>Lesson complete</small></div></div>
+                        <div className={styles.previewNode} data-state="current"><span>🦙</span><div><b>Test market timing</b><small>Continue here</small></div></div>
+                        <div className={styles.previewNode}><span>3</span><div><b>Find your position</b><small>Up next</small></div></div>
                     </div>
                 </div>
-
-                <div className={styles.heroMascot} aria-label="Alpaca mascot"><span className={styles.logoWord}>ALPACA</span><Image src="/assets/images/llama-mascot-white-v2.png" alt="Friendly white Alpaca mascot" width={1064} height={1478} priority /></div>
             </section>
 
-            <section className={styles.method}>
-                <div className={styles.intro}><span className={styles.tag}>A better learning loop</span><h2>Everything connects. Nothing gets lost.</h2><p>Alpaca gives each part of your learning a clear role, then links it into one system you can return to every day.</p></div>
-                <div className={styles.stepGrid}>
-                    {steps.map(([icon, title, text], index) => <article key={title}><div><span>{icon}</span><b>0{index + 1}</b></div><h3>{title}</h3><p>{text}</p></article>)}
+            <section className={styles.practiceSection}>
+                <div className={styles.practiceDemo}>
+                    <div className={styles.demoProgress}><span /></div>
+                    <span className={styles.demoLabel}>FILL IN THE BLANK</span>
+                    <h3>A focused course begins with a clear <u>______</u>.</h3>
+                    <div className={styles.answerRow}><span>market</span><span>logo</span><span>office</span></div>
+                    <div className={styles.demoFooter}><span>⚡ 5 left</span><b>CHECK</b></div>
+                </div>
+                <div className={styles.storyCopy}>
+                    <span className={styles.sectionKicker}>DAILY TRAIN</span>
+                    <h2>Practice that feels quick—and useful.</h2>
+                    <p>Alpaca brings back the right questions in a focused training session. Answer, learn from feedback, and keep moving.</p>
+                    <div className={styles.practicePills}>{practiceTypes.map((type) => <span key={type}>{type}</span>)}</div>
                 </div>
             </section>
 
-            <section className={styles.practice}>
-                <div className={styles.mascotWrap}>
-                    <div className={styles.orbit} />
-                    <Image className={styles.mascotImage} src="/assets/images/llama-mascot-white-v2.png" alt="Friendly white Alpaca mascot standing on two legs" width={1064} height={1478} priority={false} />
-                    <i className={styles.xp}>Level 4</i><i className={styles.nice}>On track</i>
-                </div>
-                <div className={styles.practiceCopy}>
-                    <span className={styles.tag}>Practice your way</span>
-                    <h2>Recall that feels rewarding, not repetitive.</h2>
-                    <p>Choose the question style that fits the idea. Mix quick checks with deeper recall, and keep every answer grounded in your own sources and notes.</p>
-                    <div className={styles.pills}>{quizTypes.map((type) => <span key={type}>{type}</span>)}</div>
-                    <Link href="/marketplace" className={styles.textLink}>Explore the marketplace <span>→</span></Link>
-                </div>
+            <section className={styles.landingCta}>
+                <Image src="/assets/images/llama-face-v2.png" alt="Alpaca" width={1254} height={1254} />
+                <div><span>YOUR NEXT LESSON IS WAITING</span><h2>Ready to make learning a habit?</h2><p>Pick a course and take the first small step today.</p></div>
+                <Link href="/register" className={styles.startButton}>Create a free account</Link>
             </section>
 
-            <section className={styles.community}>
-                <div><span className={styles.tag}>Learn together</span><h2>Your knowledge can be personal. Learning doesn&apos;t have to be lonely.</h2></div>
-                <p>Organize courses, share useful resources, and learn alongside a group while keeping control over what stays private.</p>
-                <div className={styles.people}><span>AM</span><span>SK</span><span>JP</span><span>RL</span></div>
-            </section>
-
-            <section className={styles.finalCta}>
-                <span className={styles.alpaca}>A</span>
-                <div><span className={styles.tag}>Ready when you are</span><h2>Build a learning habit that actually sticks.</h2><p>Start with one source. Turn it into knowledge you can use.</p></div>
-                <Link href="/register" className={styles.primary}>Create your account <span>→</span></Link>
-            </section>
+            <footer className={styles.landingFooter}><Link href="/">Alpaca</Link><span>Learn it for good.</span><nav><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/help">Help</Link></nav></footer>
         </main>
     );
 }

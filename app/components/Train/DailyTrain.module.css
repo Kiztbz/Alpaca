@@ -115,7 +115,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(180deg, #58cc02 0%, #46a302 100%);
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
   border-radius: var(--radius-full);
   transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
@@ -317,7 +317,7 @@
 /* Duolingo 3D Tactile Buttons */
 
 .duoPrimaryBtn {
-  background: #58cc02;
+  background: #2563eb;
   color: #ffffff;
   border: none;
   font-size: 15px;
@@ -327,7 +327,7 @@
   padding: 14px 32px;
   border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 4px 0 #3f9600;
+  box-shadow: 0 4px 0 #1d4ed8;
   transition: all 0.12s ease;
   display: inline-flex;
   align-items: center;
@@ -336,14 +336,14 @@
 }
 
 .duoPrimaryBtn:hover:not(:disabled) {
-  background: #64dd08;
+  background: #3b82f6;
   transform: translateY(-1px);
-  box-shadow: 0 5px 0 #3f9600;
+  box-shadow: 0 5px 0 #1d4ed8;
 }
 
 .duoPrimaryBtn:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #3f9600;
+  box-shadow: 0 1px 0 #1d4ed8;
 }
 
 .duoPrimaryBtn:disabled {
@@ -354,10 +354,10 @@
   opacity: 0.7;
 }
 
-/* State 2: Correct answer footer (Vibrant Green) */
+/* State 2: Correct answer footer (Alpaca blue) */
 .footerCorrect {
-  background: #064e3b;
-  border-top: 3px solid #10b981;
+  background: #172554;
+  border-top: 3px solid #3b82f6;
   animation: slideUpFooter 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.2);
 }
 
@@ -399,7 +399,7 @@
 
 .circleCorrect {
   background: #ffffff;
-  color: #059669;
+  color: #2563eb;
 }
 
 .circleWrong {
@@ -421,7 +421,7 @@
 }
 
 .headingCorrect {
-  color: #a7f3d0;
+  color: #bfdbfe;
 }
 
 .headingWrong {
@@ -449,9 +449,9 @@
   gap: 12px;
 }
 
-/* Green continue button */
+/* Blue continue button */
 .duoSuccessBtn {
-  background: #10b981;
+  background: #2563eb;
   color: #ffffff;
   border: none;
   font-size: 15px;
@@ -461,7 +461,7 @@
   padding: 14px 34px;
   border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 4px 0 #047857;
+  box-shadow: 0 4px 0 #1d4ed8;
   transition: all 0.12s ease;
   display: inline-flex;
   align-items: center;
@@ -469,14 +469,14 @@
 }
 
 .duoSuccessBtn:hover {
-  background: #34d399;
+  background: #3b82f6;
   transform: translateY(-1px);
-  box-shadow: 0 5px 0 #047857;
+  box-shadow: 0 5px 0 #1d4ed8;
 }
 
 .duoSuccessBtn:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #047857;
+  box-shadow: 0 1px 0 #1d4ed8;
 }
 
 /* Red / danger got it button */
@@ -688,11 +688,11 @@
 .reviewHeader > strong { padding: 9px 13px; white-space: nowrap; color: var(--accent-fg); border-radius: var(--radius-full); background: var(--accent); }
 .reviewList { display: grid; gap: 12px; text-align: left; }
 .reviewItem { padding: 18px; border: 1px solid var(--border-color); border-left-width: 4px; border-radius: var(--radius-large); background: var(--bg-1); }
-.reviewCorrect { border-left-color: #58cc02; }
+.reviewCorrect { border-left-color: #2563eb; }
 .reviewWrong { border-left-color: #ff4d4d; }
 .reviewStatus { display: flex; gap: 9px; align-items: center; }
 .reviewStatus > span { display: grid; width: 24px; height: 24px; place-items: center; color: #fff; font-weight: 900; border-radius: 50%; background: #ff4d4d; }
-.reviewCorrect .reviewStatus > span { background: #58cc02; }
+.reviewCorrect .reviewStatus > span { background: #2563eb; }
 .reviewStatus small { color: var(--fg-4); font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .reviewItem h3 { margin: 12px 0; color: var(--fg-1); font-size: 16px; line-height: 1.45; }
 .reviewItem dl { display: grid; gap: 8px; margin: 0; }
@@ -732,7 +732,7 @@
 .historyResults { display: grid; gap: 1px; border-top: 1px solid var(--border-color); background: var(--border-color); }
 .historyResults > div { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; padding: 13px 16px; background: var(--bg-2); }
 .historyResults > div > span { display: grid; width: 24px; height: 24px; place-items: center; color: #fff; border-radius: 50%; background: #ff4d4d; }
-.historyResults > .historyCorrect > span { background: #58cc02; }
+.historyResults > .historyCorrect > span { background: #2563eb; }
 .historyResults strong, .historyResults small { display: block; }
 .historyResults strong { color: var(--fg-2); font-size: 12px; }
 .historyResults small { margin-top: 4px; color: var(--fg-4); font-size: 10px; }

@@ -25,11 +25,11 @@
     --accent-08: #2563eb14;
     --accent-fg: #ffffff;
 
-    --success: #4ade80;
-    --success-50: #4ade8080;
-    --success-20: #4ade8056;
-    --success-08: #4ade8014;
-    --success-fg: #000000;
+    --success: #3b82f6;
+    --success-50: #3b82f680;
+    --success-20: #3b82f656;
+    --success-08: #3b82f614;
+    --success-fg: #ffffff;
 
     --warning: #f59e0b;
     --warning-50: #f59e0b80;
@@ -484,6 +484,12 @@ input[type="date"] {
         --padding: 20px 10px;
         --gutter-x: 10px;
         --gutter-y: 40px;
+    }
+}
+
+@media (max-width: 560px) {
+    nextjs-portal {
+        display: none !important;
     }
 }
 

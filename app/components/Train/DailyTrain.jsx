@@ -778,7 +778,7 @@ export function DailyTrain({ quizzes = [], courseId, courseName }) {
                 </>
               )}
 
-              {/* State B: Correct Answer (Green) */}
+              {/* State B: Correct Answer (Alpaca blue) */}
               {currentGraded && lastGradeResult?.isCorrect && (
                 <>
                   <div className={styles.feedbackBanner}>
